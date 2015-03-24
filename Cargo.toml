@@ -1,0 +1,5 @@
+[package]
+
+name = "rustyearth"
+version = "0.0.1"
+authors = ["Felix Rath <felixr@archlinux.info>"]
