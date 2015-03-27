@@ -1,50 +1,61 @@
+pub trait Transition {
+    fn initial() -> Self;
+    fn create_state(self) -> Option<Box<State<Self>>>;
+}
+
 pub trait State<T> {
     fn run(self: Box<Self>) -> T;
 }
 
-pub fn run_state_machine<T, F>(initial: T, transition_func: F)
-    where F: Fn(T) -> Option<Box<State<T>>>
-{
-    let mut transition = initial;
+pub fn run_state_machine<T: Transition>() {
+    let mut transition = T::initial();
 
-    while let Some(s) = transition_func(transition) {
+    while let Some(s) = transition.create_state() {
         transition = s.run();
     }
 }
 
 #[cfg(test)]
 mod test {
-    use super::{State, run_state_machine};
+    use super::{Transition, State, run_state_machine};
 
-    enum Transition {
+    enum TestTransition {
         First,
         Last,
         Over
     }
 
-    struct FirstState;
-    struct LastState;
+    impl Transition for TestTransition {
+        fn initial() -> TestTransition {
+            TestTransition::First
+        }
 
-    impl State<Transition> for FirstState {
-        fn run(self: Box<Self>) -> Transition {
-            Transition::Last
+        fn create_state(self) -> Option<Box<State<TestTransition>>> {
+            match self {
+                TestTransition::First => Some(Box::new(FirstState)),
+                TestTransition::Last => Some(Box::new(LastState)),
+                TestTransition::Over => None,
+            }
         }
     }
 
-    impl State<Transition> for LastState {
-        fn run(self: Box<Self>) -> Transition {
-            Transition::Over
+    struct FirstState;
+    struct LastState;
+
+    impl State<TestTransition> for FirstState {
+        fn run(self: Box<Self>) -> TestTransition {
+            TestTransition::Last
+        }
+    }
+
+    impl State<TestTransition> for LastState {
+        fn run(self: Box<Self>) -> TestTransition {
+            TestTransition::Over
         }
     }
 
     #[test]
     fn simple_state_machine() {
-        run_state_machine(Transition::First, |t: Transition| {
-            match t {
-                Transition::First => Some(Box::new(FirstState)),
-                Transition::Last => Some(Box::new(LastState)),
-                Transition::Over => None
-            }
-        })
+        run_state_machine::<TestTransition>()
     }
 }
