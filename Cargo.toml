@@ -1,6 +1,6 @@
 [package]
 
-name = "rustyearth"
+name = "crufty"
 version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 
