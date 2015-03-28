@@ -3,11 +3,16 @@ use glutin;
 
 use util::{State, Transition};
 
+pub use self::gamestate::GameState;
+
+mod gamestate;
+
 pub enum AppTransition {
     Startup,
     StartGame(glium::Display),
     Shutdown,
     TerminateApplication
+
 }
 
 impl Transition for AppTransition {
@@ -18,7 +23,7 @@ impl Transition for AppTransition {
     fn create_state(self) -> Option<Box<State<AppTransition>>> {
         match self {
             AppTransition::Startup => Some(Box::new(StartupState)),
-            AppTransition::StartGame(d) => Some(Box::new(GameState{display: d})),
+            AppTransition::StartGame(d) => Some(Box::new(GameState::new(d))),
             AppTransition::Shutdown => Some(Box::new(ShutdownState)),
             AppTransition::TerminateApplication => None
         }
@@ -37,16 +42,6 @@ impl State<AppTransition> for StartupState {
             .build_glium().unwrap();
 
         AppTransition::StartGame(display)
-    }
-}
-
-pub struct GameState {
-    display: glium::Display,
-}
-
-impl State<AppTransition> for GameState {
-    fn run(self: Box<Self>) -> AppTransition {
-        AppTransition::Shutdown
     }
 }
 

@@ -1,14 +1,15 @@
 [package]
-
 name = "crufty"
 version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 
 [dependencies.glium]
-git = "https://github.com/tomaka/glium"
+version = "*"
+# git = "https://github.com/tomaka/glium"
+features = ["image", "nalgebra"]
 
-[dependencies.glium_macros]
-git = "https://github.com/tomaka/glium"
+# [dependencies.glium_macros]
+# git = "https://github.com/tomaka/glium"
 
 [dependencies.glutin]
 version = "*"
