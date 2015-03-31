@@ -16,10 +16,6 @@ pub enum AppTransition {
 }
 
 impl Transition for AppTransition {
-    fn initial() -> AppTransition {
-        AppTransition::Startup
-    }
-
     fn create_state(self) -> Option<Box<State<AppTransition>>> {
         match self {
             AppTransition::Startup => Some(Box::new(StartupState)),

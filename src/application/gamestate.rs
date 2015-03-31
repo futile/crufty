@@ -2,7 +2,7 @@ use glium::{self, Surface};
 use glutin::{self, ElementState, VirtualKeyCode};
 
 use std::thread;
-use std::time::duration::Duration;
+use std::time::Duration;
 
 use util::{State};
 use application::AppTransition;

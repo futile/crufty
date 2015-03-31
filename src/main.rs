@@ -13,5 +13,5 @@ use application::{AppTransition};
 
 #[allow(dead_code)]
 fn main() {
-    run_state_machine::<AppTransition>();
+    run_state_machine(AppTransition::Startup);
 }

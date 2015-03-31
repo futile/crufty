@@ -1,5 +1,4 @@
 pub trait Transition {
-    fn initial() -> Self;
     fn create_state(self) -> Option<Box<State<Self>>>;
 }
 
@@ -7,8 +6,8 @@ pub trait State<T> {
     fn run(self: Box<Self>) -> T;
 }
 
-pub fn run_state_machine<T: Transition>() {
-    let mut transition = T::initial();
+pub fn run_state_machine<T: Transition>(initial: T) {
+    let mut transition = initial;
 
     while let Some(s) = transition.create_state() {
         transition = s.run();
@@ -26,10 +25,6 @@ mod test {
     }
 
     impl Transition for TestTransition {
-        fn initial() -> TestTransition {
-            TestTransition::First
-        }
-
         fn create_state(self) -> Option<Box<State<TestTransition>>> {
             match self {
                 TestTransition::First => Some(Box::new(FirstState)),

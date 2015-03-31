@@ -5,11 +5,8 @@ authors = ["Felix Rath <felixr@archlinux.info>"]
 
 [dependencies.glium]
 version = "*"
-# git = "https://github.com/tomaka/glium"
 features = ["image", "nalgebra"]
 
-# [dependencies.glium_macros]
-# git = "https://github.com/tomaka/glium"
-
-[dependencies.glutin]
-version = "*"
+[dependencies]
+glutin = "*"
+ecs = "*"
