@@ -9,4 +9,5 @@ features = ["image", "nalgebra"]
 
 [dependencies]
 glutin = "*"
+image = "*"
 ecs = "*"
