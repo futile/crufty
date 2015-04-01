@@ -13,6 +13,7 @@ extern crate image;
 mod util;
 mod application;
 mod systems;
+mod components;
 
 use util::{run_state_machine};
 use application::{AppTransition};
