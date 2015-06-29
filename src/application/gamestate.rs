@@ -28,7 +28,9 @@ impl State<AppTransition> for GameState {
         loop {
             let mut world = World::<LevelSystems>::new();
 
-            let entity = world.create_entity(
+            world.systems.render_system.init(RenderSystem);
+
+            let _ = world.create_entity(
                 |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                     data.position.add(&entity, Position { x: 0.0, y: 0.0 });
                 }
