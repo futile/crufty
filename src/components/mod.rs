@@ -5,7 +5,7 @@ pub struct Position {
 }
 
 components! {
-    LevelComponents {
+    struct LevelComponents {
         #[hot] position: Position
     }
 }

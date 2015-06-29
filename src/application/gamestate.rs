@@ -1,5 +1,4 @@
 use std::thread;
-use std::time::Duration;
 
 use glium::{self, Surface};
 use glutin::{self, ElementState, VirtualKeyCode};
@@ -40,7 +39,7 @@ impl State<AppTransition> for GameState {
             for event in self.display.poll_events() {
                 let mut target = self.display.draw();
                 target.clear_color(0.0, 0.0, 0.0, 0.0);
-                target.finish();
+                target.finish().unwrap();
 
                 match event {
                     glutin::Event::Closed |
@@ -49,7 +48,7 @@ impl State<AppTransition> for GameState {
                     _ => ()
                 }
 
-                thread::sleep(Duration::milliseconds(17));
+                thread::sleep_ms(17);
             }
         }
     }

@@ -7,6 +7,9 @@ authors = ["Felix Rath <felixr@archlinux.info>"]
 version = "*"
 features = ["image", "nalgebra"]
 
+#[dependencies.ecs]
+#git = "https://github.com/HeroesGrave/ecs-rs"
+
 [dependencies]
 glutin = "*"
 image = "*"

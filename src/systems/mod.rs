@@ -7,7 +7,7 @@ use components::LevelComponents;
 mod render_system;
 
 systems! {
-    LevelSystems<LevelComponents, ()> {
+    struct LevelSystems<LevelComponents, ()> {
         render_system: RenderSystem = RenderSystem
     }
 }

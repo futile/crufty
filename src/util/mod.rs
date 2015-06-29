@@ -51,6 +51,6 @@ mod test {
 
     #[test]
     fn simple_state_machine() {
-        run_state_machine::<TestTransition>()
+        run_state_machine(TestTransition::First)
     }
 }
