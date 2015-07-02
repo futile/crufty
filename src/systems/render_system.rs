@@ -2,7 +2,11 @@ use ecs::{ Process, System, DataHelper };
 
 use components::LevelComponents;
 
-pub struct RenderSystem;
+use glium;
+
+pub struct RenderSystem {
+    pub display: glium::Display,
+}
 
 impl System for RenderSystem {
     type Components = LevelComponents;
