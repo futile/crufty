@@ -1,6 +1,6 @@
 use std::thread;
 
-use glium::{self, Surface};
+use glium::{self};
 use glutin::{self, ElementState, VirtualKeyCode};
 
 use ecs::{World, BuildData};
@@ -39,10 +39,6 @@ impl State<AppTransition> for GameState {
             world.update();
 
             for event in self.display.poll_events() {
-                let mut target = self.display.draw();
-                target.clear_color(0.0, 0.0, 0.0, 0.0);
-                target.finish().unwrap();
-
                 match event {
                     glutin::Event::Closed |
                     glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::Escape))
