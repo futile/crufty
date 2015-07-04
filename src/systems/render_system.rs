@@ -1,4 +1,5 @@
-use ecs::{ Process, System, DataHelper };
+use ecs::{ System, DataHelper, EntityIter };
+use ecs::system::EntityProcess;
 
 use components::LevelComponents;
 
@@ -96,8 +97,8 @@ impl System for RenderSystem {
     fn is_active(&self) -> bool { false }
 }
 
-impl Process for RenderSystem {
-    fn process(&mut self, _: &mut DataHelper<LevelComponents, ()>) {
+impl EntityProcess for RenderSystem {
+    fn process(&mut self, entities: EntityIter<LevelComponents>, _: &mut DataHelper<LevelComponents, ()>) {
         let uniforms = uniform! {
             matrix: [
                 [1.0, 0.0, 0.0, 0.0],

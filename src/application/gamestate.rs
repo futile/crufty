@@ -4,6 +4,7 @@ use glium::{self};
 use glutin::{self, ElementState, VirtualKeyCode};
 
 use ecs::{World, BuildData};
+use ecs::system::EntitySystem;
 
 use util::{State};
 use application::AppTransition;
@@ -27,7 +28,10 @@ impl State<AppTransition> for GameState {
     fn run(self: Box<Self>) -> AppTransition {
         let mut world = World::<LevelSystems>::new();
 
-        world.systems.render_system.init(RenderSystem::new(self.display.clone()));
+        world.systems.render_system.init(EntitySystem::new(
+            RenderSystem::new(self.display.clone()),
+            aspect!(<LevelComponents> all: [position])
+                ));
 
         let _ = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
