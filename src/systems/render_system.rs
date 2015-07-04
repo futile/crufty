@@ -91,6 +91,9 @@ impl RenderSystem {
 impl System for RenderSystem {
     type Components = LevelComponents;
     type Services = ();
+
+    // make system passive, so we have to call it manually
+    fn is_active(&self) -> bool { false }
 }
 
 impl Process for RenderSystem {
