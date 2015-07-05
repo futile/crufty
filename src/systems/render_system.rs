@@ -1,18 +1,17 @@
 use ecs::{ System, DataHelper, EntityIter };
 use ecs::system::EntityProcess;
 
-use components::LevelComponents;
-
 use glium::{self, Surface};
 use glium::index::PrimitiveType;
 
-use std::io::Cursor;
 use std::io::Read;
 use std::fs::File;
 
 use image::{self, GenericImage};
 
 use na::{Vec2, OrthoMat3};
+
+use components::LevelComponents;
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 struct Vertex {
@@ -55,7 +54,7 @@ pub struct RenderSystem {
 
 impl RenderSystem {
     pub fn new(display: glium::Display) -> RenderSystem {
-        let mut image = image::load(Cursor::new(&include_bytes!("../../assets/test1.png")[..]), image::PNG).unwrap();
+        let mut image = image::open("../../assets/test1.png").unwrap();
 
         let image = image.sub_image(0, 0, 32, 32).to_image();
         let texture = glium::texture::CompressedSrgbTexture2d::new(&display, image);
