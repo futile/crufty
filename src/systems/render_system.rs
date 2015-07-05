@@ -7,6 +7,8 @@ use glium::{self, Surface};
 use glium::index::PrimitiveType;
 
 use std::io::Cursor;
+use std::io::Read;
+use std::fs::File;
 
 use image::{self, GenericImage};
 
@@ -73,39 +75,22 @@ impl RenderSystem {
         let index_buffer = glium::IndexBuffer::new(&display, PrimitiveType::TriangleStrip,
                                                    vec![1 as u16, 2, 0, 3]);
 
+        let mut vertex_shader_code = String::new();
+        File::open("../../assets/shaders/sprite.vert")
+            .unwrap()
+            .read_to_string(&mut vertex_shader_code)
+            .unwrap();
+
+        let mut fragment_shader_code = String::new();
+        File::open("../../assets/shaders/sprite.frag")
+            .unwrap()
+            .read_to_string(&mut fragment_shader_code)
+            .unwrap();
+
         let program = program!(&display,
                                140 => {
-                                   vertex: "
-                                        #version 140
-
-                                        uniform vec2 view_pos;
-                                        uniform vec2 scale;
-                                        uniform mat4 proj;
-
-                                        in vec2 position;
-                                        in vec2 tex_coords;
-
-                                        out vec2 v_tex_coords;
-
-                                        void main() {
-                                            vec4 pos = proj * vec4(scale * position + view_pos,  1.0, 1.0);
-                                            pos.xy -= vec2(1.0, 1.0);
-                                            v_tex_coords = tex_coords;
-                                            gl_Position = pos;
-                                        }
-                                    ",
-
-                                   fragment: "
-                                        #version 140
-
-                                        uniform sampler2D tex;
-                                        in vec2 v_tex_coords;
-                                        out vec4 f_color;
-
-                                        void main() {
-                                            f_color = texture(tex, v_tex_coords);
-                                        }
-                                    "
+                                   vertex: &vertex_shader_code,
+                                   fragment: &fragment_shader_code,
                                }).unwrap();
 
         RenderSystem {
@@ -133,7 +118,7 @@ impl EntityProcess for RenderSystem {
         let mut target = self.display.draw();
         target.clear_color(0.0, 0.0, 0.0, 0.0);
 
-        let ortho_proj = OrthoMat3::new(self.world_viewport.width, self.world_viewport.height, 0.0, -2.0);
+        let ortho_proj = OrthoMat3::new(self.world_viewport.width, self.world_viewport.height, 0.0, -2.0).to_mat();
 
         for e in entities {
             let position = data.position[e];
@@ -145,7 +130,7 @@ impl EntityProcess for RenderSystem {
             let uniforms = uniform! {
                 view_pos: view_pos,
                 scale: scale,
-                proj: ortho_proj.to_mat(),
+                proj: ortho_proj,
                 tex: &self.texture
             };
 
