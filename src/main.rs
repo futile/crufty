@@ -8,6 +8,8 @@ extern crate ecs;
 
 extern crate image;
 
+extern crate nalgebra as na;
+
 mod util;
 mod application;
 mod systems;

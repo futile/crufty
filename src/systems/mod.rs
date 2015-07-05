@@ -1,4 +1,4 @@
-pub use self::render_system::RenderSystem;
+pub use self::render_system::{ RenderSystem, WorldViewport };
 
 use ecs::system::{ LazySystem, EntitySystem };
 
