@@ -32,8 +32,6 @@ impl State<AppTransition> for GameState {
         let mut render_system = RenderSystem::new(self.display.clone());
         render_system.world_viewport = WorldViewport::new(0.0, 0.0, width as f32, height as f32);
 
-        println!("width: {}, height: {}", width, height);
-
         world.systems.render_system.init(EntitySystem::new(
             render_system,
             aspect!(<LevelComponents> all: [position, sprite_info])
@@ -55,6 +53,10 @@ impl State<AppTransition> for GameState {
                     glutin::Event::Closed |
                     glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::Escape))
                         => return AppTransition::Shutdown,
+                    glutin::Event::Resized(width, height) => {
+                        let worldview = &mut world.systems.render_system.inner.as_mut().unwrap().inner.world_viewport;
+                        worldview.width = width as f32; worldview.height = height as f32;
+                            }
                     _ => ()
                 }
 

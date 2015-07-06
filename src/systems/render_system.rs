@@ -21,10 +21,10 @@ struct Vertex {
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct WorldViewport {
-    x: f32,
-    y: f32,
-    width: f32,
-    height: f32,
+    pub x: f32,
+    pub y: f32,
+    pub width: f32,
+    pub height: f32,
 }
 
 impl WorldViewport {
