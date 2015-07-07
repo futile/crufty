@@ -12,6 +12,8 @@ use application::AppTransition;
 use systems::{LevelSystems, RenderSystem, WorldViewport};
 use components::{LevelComponents, Position, SpriteInfo};
 
+use hprof;
+
 pub struct GameState {
     display: glium::Display,
 }
@@ -46,24 +48,37 @@ impl State<AppTransition> for GameState {
             );
 
         loop {
-            world.update();
+            hprof::start_frame();
 
-            for event in self.display.poll_events() {
-                match event {
-                    glutin::Event::Closed |
-                    glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::Escape))
-                        => return AppTransition::Shutdown,
-                    glutin::Event::Resized(width, height) => {
-                        let worldview = &mut world.systems.render_system.inner.as_mut().unwrap().inner.world_viewport;
-                        worldview.width = width as f32; worldview.height = height as f32;
-                            }
-                    _ => ()
+            {
+                let _ = hprof::enter("world-update");
+                world.update();
+            }
+
+            {
+                let _ = hprof::enter("window-events");
+
+                for event in self.display.poll_events() {
+                    match event {
+                        glutin::Event::Closed |
+                        glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::Escape))
+                            => return AppTransition::Shutdown,
+                        glutin::Event::Resized(width, height) => {
+                            let worldview = &mut world.systems.render_system.inner.as_mut().unwrap().inner.world_viewport;
+                            worldview.width = width as f32; worldview.height = height as f32;
+                        }
+                        _ => ()
+                    }
                 }
-
-                thread::sleep_ms(17);
             }
 
             process!(world, render_system);
+
+            hprof::end_frame();
+
+            thread::sleep_ms(17);
+
+            hprof::profiler().print_timing();
         }
     }
 }

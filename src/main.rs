@@ -10,7 +10,11 @@ extern crate image;
 
 extern crate nalgebra as na;
 
+extern crate hprof;
+
+#[macro_use]
 mod util;
+
 mod application;
 mod systems;
 mod components;

@@ -13,6 +13,8 @@ use na::{Vec2, OrthoMat3};
 
 use components::LevelComponents;
 
+use hprof;
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 struct Vertex {
     position: [f32; 2],
@@ -114,28 +116,46 @@ impl System for RenderSystem {
 
 impl EntityProcess for RenderSystem {
     fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, ()>) {
+        let _ = hprof::enter("rendering");
+
+        let _s = hprof::enter("setup");
+
+        let _g = hprof::enter("draw");
         let mut target = self.display.draw();
+        drop(_g);
+
+        let _g = hprof::enter("clear");
         target.clear_color(0.0, 0.0, 0.0, 0.0);
+        drop(_g);
 
+        let _g = hprof::enter("ortho");
         let ortho_proj = OrthoMat3::new(self.world_viewport.width, self.world_viewport.height, 0.0, -2.0).to_mat();
+        drop(_g);
 
-        for e in entities {
-            let position = data.position[e];
-            let sprite_info = data.sprite_info[e];
+        drop(_s);
 
-            let scale = Vec2::new(sprite_info.width, sprite_info.height);
-            let view_pos = Vec2::new(position.x - self.world_viewport.x, position.y - self.world_viewport.y);
+        {
+            let _g = hprof::enter("drawing");
+            for e in entities {
+                let position = data.position[e];
+                let sprite_info = data.sprite_info[e];
 
-            let uniforms = uniform! {
-                view_pos: view_pos,
-                scale: scale,
-                proj: ortho_proj,
-                tex: &self.texture
-            };
+                let scale = Vec2::new(sprite_info.width, sprite_info.height);
+                let view_pos = Vec2::new(position.x - self.world_viewport.x, position.y - self.world_viewport.y);
 
-            target.draw(&self.unit_quad, &self.index_buffer, &self.program, &uniforms, &Default::default()).unwrap();
+                let uniforms = uniform! {
+                    view_pos: view_pos,
+                    scale: scale,
+                    proj: ortho_proj,
+                    tex: &self.texture
+                };
+
+                target.draw(&self.unit_quad, &self.index_buffer, &self.program, &uniforms, &Default::default()).unwrap()
+            }
         }
 
+        let _g = hprof::enter("finishing");
         target.finish().unwrap();
+        drop(_g);
     }
 }
