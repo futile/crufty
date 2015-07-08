@@ -47,6 +47,8 @@ impl State<AppTransition> for GameState {
             }
             );
 
+        let mut profiler_ticks = 0;
+
         loop {
             hprof::start_frame();
 
@@ -63,6 +65,8 @@ impl State<AppTransition> for GameState {
                         glutin::Event::Closed |
                         glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::Escape))
                             => return AppTransition::Shutdown,
+                        glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::P))
+                            => profiler_ticks += 5,
                         glutin::Event::Resized(width, height) => {
                             let worldview = &mut world.systems.render_system.inner.as_mut().unwrap().inner.world_viewport;
                             worldview.width = width as f32; worldview.height = height as f32;
@@ -78,7 +82,10 @@ impl State<AppTransition> for GameState {
 
             thread::sleep_ms(17);
 
-            hprof::profiler().print_timing();
+            if profiler_ticks > 0 {
+                hprof::profiler().print_timing();
+                profiler_ticks -= 1;
+            }
         }
     }
 }
