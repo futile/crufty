@@ -1,3 +1,5 @@
+#![feature(duration, thread_sleep)]
+
 extern crate glutin;
 
 #[macro_use]
@@ -11,6 +13,8 @@ extern crate image;
 extern crate nalgebra as na;
 
 extern crate hprof;
+
+extern crate clock_ticks;
 
 #[macro_use]
 mod util;
