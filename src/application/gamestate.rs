@@ -56,14 +56,19 @@ impl State<AppTransition> for GameState {
         let mut previous_time = clock_ticks::precise_time_ms();
         let mut lag_behind_simulation = 0u64;
 
+        // change these
         const MS_PER_UPDATE: u64 = 10;
         const FPS: u64 = 60;
-        const INV_FPS: f64 = 1000.0f64 / (FPS as f64);
+
+        // leave these
+        const MS_TO_NS: u64 = 1000000;
+        const NS_PER_UPDATE: u64 = MS_PER_UPDATE * MS_TO_NS;
+        const INV_FPS_NS: u64 = 1000000000 / FPS; // 1s / FPS
 
         loop {
             hprof::start_frame();
 
-            let current_time = clock_ticks::precise_time_ms();
+            let current_time = clock_ticks::precise_time_ns();
             let elapsed = current_time - previous_time;
             previous_time = current_time;
             lag_behind_simulation += elapsed;
@@ -87,20 +92,20 @@ impl State<AppTransition> for GameState {
                 }
             }
 
-            while lag_behind_simulation >= MS_PER_UPDATE {
+            while lag_behind_simulation >= NS_PER_UPDATE {
                 let _ = hprof::enter("world-update");
                 world.update();
-                lag_behind_simulation -= MS_PER_UPDATE;
+                lag_behind_simulation -= NS_PER_UPDATE;
             }
 
             process!(world, render_system);
 
             hprof::end_frame();
 
-            let diff = (clock_ticks::precise_time_ms() - previous_time) as f64;
-            if diff < INV_FPS {
-                println!("sleeping for {}ms...", INV_FPS - diff);
-                thread::sleep(Duration::new(0, ((INV_FPS - diff) * 1000000f64) as u32))
+            let diff = clock_ticks::precise_time_ns() - previous_time;
+            if diff < INV_FPS_NS {
+                println!("sleeping for {}ns...", INV_FPS_NS - diff);
+                thread::sleep(Duration::new(0, (INV_FPS_NS - diff) as u32));
             }
 
             if profiler_ticks > 0 {
