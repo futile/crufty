@@ -3,6 +3,8 @@
 uniform vec2 view_pos;
 uniform vec2 scale;
 uniform mat4 proj;
+uniform vec2 win_scale;
+uniform vec2 win_trans;
 
 in vec2 position;
 in vec2 tex_coords;
