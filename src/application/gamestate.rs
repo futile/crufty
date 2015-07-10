@@ -53,17 +53,22 @@ impl State<AppTransition> for GameState {
 
         let mut profiler_ticks = 0;
 
-        let mut previous_time = clock_ticks::precise_time_ms();
+        let mut previous_time = clock_ticks::precise_time_ns();
         let mut lag_behind_simulation = 0u64;
 
         // change these
         const MS_PER_UPDATE: u64 = 10;
+        #[allow(dead_code)]
         const FPS: u64 = 60;
 
         // leave these
         const MS_TO_NS: u64 = 1000000;
         const NS_PER_UPDATE: u64 = MS_PER_UPDATE * MS_TO_NS;
+        #[allow(dead_code)]
         const INV_FPS_NS: u64 = 1000000000 / FPS; // 1s / FPS
+
+        // change this
+        const MAX_SLEEP: u64 = NS_PER_UPDATE;
 
         loop {
             hprof::start_frame();
@@ -103,9 +108,8 @@ impl State<AppTransition> for GameState {
             hprof::end_frame();
 
             let diff = clock_ticks::precise_time_ns() - previous_time;
-            if diff < INV_FPS_NS {
-                println!("sleeping for {}ns...", INV_FPS_NS - diff);
-                thread::sleep(Duration::new(0, (INV_FPS_NS - diff) as u32));
+            if diff < MAX_SLEEP {
+                thread::sleep(Duration::new(0, (MAX_SLEEP - diff) as u32));
             }
 
             if profiler_ticks > 0 {
