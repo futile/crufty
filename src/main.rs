@@ -11,6 +11,7 @@ extern crate ecs;
 extern crate image;
 
 extern crate nalgebra as na;
+extern crate ncollide as nc;
 
 extern crate hprof;
 

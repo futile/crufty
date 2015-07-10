@@ -67,7 +67,7 @@ impl State<AppTransition> for GameState {
         #[allow(dead_code)]
         const INV_FPS_NS: u64 = 1000000000 / FPS; // 1s / FPS
 
-        // change this
+        // change this to min(NS_PER_UPDATE, INV_FPS_NS)
         const MAX_SLEEP: u64 = NS_PER_UPDATE;
 
         loop {
