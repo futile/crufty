@@ -4,7 +4,7 @@ use glium::{self};
 use glutin::{self, ElementState, VirtualKeyCode};
 
 use ecs::{World, BuildData};
-use ecs::system::EntitySystem;
+use ecs::system::{EntitySystem, InteractSystem};
 
 use util::{State};
 use application::AppTransition;
@@ -38,8 +38,9 @@ impl State<AppTransition> for GameState {
         let mut render_system = RenderSystem::new(self.display.clone());
         render_system.world_viewport = WorldViewport::new(0.0, 0.0, width as f32, height as f32);
 
-        world.systems.render_system.init(EntitySystem::new(
+        world.systems.render_system.init(InteractSystem::new(
             render_system,
+            aspect!(<LevelComponents> all: [camera]),
             aspect!(<LevelComponents> all: [position, sprite_info])
                 ));
 
