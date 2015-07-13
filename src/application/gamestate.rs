@@ -10,13 +10,16 @@ use util::{State};
 use application::AppTransition;
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Position, SpriteInfo};
+use components::{LevelComponents, Position, SpriteInfo, Camera};
 
 use hprof;
 
 use clock_ticks;
 
 use std::time::Duration;
+
+use nc::bounding_volume::AABB2;
+use na::Pnt2;
 
 pub struct GameState {
     display: glium::Display,
@@ -35,8 +38,7 @@ impl State<AppTransition> for GameState {
         let mut world = World::<LevelSystems>::new();
 
         let (width, height) = self.display.get_framebuffer_dimensions();
-        let mut render_system = RenderSystem::new(self.display.clone());
-        render_system.world_viewport = WorldViewport::new(0.0, 0.0, width as f32, height as f32);
+        let render_system = RenderSystem::new(self.display.clone());
 
         world.systems.render_system.init(InteractSystem::new(
             render_system,
@@ -49,6 +51,11 @@ impl State<AppTransition> for GameState {
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
                 data.sprite_info.add(&entity, SpriteInfo { width: 32.0, height: 32.0 });
+                data.camera.add(&entity, Camera::new(
+                    WorldViewport::new(width as f32, height as f32),
+                    AABB2::new(Pnt2::new(0.0, 0.0), Pnt2::new(1.0, 1.0)),
+                    true
+                    ));
             }
             );
 
@@ -89,10 +96,10 @@ impl State<AppTransition> for GameState {
                             => return AppTransition::Shutdown,
                         glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::P))
                             => profiler_ticks += 3,
-                        glutin::Event::Resized(width, height) => {
-                            let worldview = &mut world.systems.render_system.inner.as_mut().unwrap().inner.world_viewport;
-                            worldview.width = width as f32; worldview.height = height as f32;
-                        }
+                        // glutin::Event::Resized(width, height) => {
+                        //     let worldview = &mut world.systems.render_system.inner.as_mut().unwrap().inner.world_viewport;
+                        //     worldview.width = width as f32; worldview.height = height as f32;
+                        // }
                         _ => ()
                     }
                 }

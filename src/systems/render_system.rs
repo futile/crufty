@@ -23,24 +23,20 @@ struct Vertex {
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct WorldViewport {
-    pub x: f32,
-    pub y: f32,
     pub width: f32,
     pub height: f32,
 }
 
 impl WorldViewport {
-    pub fn new(x: f32, y: f32, width: f32, height: f32) -> WorldViewport {
+    pub fn new(width: f32, height: f32) -> WorldViewport {
         WorldViewport {
-            x: x,
-            y: y,
             width: width,
             height: height,
         }
     }
 
     pub fn empty() -> WorldViewport {
-        WorldViewport::new(0.0, 0.0, 0.0, 0.0)
+        WorldViewport::new(0.0, 0.0)
     }
 }
 
@@ -50,8 +46,6 @@ pub struct RenderSystem {
     unit_quad: glium::VertexBuffer<Vertex>,
     index_buffer: glium::IndexBuffer<u16>,
     program: glium::Program,
-
-    pub world_viewport: WorldViewport,
 }
 
 impl RenderSystem {
@@ -100,8 +94,6 @@ impl RenderSystem {
             unit_quad: vertex_buffer,
             index_buffer: index_buffer,
             program: program,
-
-            world_viewport: WorldViewport::empty(),
         }
     }
 }
@@ -128,21 +120,27 @@ impl InteractProcess for RenderSystem {
         target.clear_color(0.0, 0.0, 0.0, 0.0);
         drop(_g);
 
-        let _g = hprof::enter("ortho");
-        let ortho_proj = OrthoMat3::new(self.world_viewport.width, self.world_viewport.height, 0.0, -2.0).to_mat();
-        drop(_g);
-
         drop(_s);
 
         {
             let _g = hprof::enter("drawing");
+
+            let sprites: Vec<_> = sprite_entities.collect();
+
             for ce in camera_entities {
-                for e in sprite_entities {
-                    let position = data.position[e];
-                    let sprite_info = data.sprite_info[e];
+                let ref camera = data.camera[ce];
+                let cpos = data.position[ce];
+
+                let _g = hprof::enter("ortho");
+                let ortho_proj = OrthoMat3::new(camera.world_viewport.width, camera.world_viewport.height, 0.0, -2.0).to_mat();
+                drop(_g);
+
+                for e in &sprites {
+                    let position = data.position[*e];
+                    let sprite_info = data.sprite_info[*e];
 
                     let scale = Vec2::new(sprite_info.width, sprite_info.height);
-                    let view_pos = Vec2::new(position.x - self.world_viewport.x, position.y - self.world_viewport.y);
+                    let view_pos = Vec2::new(position.x - cpos.x, position.y - cpos.y);
 
                     let uniforms = uniform! {
                         view_pos: view_pos,
