@@ -128,8 +128,9 @@ impl InteractProcess for RenderSystem {
             let sprites: Vec<_> = sprite_entities.collect();
 
             for ce in camera_entities {
-                let ref camera = data.camera[ce];
+                let camera = &data.camera[ce];
                 let cpos = data.position[ce];
+                let screen_size = camera.screen_viewport.half_extents() * 2.0;
 
                 let _g = hprof::enter("ortho");
                 let ortho_proj = OrthoMat3::new(camera.world_viewport.width, camera.world_viewport.height, 0.0, -2.0).to_mat();
@@ -146,7 +147,9 @@ impl InteractProcess for RenderSystem {
                         view_pos: view_pos,
                         scale: scale,
                         proj: ortho_proj,
-                        tex: &self.texture
+                        tex: &self.texture,
+                        win_scale: screen_size,
+                        win_trans: camera.screen_viewport.mins().to_vec(),
                     };
 
                     target.draw(&self.unit_quad, &self.index_buffer, &self.program, &uniforms, &Default::default()).unwrap()

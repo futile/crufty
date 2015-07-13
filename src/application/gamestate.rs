@@ -4,7 +4,7 @@ use glium::{self};
 use glutin::{self, ElementState, VirtualKeyCode};
 
 use ecs::{World, BuildData};
-use ecs::system::{EntitySystem, InteractSystem};
+use ecs::system::{InteractSystem};
 
 use util::{State};
 use application::AppTransition;
@@ -52,7 +52,7 @@ impl State<AppTransition> for GameState {
                 data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
                 data.sprite_info.add(&entity, SpriteInfo { width: 32.0, height: 32.0 });
                 data.camera.add(&entity, Camera::new(
-                    WorldViewport::new(width as f32, height as f32),
+                    WorldViewport::new((width / 2) as f32, ( height / 2 )as f32),
                     AABB2::new(Pnt2::new(0.0, 0.0), Pnt2::new(1.0, 1.0)),
                     true
                     ));
