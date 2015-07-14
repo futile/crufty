@@ -6,7 +6,7 @@ use ecs::system::EntityProcess;
 use components::LevelComponents;
 
 pub struct CameraSystem {
-    resized: Option<(u32, u32)>,
+    pub resized: Option<(u32, u32)>,
 }
 
 impl CameraSystem {

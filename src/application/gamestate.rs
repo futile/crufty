@@ -59,6 +59,8 @@ impl State<AppTransition> for GameState {
             }
             );
 
+        process!(world, camera_system);
+
         let mut profiler_ticks = 0;
 
         let mut previous_time = clock_ticks::precise_time_ns();
@@ -96,10 +98,16 @@ impl State<AppTransition> for GameState {
                             => return AppTransition::Shutdown,
                         glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::P))
                             => profiler_ticks += 3,
-                        // glutin::Event::Resized(width, height) => {
-                        //     let worldview = &mut world.systems.render_system.inner.as_mut().unwrap().inner.world_viewport;
-                        //     worldview.width = width as f32; worldview.height = height as f32;
-                        // }
+                        glutin::Event::KeyboardInput(ElementState::Pressed, _, Some(vkc))
+                            => println!("pressed: {:?}", vkc),
+                        glutin::Event::KeyboardInput(ElementState::Released, _, Some(vkc))
+                            => println!("released: {:?}", vkc),
+                        glutin::Event::ReceivedCharacter(c)
+                            => println!("char: {:?}", c),
+                        glutin::Event::Resized(width, height) => {
+                            world.systems.camera_system.resized = Some((width, height));
+                            process!(world, camera_system);
+                        },
                         _ => ()
                     }
                 }
