@@ -1,5 +1,4 @@
-use glium;
-use glutin;
+use glium::{self, glutin};
 
 use util::{State, Transition};
 

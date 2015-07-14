@@ -3,15 +3,8 @@ name = "crufty"
 version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 
-[dependencies.glium]
-version = "*"
-features = ["image", "nalgebra"]
-
-#[dependencies.ecs]
-#git = "https://github.com/HeroesGrave/ecs-rs"
-
 [dependencies]
-glutin = "*"
+glium = "*"
 image = "*"
 ecs = "*"
 nalgebra = "*"

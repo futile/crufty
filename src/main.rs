@@ -1,7 +1,5 @@
 #![feature(duration, thread_sleep)]
 
-extern crate glutin;
-
 #[macro_use]
 extern crate glium;
 
