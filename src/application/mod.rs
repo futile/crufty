@@ -4,7 +4,10 @@ use util::{State, Transition};
 
 pub use self::gamestate::GameState;
 
+pub use self::input::KeyboardState;
+
 mod gamestate;
+mod input;
 
 pub enum AppTransition {
     Startup,

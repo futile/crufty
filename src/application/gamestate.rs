@@ -46,7 +46,6 @@ impl State<AppTransition> for GameState {
             aspect!(<LevelComponents> all: [position, sprite_info])
                 ));
 
-
         let _ = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });

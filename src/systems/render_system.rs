@@ -15,6 +15,8 @@ use components::LevelComponents;
 
 use hprof;
 
+use super::LevelServices;
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 struct Vertex {
     position: [f32; 2],
@@ -100,14 +102,14 @@ impl RenderSystem {
 
 impl System for RenderSystem {
     type Components = LevelComponents;
-    type Services = ();
+    type Services = LevelServices;
 
     // make system passive, so we have to call it manually
     fn is_active(&self) -> bool { false }
 }
 
 impl InteractProcess for RenderSystem {
-    fn process(&self, camera_entities: EntityIter<LevelComponents>, sprite_entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, ()>) {
+    fn process(&self, camera_entities: EntityIter<LevelComponents>, sprite_entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
         let _ = hprof::enter("rendering");
 
         let _s = hprof::enter("setup");
