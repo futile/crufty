@@ -5,14 +5,14 @@ use ecs::system::{ LazySystem, EntitySystem, InteractSystem };
 
 use components::LevelComponents;
 
-use application::KeyboardState;
+use application::InputManager;
 
 mod render_system;
 mod camera_system;
 
 services! {
     struct LevelServices {
-        keyboard_state: KeyboardState = KeyboardState::new(),
+        input_manager: InputManager = InputManager::new(),
     }
 }
 

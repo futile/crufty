@@ -99,12 +99,12 @@ impl State<AppTransition> for GameState {
                             => profiler_ticks += 3,
                         glutin::Event::KeyboardInput(ElementState::Pressed, _, Some(vkc))
                             => {
-                                world.services.keyboard_state.handle_event(ElementState::Pressed, vkc);
+                                world.services.input_manager.handle_event(ElementState::Pressed, vkc);
                                 println!("pressed: {:?}", vkc);
                             },
                         glutin::Event::KeyboardInput(ElementState::Released, _, Some(vkc))
                             => {
-                                world.services.keyboard_state.handle_event(ElementState::Released, vkc);
+                                world.services.input_manager.handle_event(ElementState::Released, vkc);
                                 println!("released: {:?}", vkc);
                             },
                         glutin::Event::ReceivedCharacter(c)

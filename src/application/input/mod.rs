@@ -7,7 +7,7 @@ mod intents;
 
 pub use self::intents::InputIntent;
 
-pub struct KeyboardState {
+struct KeyboardState {
     keys: HashSet<VirtualKeyCode>,
 }
 
@@ -73,5 +73,25 @@ impl MappedInputs {
 }
 
 pub struct InputManager {
+    keyboard_state: KeyboardState,
+
     input_contexts: Vec<InputContext>,
+}
+
+impl InputManager {
+    pub fn new() -> InputManager {
+        InputManager {
+            keyboard_state: KeyboardState::new(),
+
+            input_contexts: Vec::new(),
+        }
+    }
+
+    pub fn handle_event(&mut self, state: ElementState, vkc: VirtualKeyCode) {
+        self.keyboard_state.handle_event(state, vkc);
+    }
+
+    fn is_pressed(&self, vkc: VirtualKeyCode) -> bool {
+        self.keyboard_state.is_pressed(vkc)
+    }
 }
