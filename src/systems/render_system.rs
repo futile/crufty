@@ -37,7 +37,7 @@ impl WorldViewport {
         }
     }
 
-    pub fn empty() -> WorldViewport {
+    pub fn new_empty() -> WorldViewport {
         WorldViewport::new(0.0, 0.0)
     }
 }

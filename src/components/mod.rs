@@ -32,7 +32,7 @@ impl Camera {
 
     pub fn new_empty() -> Camera {
         Camera {
-            world_viewport: WorldViewport::empty(),
+            world_viewport: WorldViewport::new_empty(),
             screen_viewport: AABB2::new_invalid(),
             resize_world_to_window: true,
         }

@@ -2,6 +2,10 @@ use glium::glutin::{ElementState, VirtualKeyCode};
 
 use std::collections::HashSet;
 
+mod intents;
+
+pub use self::intents::InputIntent;
+
 pub struct KeyboardState {
     keys: HashSet<VirtualKeyCode>,
 }
