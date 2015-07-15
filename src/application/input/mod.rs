@@ -25,57 +25,25 @@ impl KeyboardState {
         };
     }
 
-    pub fn is_pressed(&self, vkc: VirtualKeyCode) -> bool {
-        return self.keys.contains(&vkc);
+    pub fn is_pressed(&self, vkc: &VirtualKeyCode) -> bool {
+       self.keys.contains(vkc)
+    }
+
+    pub fn pressed_keys<'a>(&'a self) -> ::std::collections::hash_set::Iter<'a, VirtualKeyCode> {
+        self.keys.iter()
     }
 }
 
-type InputContext = HashMap<VirtualKeyCode, InputIntent>;
-
-pub struct MappedInputs {
-    intent_to_key: HashMap<InputIntent, VirtualKeyCode>,
-    consumed_keys: HashSet<VirtualKeyCode>,
-}
-
-impl MappedInputs {
-    pub fn new() -> MappedInputs {
-        MappedInputs {
-            intent_to_key: HashMap::new(),
-            consumed_keys: HashSet::new(),
-        }
-    }
-
-    pub fn add_input(&mut self, intent: InputIntent, key: VirtualKeyCode) {
-        self.intent_to_key.insert(intent, key);
-    }
-
-    pub fn has_intent(&self, intent: &InputIntent) -> bool {
-        if let Some(vkc) = self.intent_to_key.get(intent) {
-            return !self.consumed_keys.contains(vkc);
-        }
-
-        return false;
-    }
-
-    // returns `true` if the intent wasn't consumed before
-    pub fn consume_intent(&mut self, intent: &InputIntent) -> bool {
-        if let Some(vkc) = self.intent_to_key.get(intent) {
-            return self.consumed_keys.insert(*vkc);
-        }
-
-        return false;
-    }
-
-    pub fn clear(&mut self) {
-        self.intent_to_key.clear();
-        self.consumed_keys.clear();
-    }
+pub trait KeyHandler {
+    // returns whether the key was consumed
+    fn handle_key(&mut self, state: ElementState, new_this_frame: bool, key: VirtualKeyCode) -> bool;
 }
 
 pub struct InputManager {
     keyboard_state: KeyboardState,
 
-    input_contexts: Vec<InputContext>,
+    new_this_frame: HashSet<VirtualKeyCode>,
+    consumed: HashSet<VirtualKeyCode>,
 }
 
 impl InputManager {
@@ -83,15 +51,42 @@ impl InputManager {
         InputManager {
             keyboard_state: KeyboardState::new(),
 
-            input_contexts: Vec::new(),
+            new_this_frame: HashSet::new(),
+            consumed: HashSet::new(),
         }
     }
 
     pub fn handle_event(&mut self, state: ElementState, vkc: VirtualKeyCode) {
         self.keyboard_state.handle_event(state, vkc);
+        self.new_this_frame.insert(vkc);
     }
 
-    fn is_pressed(&self, vkc: VirtualKeyCode) -> bool {
-        self.keyboard_state.is_pressed(vkc)
+    pub fn dispatch<T: KeyHandler>(&mut self, key_handler: &mut T) {
+        for vkc in &self.new_this_frame {
+            if(self.consumed.contains(&vkc)) {
+                continue;
+            }
+
+            let state = if self.keyboard_state.is_pressed(vkc) { ElementState::Pressed } else { ElementState::Released };
+
+            if key_handler.handle_key(state, true, *vkc) {
+                self.consumed.insert(*vkc);
+            }
+        }
+
+        for vkc in self.keyboard_state.pressed_keys() {
+            if self.consumed.contains(&vkc) {
+                continue;
+            }
+
+            if key_handler.handle_key(ElementState::Pressed, false, *vkc) {
+                self.consumed.insert(*vkc);
+            }
+        }
+    }
+
+    pub fn end_frame(&mut self) {
+        self.new_this_frame.clear();
+        self.consumed.clear();
     }
 }
