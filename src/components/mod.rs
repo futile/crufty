@@ -1,6 +1,9 @@
+use std::collections::HashSet;
+
 use nc::bounding_volume::AABB2;
 
 use systems::WorldViewport;
+use application::{InputContext, InputIntent};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Position {
@@ -20,6 +23,13 @@ pub struct Camera {
     pub screen_viewport: AABB2<f32>,
     pub resize_world_to_window: bool,
 }
+
+#[derive(Debug)]
+pub struct KeyboardInput {
+    pub input_context: InputContext,
+}
+
+pub type Intents = HashSet<InputIntent>;
 
 impl Camera {
     pub fn new(world_viewport: WorldViewport, screen_viewport: AABB2<f32>, resize_world_to_window: bool) -> Camera {
@@ -44,5 +54,7 @@ components! {
         #[hot] position: Position,
         #[hot] sprite_info: SpriteInfo,
         #[cold] camera: Camera,
+        #[cold] keyboard_input: KeyboardInput,
+        #[cold] intents: Intents,
     }
 }

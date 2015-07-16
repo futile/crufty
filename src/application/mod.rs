@@ -4,7 +4,7 @@ use util::{State, Transition};
 
 pub use self::gamestate::GameState;
 
-pub use self::input::InputManager;
+pub use self::input::{InputManager, InputContext, KeyHandler, InputState, InputIntent};
 
 mod gamestate;
 mod input;

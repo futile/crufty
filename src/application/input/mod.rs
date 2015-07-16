@@ -34,9 +34,16 @@ impl KeyboardState {
     }
 }
 
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
+pub enum InputState {
+    PressedThisFrame,
+    Pressed,
+    ReleasedThisFrame,
+}
+
 pub trait KeyHandler {
     // returns whether the key was consumed
-    fn handle_key(&mut self, state: ElementState, new_this_frame: bool, key: VirtualKeyCode) -> bool;
+    fn handle_key(&mut self, state: InputState, key: VirtualKeyCode) -> bool;
 }
 
 pub struct InputManager {
@@ -45,6 +52,8 @@ pub struct InputManager {
     new_this_frame: HashSet<VirtualKeyCode>,
     consumed: HashSet<VirtualKeyCode>,
 }
+
+pub type InputContext = HashMap<(VirtualKeyCode, InputState), InputIntent>;
 
 impl InputManager {
     pub fn new() -> InputManager {
@@ -63,14 +72,20 @@ impl InputManager {
 
     pub fn dispatch<T: KeyHandler>(&mut self, key_handler: &mut T) {
         for vkc in &self.new_this_frame {
-            if(self.consumed.contains(&vkc)) {
+            if self.consumed.contains(&vkc) {
                 continue;
             }
 
-            let state = if self.keyboard_state.is_pressed(vkc) { ElementState::Pressed } else { ElementState::Released };
+            let state = if self.keyboard_state.is_pressed(vkc) { InputState::PressedThisFrame } else { InputState::ReleasedThisFrame };
 
-            if key_handler.handle_key(state, true, *vkc) {
+            if key_handler.handle_key(state, *vkc) {
                 self.consumed.insert(*vkc);
+            }
+
+            if state == InputState::PressedThisFrame {
+                if key_handler.handle_key(InputState::Pressed, *vkc) {
+                    self.consumed.insert(*vkc);
+                }
             }
         }
 
@@ -79,7 +94,7 @@ impl InputManager {
                 continue;
             }
 
-            if key_handler.handle_key(ElementState::Pressed, false, *vkc) {
+            if key_handler.handle_key(InputState::Pressed, *vkc) {
                 self.consumed.insert(*vkc);
             }
         }

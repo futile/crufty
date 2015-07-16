@@ -1,4 +1,5 @@
 use std::thread;
+use std::collections::HashMap;
 
 use glium::{self};
 use glium::glutin::{self, ElementState, VirtualKeyCode};
@@ -7,10 +8,10 @@ use ecs::{World, BuildData};
 use ecs::system::{InteractSystem};
 
 use util::{State};
-use application::AppTransition;
+use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Position, SpriteInfo, Camera};
+use components::{LevelComponents, Position, SpriteInfo, Camera, KeyboardInput};
 
 use hprof;
 
@@ -55,6 +56,12 @@ impl State<AppTransition> for GameState {
                     AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),
                     true
                     ));
+                let mut inputs = HashMap::new();
+                inputs.insert((VirtualKeyCode::O, InputState::Pressed), InputIntent::PrintDebugMessage);
+
+                data.keyboard_input.add(&entity, KeyboardInput{
+                    input_context: inputs,
+                });
             }
             );
 
@@ -79,6 +86,8 @@ impl State<AppTransition> for GameState {
         // change this to min(NS_PER_UPDATE, INV_FPS_NS)
         const MAX_SLEEP: u64 = NS_PER_UPDATE;
 
+        let mut input_manager = InputManager::new();
+
         loop {
             hprof::start_frame();
 
@@ -99,12 +108,12 @@ impl State<AppTransition> for GameState {
                             => profiler_ticks += 3,
                         glutin::Event::KeyboardInput(ElementState::Pressed, _, Some(vkc))
                             => {
-                                world.services.input_manager.handle_event(ElementState::Pressed, vkc);
+                                input_manager.handle_event(ElementState::Pressed, vkc);
                                 println!("pressed: {:?}", vkc);
                             },
                         glutin::Event::KeyboardInput(ElementState::Released, _, Some(vkc))
                             => {
-                                world.services.input_manager.handle_event(ElementState::Released, vkc);
+                                input_manager.handle_event(ElementState::Released, vkc);
                                 println!("released: {:?}", vkc);
                             },
                         glutin::Event::ReceivedCharacter(c)
@@ -117,6 +126,9 @@ impl State<AppTransition> for GameState {
                     }
                 }
             }
+
+            input_manager.dispatch(&mut world.systems.keyboard_system.inner);
+            input_manager.end_frame();
 
             while lag_behind_simulation >= NS_PER_UPDATE {
                 let _ = hprof::enter("world-update");

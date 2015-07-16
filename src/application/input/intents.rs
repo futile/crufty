@@ -1,4 +1,4 @@
-#[derive(Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Copy, Clone, Eq, PartialEq, Hash, Debug)]
 pub enum InputIntent {
-    //
+    PrintDebugMessage,
 }
