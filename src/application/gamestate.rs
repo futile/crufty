@@ -11,7 +11,7 @@ use util::{State};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Position, SpriteInfo, Camera, KeyboardInput};
+use components::{LevelComponents, Position, SpriteInfo, Camera, KeyboardInput, Intents};
 
 use hprof;
 
@@ -56,8 +56,9 @@ impl State<AppTransition> for GameState {
                     AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),
                     true
                     ));
+                data.intents.add(&entity, Intents::new());
                 let mut inputs = HashMap::new();
-                inputs.insert((VirtualKeyCode::O, InputState::Pressed), InputIntent::PrintDebugMessage);
+                inputs.insert((VirtualKeyCode::O, InputState::PressedThisFrame), InputIntent::PrintDebugMessage);
 
                 data.keyboard_input.add(&entity, KeyboardInput{
                     input_context: inputs,
@@ -136,6 +137,7 @@ impl State<AppTransition> for GameState {
                 lag_behind_simulation -= NS_PER_UPDATE;
             }
 
+            process!(world, intent_system);
             process!(world, render_system);
 
             hprof::end_frame();
