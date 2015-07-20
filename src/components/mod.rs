@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::path::PathBuf;
 
 use nc::bounding_volume::AABB2;
 
@@ -11,10 +12,11 @@ pub struct Position {
     pub y: f32,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SpriteInfo {
     pub width: f32,
     pub height: f32,
+    pub path: PathBuf,
 }
 
 #[derive(Clone, Debug, PartialEq)]

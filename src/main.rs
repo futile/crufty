@@ -1,4 +1,4 @@
-#![feature(duration, thread_sleep)]
+#![feature(path_ext,duration, thread_sleep)]
 
 #[macro_use]
 extern crate glium;

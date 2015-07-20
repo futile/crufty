@@ -3,8 +3,12 @@ name = "crufty"
 version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 
+[dependencies.glium]
+version = "*"
+features = ["glutin", "image", "nalgebra", "gl_texture_3d"]
+
 [dependencies]
-glium = "*"
+# glium = "*"
 image = "*"
 ecs = "*"
 nalgebra = "*"

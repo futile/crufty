@@ -1,5 +1,6 @@
 use std::thread;
 use std::collections::HashMap;
+use std::path::PathBuf;
 
 use glium::{self};
 use glium::glutin::{self, ElementState, VirtualKeyCode};
@@ -50,7 +51,7 @@ impl State<AppTransition> for GameState {
         let _ = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
-                data.sprite_info.add(&entity, SpriteInfo { width: 32.0, height: 32.0 });
+                data.sprite_info.add(&entity, SpriteInfo { width: 32.0, height: 32.0, path: PathBuf::from("assets/textures/tilesets/cave/tile1.png") });
                 data.camera.add(&entity, Camera::new(
                     WorldViewport::new((width / 1) as f32, ( height / 1 )as f32),
                     AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),

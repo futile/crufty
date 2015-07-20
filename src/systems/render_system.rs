@@ -3,9 +3,12 @@ use ecs::system::InteractProcess;
 
 use glium::{self, Surface};
 use glium::index::PrimitiveType;
+use glium::texture::CompressedSrgbTexture2dArray;
 
 use std::io::Read;
-use std::fs::File;
+use std::fs::{self, File, PathExt};
+use std::path::{Path, PathBuf};
+use std::collections::HashMap;
 
 use image::{self, GenericImage};
 
@@ -44,7 +47,8 @@ impl WorldViewport {
 
 pub struct RenderSystem {
     display: glium::Display,
-    texture: glium::texture::CompressedSrgbTexture2d,
+    texture_store: HashMap<PathBuf, CompressedSrgbTexture2dArray>,
+    index_store: HashMap<PathBuf, u32>,
     unit_quad: glium::VertexBuffer<Vertex>,
     index_buffer: glium::IndexBuffer<u16>,
     program: glium::Program,
@@ -52,11 +56,6 @@ pub struct RenderSystem {
 
 impl RenderSystem {
     pub fn new(display: glium::Display) -> RenderSystem {
-        let mut image = image::open("assets/textures/tilesets/cave/tile1.png").unwrap();
-
-        let image = image.sub_image(0, 0, 32, 32).to_image();
-        let texture = glium::texture::CompressedSrgbTexture2d::new(&display, image);
-
         let vertex_buffer = {
             implement_vertex!(Vertex, position, tex_coords);
 
@@ -92,11 +91,44 @@ impl RenderSystem {
 
         RenderSystem {
             display: display,
-            texture: texture,
+            texture_store: HashMap::new(),
+            index_store: HashMap::new(),
             unit_quad: vertex_buffer,
             index_buffer: index_buffer,
             program: program,
         }
+    }
+
+    fn load_dir(&mut self, path: &Path) {
+        if !path.is_dir() {
+            panic!("Is not a directory: '{:?}'", path);
+        }
+
+        let mut file_paths = Vec::new();
+
+        for entry in fs::read_dir(path).unwrap() {
+            let entry = entry.unwrap();
+
+            if !entry.path().is_dir() {
+                file_paths.push(entry.path());
+            }
+        }
+
+        file_paths.sort();
+
+        let images = file_paths.iter()
+            .filter(|fpath| !fpath.is_dir())
+            .map(|fpath| image::open(fpath).unwrap())
+            .collect::<Vec<_>>();
+
+        self.texture_store.insert(path.to_path_buf(), CompressedSrgbTexture2dArray::new(&self.display, images));
+
+        println!("paths gathered: {:?}", file_paths);
+
+        for (idx, fpath) in file_paths.into_iter().enumerate() {
+            self.index_store.insert(fpath, idx as u32);
+        }
+
     }
 }
 
@@ -109,7 +141,7 @@ impl System for RenderSystem {
 }
 
 impl InteractProcess for RenderSystem {
-    fn process(&self, camera_entities: EntityIter<LevelComponents>, sprite_entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(&mut self, camera_entities: EntityIter<LevelComponents>, sprite_entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
         let _ = hprof::enter("rendering");
 
         let _s = hprof::enter("setup");
@@ -139,17 +171,26 @@ impl InteractProcess for RenderSystem {
                 drop(_g);
 
                 for e in &sprites {
-                    let position = data.position[*e];
-                    let sprite_info = data.sprite_info[*e];
+                    let position = &data.position[*e];
+                    let sprite_info = &data.sprite_info[*e];
 
                     let scale = Vec2::new(sprite_info.width, sprite_info.height);
                     let view_pos = Vec2::new(position.x - (cpos.x - camera.world_viewport.width / 2.0), position.y - (cpos.y - camera.world_viewport.height / 2.0));
+
+                    let texture: &CompressedSrgbTexture2dArray = {
+                        let dir: &Path = &sprite_info.path.parent().unwrap();
+                        if !self.texture_store.contains_key(dir) {
+                            self.load_dir(dir);
+                        }
+                        &self.texture_store[dir]
+                    };
 
                     let uniforms = uniform! {
                         view_pos: view_pos,
                         scale: scale,
                         proj: ortho_proj,
-                        tex: &self.texture,
+                        tex: texture,
+                        tex_index: *self.index_store.get(&sprite_info.path).unwrap() as f32,
                         win_scale: screen_size,
                         win_trans: camera.screen_viewport.mins().to_vec(),
                     };
