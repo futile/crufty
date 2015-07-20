@@ -52,7 +52,7 @@ pub struct RenderSystem {
 
 impl RenderSystem {
     pub fn new(display: glium::Display) -> RenderSystem {
-        let mut image = image::open("../../assets/test1.png").unwrap();
+        let mut image = image::open("assets/textures/tilesets/cave/tile1.png").unwrap();
 
         let image = image.sub_image(0, 0, 32, 32).to_image();
         let texture = glium::texture::CompressedSrgbTexture2d::new(&display, image);
@@ -73,13 +73,13 @@ impl RenderSystem {
                                                    vec![1 as u16, 2, 0, 3]);
 
         let mut vertex_shader_code = String::new();
-        File::open("../../assets/shaders/sprite.vert")
+        File::open("assets/shaders/sprite.vert")
             .unwrap()
             .read_to_string(&mut vertex_shader_code)
             .unwrap();
 
         let mut fragment_shader_code = String::new();
-        File::open("../../assets/shaders/sprite.frag")
+        File::open("assets/shaders/sprite.frag")
             .unwrap()
             .read_to_string(&mut fragment_shader_code)
             .unwrap();

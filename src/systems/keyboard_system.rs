@@ -1,15 +1,13 @@
 use ecs::{ System, DataHelper, EntityIter };
 use ecs::system::EntityProcess;
 
-use glium::glutin::{ElementState, VirtualKeyCode};
+use glium::glutin::{VirtualKeyCode};
 
 use std::collections::HashSet;
 
 use super::LevelServices;
 
 use application::{KeyHandler, InputState};
-
-// use systems::WorldViewport;
 
 use components::LevelComponents;
 
