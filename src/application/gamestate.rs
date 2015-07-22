@@ -66,11 +66,13 @@ impl State<AppTransition> for GameState {
                     true
                     ));
                 data.intents.add(&entity, Intents::new());
-                let mut inputs = HashMap::new();
-                inputs.insert((VirtualKeyCode::O, InputState::PressedThisFrame), InputIntent::PrintDebugMessage);
 
                 data.keyboard_input.add(&entity, KeyboardInput{
-                    input_context: inputs,
+                    input_context: {
+                        let mut inputs = HashMap::new();
+                        inputs.insert((VirtualKeyCode::O, InputState::PressedThisFrame), InputIntent::PrintDebugMessage);
+                        inputs
+                    },
                 });
             }
             );
