@@ -1,6 +1,6 @@
 use std::thread;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::Path;
 
 use glium::{self};
 use glium::glutin::{self, ElementState, VirtualKeyCode};
@@ -8,7 +8,7 @@ use glium::glutin::{self, ElementState, VirtualKeyCode};
 use ecs::{World, BuildData};
 use ecs::system::{InteractSystem};
 
-use util::{State};
+use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
@@ -42,16 +42,24 @@ impl State<AppTransition> for GameState {
         let (width, height) = self.display.get_framebuffer_dimensions();
         let render_system = RenderSystem::new(self.display.clone());
 
+        world.services.texture_store = TextureStore::new(self.display.clone());
+
         world.systems.render_system.init(InteractSystem::new(
             render_system,
             aspect!(<LevelComponents> all: [camera]),
             aspect!(<LevelComponents> all: [position, sprite_info])
                 ));
 
+        let tex_info = world.services.texture_store.get_texture_info(Path::new("assets/textures/tilesets/cave/tile1.png"));
+
         let _ = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
-                data.sprite_info.add(&entity, SpriteInfo { width: 32.0, height: 32.0, path: PathBuf::from("assets/textures/tilesets/cave/tile1.png") });
+                data.sprite_info.add(&entity, SpriteInfo {
+                    width: 32.0,
+                    height: 32.0,
+                    texture_info: tex_info,
+                });
                 data.camera.add(&entity, Camera::new(
                     WorldViewport::new((width / 1) as f32, ( height / 1 )as f32),
                     AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),

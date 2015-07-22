@@ -1,10 +1,11 @@
 use std::collections::HashSet;
-use std::path::PathBuf;
 
 use nc::bounding_volume::AABB2;
 
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
+
+use util::TextureInfo;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Position {
@@ -16,7 +17,7 @@ pub struct Position {
 pub struct SpriteInfo {
     pub width: f32,
     pub height: f32,
-    pub path: PathBuf,
+    pub texture_info: TextureInfo,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -42,6 +43,7 @@ impl Camera {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_empty() -> Camera {
         Camera {
             world_viewport: WorldViewport::new_empty(),

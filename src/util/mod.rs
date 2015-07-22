@@ -1,3 +1,7 @@
+pub use self::texture_store::{TextureStore, TextureInfo};
+
+mod texture_store;
+
 pub trait Transition {
     fn create_state(self) -> Option<Box<State<Self>>>;
 }

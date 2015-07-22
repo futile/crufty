@@ -3,14 +3,11 @@ use ecs::system::InteractProcess;
 
 use glium::{self, Surface};
 use glium::index::PrimitiveType;
-use glium::texture::CompressedSrgbTexture2dArray;
 
+use std::fs::File;
 use std::io::Read;
-use std::fs::{self, File, PathExt};
-use std::path::{Path, PathBuf};
-use std::collections::HashMap;
 
-use image::{self, GenericImage};
+use image::{GenericImage};
 
 use na::{Vec2, OrthoMat3};
 
@@ -40,6 +37,7 @@ impl WorldViewport {
         }
     }
 
+    #[allow(dead_code)]
     pub fn new_empty() -> WorldViewport {
         WorldViewport::new(0.0, 0.0)
     }
@@ -47,8 +45,6 @@ impl WorldViewport {
 
 pub struct RenderSystem {
     display: glium::Display,
-    texture_store: HashMap<PathBuf, CompressedSrgbTexture2dArray>,
-    index_store: HashMap<PathBuf, u32>,
     unit_quad: glium::VertexBuffer<Vertex>,
     index_buffer: glium::IndexBuffer<u16>,
     program: glium::Program,
@@ -91,44 +87,10 @@ impl RenderSystem {
 
         RenderSystem {
             display: display,
-            texture_store: HashMap::new(),
-            index_store: HashMap::new(),
             unit_quad: vertex_buffer,
             index_buffer: index_buffer,
             program: program,
         }
-    }
-
-    fn load_dir(&mut self, path: &Path) {
-        if !path.is_dir() {
-            panic!("Is not a directory: '{:?}'", path);
-        }
-
-        let mut file_paths = Vec::new();
-
-        for entry in fs::read_dir(path).unwrap() {
-            let entry = entry.unwrap();
-
-            if !entry.path().is_dir() {
-                file_paths.push(entry.path());
-            }
-        }
-
-        file_paths.sort();
-
-        let images = file_paths.iter()
-            .filter(|fpath| !fpath.is_dir())
-            .map(|fpath| image::open(fpath).unwrap())
-            .collect::<Vec<_>>();
-
-        self.texture_store.insert(path.to_path_buf(), CompressedSrgbTexture2dArray::new(&self.display, images));
-
-        println!("paths gathered: {:?}", file_paths);
-
-        for (idx, fpath) in file_paths.into_iter().enumerate() {
-            self.index_store.insert(fpath, idx as u32);
-        }
-
     }
 }
 
@@ -177,20 +139,14 @@ impl InteractProcess for RenderSystem {
                     let scale = Vec2::new(sprite_info.width, sprite_info.height);
                     let view_pos = Vec2::new(position.x - (cpos.x - camera.world_viewport.width / 2.0), position.y - (cpos.y - camera.world_viewport.height / 2.0));
 
-                    let texture: &CompressedSrgbTexture2dArray = {
-                        let dir: &Path = &sprite_info.path.parent().unwrap();
-                        if !self.texture_store.contains_key(dir) {
-                            self.load_dir(dir);
-                        }
-                        &self.texture_store[dir]
-                    };
+                    let texture = data.services.texture_store.get_texture(&sprite_info.texture_info);
 
                     let uniforms = uniform! {
                         view_pos: view_pos,
                         scale: scale,
                         proj: ortho_proj,
                         tex: texture,
-                        tex_index: *self.index_store.get(&sprite_info.path).unwrap() as f32,
+                        tex_index: sprite_info.texture_info.idx,
                         win_scale: screen_size,
                         win_trans: camera.screen_viewport.mins().to_vec(),
                     };

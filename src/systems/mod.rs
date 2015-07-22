@@ -3,14 +3,11 @@ pub use self::camera_system::{ CameraSystem };
 pub use self::keyboard_system::KeyboardSystem;
 pub use self::intent_system::IntentSystem;
 
-use std::collections::HashMap;
-use std::path::PathBuf;
-
 use ecs::system::{ LazySystem, EntitySystem, InteractSystem };
 
 use components::LevelComponents;
 
-use glium::texture::CompressedSrgbTexture2dArray;
+use util::TextureStore;
 
 mod render_system;
 mod camera_system;
@@ -19,7 +16,7 @@ mod intent_system;
 
 services! {
     struct LevelServices {
-        texture_store: HashMap<PathBuf, CompressedSrgbTexture2dArray> = HashMap::new(),
+        texture_store: TextureStore = TextureStore::new_invalid(),
     }
 }
 
