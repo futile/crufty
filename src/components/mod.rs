@@ -13,6 +13,12 @@ pub struct Position {
     pub y: f32,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Velocity {
+    pub vx: f32,
+    pub vy: f32,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SpriteInfo {
     pub width: f32,
@@ -57,6 +63,7 @@ components! {
     struct LevelComponents {
         #[hot] position: Position,
         #[hot] sprite_info: SpriteInfo,
+        #[cold] velocity: Velocity,
         #[cold] camera: Camera,
         #[cold] keyboard_input: KeyboardInput,
         #[cold] intents: Intents,

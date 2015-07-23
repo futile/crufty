@@ -12,7 +12,7 @@ use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Position, SpriteInfo, Camera, KeyboardInput, Intents};
+use components::{LevelComponents, Position, SpriteInfo, Camera, KeyboardInput, Intents, Velocity};
 
 use hprof;
 
@@ -55,16 +55,22 @@ impl State<AppTransition> for GameState {
         let _ = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
-                data.sprite_info.add(&entity, SpriteInfo {
-                    width: 32.0,
-                    height: 32.0,
-                    texture_info: tex_info,
-                });
                 data.camera.add(&entity, Camera::new(
                     WorldViewport::new((width / 1) as f32, ( height / 1 )as f32),
                     AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),
                     true
                     ));
+                });
+
+        let _ = world.create_entity(
+            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
+                data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
+                data.velocity.add(&entity, Velocity { vx: 200.0, vy: 200.0 });
+                data.sprite_info.add(&entity, SpriteInfo {
+                    width: 32.0,
+                    height: 32.0,
+                    texture_info: tex_info,
+                });
                 data.intents.add(&entity, Intents::new());
 
                 data.keyboard_input.add(&entity, KeyboardInput{
