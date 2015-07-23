@@ -4,11 +4,10 @@ version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 
 [dependencies.glium]
-version = "*"
-features = ["glutin", "image", "nalgebra", "gl_texture_3d"]
+version = "0.8.0"
+features = ["glutin", "image", "nalgebra"]
 
 [dependencies]
-# glium = "*"
 image = "*"
 ecs = "*"
 nalgebra = "*"

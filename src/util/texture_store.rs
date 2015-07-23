@@ -75,7 +75,7 @@ impl TextureStore {
 
         println!("paths loaded: {:?}", file_paths);
 
-        self.tex_store.push(CompressedSrgbTexture2dArray::new(self.display.as_ref().unwrap(), images));
+        self.tex_store.push(CompressedSrgbTexture2dArray::new(self.display.as_ref().unwrap(), images).unwrap());
         let tex_id = self.tex_store.len() - 1;
 
         for (idx, fpath) in file_paths.into_iter().enumerate() {
