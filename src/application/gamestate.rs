@@ -12,7 +12,7 @@ use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Position, SpriteInfo, Gravity, Camera, KeyboardInput, Intents, Velocity};
+use components::{LevelComponents, Position, Collision, CollisionShape, SpriteInfo, Gravity, Camera, KeyboardInput, Intents, Velocity};
 
 use hprof;
 
@@ -21,7 +21,8 @@ use clock_ticks;
 use std::time::Duration;
 
 use nc::bounding_volume::AABB2;
-use na::Pnt2;
+use nc::shape::Cuboid2;
+use na::{Vec2, Pnt2};
 
 pub struct GameState {
     display: glium::Display,
@@ -66,6 +67,7 @@ impl State<AppTransition> for GameState {
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: 0.0, y: 0.0 });
                 data.velocity.add(&entity, Velocity { vx: 00.0, vy: -10.0 });
+                data.collision.add(&entity, Collision { shape: CollisionShape::SingleBox(Cuboid2::new(Vec2::new(0.5, 0.5)))});
                 data.gravity.add(&entity, Gravity::new());
                 data.sprite_info.add(&entity, SpriteInfo {
                     width: 32.0,

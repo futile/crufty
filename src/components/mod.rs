@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 
 use nc::bounding_volume::AABB2;
+use nc::shape::Cuboid2;
 
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
@@ -30,6 +31,20 @@ impl Gravity {
             f: 1.0,
         }
     }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub enum CollisionShape {
+    SingleBox(Cuboid2<f32>),
+    TwoBoxes {
+        x: Cuboid2<f32>,
+        y: Cuboid2<f32>
+    }
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Collision {
+    pub shape: CollisionShape,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -75,6 +90,7 @@ impl Camera {
 components! {
     struct LevelComponents {
         #[hot] position: Position,
+        #[hot] collision: Collision,
         #[hot] sprite_info: SpriteInfo,
         #[cold] velocity: Velocity,
         #[cold] gravity: Gravity,
