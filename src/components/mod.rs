@@ -19,6 +19,19 @@ pub struct Velocity {
     pub vy: f32,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq)]
+pub struct Gravity {
+    pub f: f32,
+}
+
+impl Gravity {
+    pub fn new() -> Gravity {
+        Gravity {
+            f: 1.0,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SpriteInfo {
     pub width: f32,
@@ -64,6 +77,7 @@ components! {
         #[hot] position: Position,
         #[hot] sprite_info: SpriteInfo,
         #[cold] velocity: Velocity,
+        #[cold] gravity: Gravity,
         #[cold] camera: Camera,
         #[cold] keyboard_input: KeyboardInput,
         #[cold] intents: Intents,

@@ -54,7 +54,7 @@ impl State<AppTransition> for GameState {
 
         let _ = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
+                data.position.add(&entity, Position { x: 0.0, y: 0.0 });
                 data.camera.add(&entity, Camera::new(
                     WorldViewport::new((width / 1) as f32, ( height / 1 )as f32),
                     AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),
@@ -64,8 +64,8 @@ impl State<AppTransition> for GameState {
 
         let _ = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
-                data.velocity.add(&entity, Velocity { vx: 10.0, vy: 10.0 });
+                data.position.add(&entity, Position { x: 0.0, y: 0.0 });
+                data.velocity.add(&entity, Velocity { vx: 00.0, vy: -10.0 });
                 data.gravity.add(&entity, Gravity::new());
                 data.sprite_info.add(&entity, SpriteInfo {
                     width: 32.0,

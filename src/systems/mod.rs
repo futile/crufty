@@ -3,6 +3,7 @@ pub use self::camera_system::{ CameraSystem };
 pub use self::keyboard_system::KeyboardSystem;
 pub use self::intent_system::IntentSystem;
 pub use self::velocity_system::VelocitySystem;
+pub use self::gravity_system::GravitySystem;
 
 use ecs::system::{ LazySystem, EntitySystem, InteractSystem };
 
@@ -15,6 +16,7 @@ mod camera_system;
 mod keyboard_system;
 mod intent_system;
 mod velocity_system;
+mod gravity_system;
 
 services! {
     struct LevelServices {
@@ -25,6 +27,10 @@ services! {
 
 systems! {
     struct LevelSystems<LevelComponents, LevelServices> {
+        gravity_system: EntitySystem<GravitySystem> = EntitySystem::new(
+            GravitySystem { g: 20.0 },
+            aspect!(<LevelComponents> all: [gravity, velocity]),
+            ),
         velocity_system: EntitySystem<VelocitySystem> = EntitySystem::new(
             VelocitySystem,
             aspect!(<LevelComponents> all: [velocity]),
