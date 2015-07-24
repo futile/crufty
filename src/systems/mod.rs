@@ -19,6 +19,7 @@ mod velocity_system;
 services! {
     struct LevelServices {
         texture_store: TextureStore = TextureStore::new_invalid(),
+        delta_time_s: f32 = 0.0,
     }
 }
 

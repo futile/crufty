@@ -16,10 +16,11 @@ impl EntityProcess for VelocitySystem {
     fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             let velocity = data.velocity[e];
+            let delta = data.services.delta_time_s;
 
             if let Some(position) = data.position.borrow(&e) {
-                position.x += velocity.vx;
-                position.y += velocity.vy;
+                position.x += velocity.vx * delta;
+                position.y += velocity.vy * delta;
             }
 
             data.velocity[e].vx = 0.0;

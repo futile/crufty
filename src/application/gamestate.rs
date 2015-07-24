@@ -12,7 +12,7 @@ use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Position, SpriteInfo, Camera, KeyboardInput, Intents, Velocity};
+use components::{LevelComponents, Position, SpriteInfo, Gravity, Camera, KeyboardInput, Intents, Velocity};
 
 use hprof;
 
@@ -65,7 +65,8 @@ impl State<AppTransition> for GameState {
         let _ = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: ( width - 32 ) as f32, y: ( height - 32 ) as f32 });
-                data.velocity.add(&entity, Velocity { vx: 200.0, vy: 200.0 });
+                data.velocity.add(&entity, Velocity { vx: 10.0, vy: 10.0 });
+                data.gravity.add(&entity, Gravity::new());
                 data.sprite_info.add(&entity, SpriteInfo {
                     width: 32.0,
                     height: 32.0,
@@ -103,6 +104,8 @@ impl State<AppTransition> for GameState {
 
         // change this to min(NS_PER_UPDATE, INV_FPS_NS)
         const MAX_SLEEP: u64 = NS_PER_UPDATE;
+
+        world.services.delta_time_s = (MS_PER_UPDATE as f32) / 1000.0;
 
         let mut input_manager = InputManager::new();
 
