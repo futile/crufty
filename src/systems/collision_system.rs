@@ -11,8 +11,8 @@ impl System for CollisionSystem {
     type Components = LevelComponents;
     type Services = LevelServices;
 
-    fn activated(&mut self, _: &EntityData<Self::Components>, comps: &Self::Components) {
-        println!("CollisionSystem::activated {}", comps.delta_time_s);
+    fn activated(&mut self, _: &EntityData<Self::Components>, comps: &Self::Components, services: &mut Self::Services) {
+        println!("CollisionSystem::activated {}", services.delta_time_s);
     }
 }
 

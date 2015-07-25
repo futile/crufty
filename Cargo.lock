@@ -3,7 +3,7 @@ name = "crufty"
 version = "0.0.1"
 dependencies = [
  "clock_ticks 0.0.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "ecs 0.19.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ecs 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "glium 0.8.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hprof 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.3.11 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -109,7 +109,7 @@ dependencies = [
 
 [[package]]
 name = "ecs"
-version = "0.19.5"
+version = "0.20.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "vec_map 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",

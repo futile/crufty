@@ -9,7 +9,7 @@ features = ["glutin", "image", "nalgebra"]
 
 [dependencies]
 image = "*"
-ecs = "*"
+ecs = "0.20"
 nalgebra = "*"
 hprof = "*"
 clock_ticks = "*"
