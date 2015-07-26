@@ -65,8 +65,9 @@ impl State<AppTransition> for GameState {
 
         let player = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 0.0, y: 0.0 });
-                data.velocity.add(&entity, Velocity { vx: 00.0, vy: -10.0 });
+                let pos = Position { x: 0.0, y: 0.0 };
+                data.position.add(&entity, pos);
+                data.velocity.add(&entity, Velocity { vx: 00.0, vy: -10.0, last_pos: pos });
                 data.collision.add(&entity, Collision {
                     shape: CollisionShape::SingleBox(Cuboid2::new(Vec2::new(0.5, 0.5))),
                 });

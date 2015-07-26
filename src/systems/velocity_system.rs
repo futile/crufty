@@ -18,9 +18,13 @@ impl EntityProcess for VelocitySystem {
             let velocity = data.velocity[e];
             let delta = data.services.delta_time_s;
 
-            if let Some(position) = data.position.borrow(&e) {
+            if let Some(mut position) = data.position.get(&e) {
+                data.velocity[e].last_pos = position;
+
                 position.x += velocity.vx * delta;
                 position.y += velocity.vy * delta;
+
+                data.position.set(&e, position);
             }
 
             data.velocity[e].vx = 0.0;

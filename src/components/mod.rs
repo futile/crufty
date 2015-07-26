@@ -18,7 +18,20 @@ pub struct Position {
 pub struct Velocity {
     pub vx: f32,
     pub vy: f32,
+
+    pub last_pos: Position,
 }
+
+// impl Velocity {
+//     pub fn new(vx: f32, vy: f32) -> Velocity {
+//         Velocity {
+//             vx: vx,
+//             vy: vy,
+
+//             last_pos: Position
+//         }
+//     }
+// }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Gravity {
