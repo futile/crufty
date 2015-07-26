@@ -79,6 +79,14 @@ impl System for CollisionSystem {
 
 impl EntityProcess for CollisionSystem {
     fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
-        //
+        for e in entities {
+            let pos = data.position[e];
+            let uid = self.entity_uids[&**e];
+
+            data.services.collision_world.defered_set_position(uid, Iso2::new(Vec2::new(pos.x, pos.y), na::zero()),
+);
+        }
+
+        data.services.collision_world.update();
     }
 }
