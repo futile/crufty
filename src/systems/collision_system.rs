@@ -3,7 +3,7 @@ use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::{LevelComponents, CollisionShape};
+use components::{LevelComponents, CollisionShape, CollisionAxis};
 
 use na::{self, Pnt2, Iso2, Vec2};
 use nc::world::CollisionGroups;
@@ -39,6 +39,12 @@ impl CollisionSystem {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct CollisionEntityData {
+    pub entity: Entity,
+    pub axis: CollisionAxis,
+}
+
 impl System for CollisionSystem {
     type Components = LevelComponents;
     type Services = LevelServices;
@@ -54,15 +60,23 @@ impl System for CollisionSystem {
             CollisionShape::TwoBoxes{ x: _, y: _ } => unimplemented!(),
         };
 
+        let data = CollisionEntityData {
+            entity: ***e,
+            axis: match coll.shape {
+                CollisionShape::SingleBox(_) => CollisionAxis::XY,
+                CollisionShape::TwoBoxes{ x: _, y: _ } => unimplemented!(),
+            }
+        };
+
         services.collision_world.add(uid,
                                      Iso2::new(Vec2::new(pos.x, pos.y), na::zero()),
                                      Arc::new(Box::new(shape.clone()) as Box<Repr<Pnt2<f32>, Iso2<f32>>>),
                                      CollisionGroups::new(),
-                                     ***e);
+                                     data);
 
         self.entity_uids.insert(***e, uid);
 
-        println!("CollisionSystem::activated {}", uid);
+        println!("CollisionSystem::activated {:?}", data);
     }
 
     fn deactivated(&mut self, e: &EntityData<Self::Components>, _: &Self::Components, services: &mut Self::Services) {

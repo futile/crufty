@@ -4,10 +4,9 @@ pub use self::keyboard_system::KeyboardSystem;
 pub use self::intent_system::IntentSystem;
 pub use self::velocity_system::VelocitySystem;
 pub use self::gravity_system::GravitySystem;
-pub use self::collision_system::CollisionSystem;
+pub use self::collision_system::{CollisionSystem, CollisionEntityData};
 
 use ecs::system::{ LazySystem, EntitySystem, InteractSystem };
-use ecs::Entity;
 
 use components::LevelComponents;
 
@@ -30,7 +29,7 @@ pub type CollisionWorld2<N, T> = CollisionWorld<Pnt2<N>, Iso2<N>, T>;
 services! {
     struct LevelServices {
         texture_store: TextureStore = TextureStore::new_invalid(),
-        collision_world: CollisionWorld2<f32, Entity> = CollisionWorld2::new(0.10, 0.10, false),
+        collision_world: CollisionWorld2<f32, CollisionEntityData> = CollisionWorld2::new(0.10, 0.10, false),
         delta_time_s: f32 = 0.0,
     }
 }

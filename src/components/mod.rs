@@ -22,17 +22,6 @@ pub struct Velocity {
     pub last_pos: Position,
 }
 
-// impl Velocity {
-//     pub fn new(vx: f32, vy: f32) -> Velocity {
-//         Velocity {
-//             vx: vx,
-//             vy: vy,
-
-//             last_pos: Position
-//         }
-//     }
-// }
-
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Gravity {
     pub f: f32,
@@ -53,6 +42,13 @@ pub enum CollisionShape {
         x: Cuboid2<f32>,
         y: Cuboid2<f32>
     }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum CollisionAxis {
+    XY,
+    X,
+    Y,
 }
 
 #[derive(Clone, Debug, PartialEq)]
