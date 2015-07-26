@@ -69,7 +69,7 @@ impl System for CollisionSystem {
         };
 
         services.collision_world.add(uid,
-                                     Iso2::new(Vec2::new(pos.x, pos.y), na::zero()),
+                                     Iso2::new(Vec2::new(pos.x / 32.0, pos.y / 32.0), na::zero()),
                                      Arc::new(Box::new(shape.clone()) as Box<Repr<Pnt2<f32>, Iso2<f32>>>),
                                      CollisionGroups::new(),
                                      data);
@@ -97,10 +97,14 @@ impl EntityProcess for CollisionSystem {
             let pos = data.position[e];
             let uid = self.entity_uids[&**e];
 
-            data.services.collision_world.defered_set_position(uid, Iso2::new(Vec2::new(pos.x, pos.y), na::zero()),
+            data.services.collision_world.defered_set_position(uid, Iso2::new(Vec2::new(pos.x / 32.0, pos.y / 32.0), na::zero()),
 );
         }
 
         data.services.collision_world.update();
+
+        data.services.collision_world.contacts(|d1, d2, c| {
+            println!("d1: {:?}, d2: {:?}, c: {:?}", d1, d2, c);
+        });
     }
 }
