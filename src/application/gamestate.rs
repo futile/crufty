@@ -5,7 +5,7 @@ use std::path::Path;
 use glium::{self};
 use glium::glutin::{self, ElementState, VirtualKeyCode};
 
-use ecs::{World, BuildData};
+use ecs::{World, BuildData, ModifyData};
 use ecs::system::{InteractSystem};
 
 use util::{State, TextureStore};
@@ -63,11 +63,13 @@ impl State<AppTransition> for GameState {
                     ));
                 });
 
-        let _ = world.create_entity(
+        let player = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: 0.0, y: 0.0 });
                 data.velocity.add(&entity, Velocity { vx: 00.0, vy: -10.0 });
-                data.collision.add(&entity, Collision { shape: CollisionShape::SingleBox(Cuboid2::new(Vec2::new(0.5, 0.5)))});
+                data.collision.add(&entity, Collision {
+                    shape: CollisionShape::SingleBox(Cuboid2::new(Vec2::new(0.5, 0.5))),
+                });
                 data.gravity.add(&entity, Gravity::new());
                 data.sprite_info.add(&entity, SpriteInfo {
                     width: 32.0,
@@ -157,6 +159,10 @@ impl State<AppTransition> for GameState {
                 let _ = hprof::enter("world-update");
                 world.update();
                 lag_behind_simulation -= NS_PER_UPDATE;
+                // world.modify_entity(player,
+                //                     |entity: ModifyData<LevelComponents>, data: &mut LevelComponents| {
+                //                         data.collision.remove(&entity);
+                //                     });
             }
 
             process!(world, intent_system);
