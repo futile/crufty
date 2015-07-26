@@ -63,19 +63,6 @@ impl State<AppTransition> for GameState {
                     ));
                 });
 
-        let _ = world.create_entity(
-            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 0.0, y: -20.0 });
-                data.collision.add(&entity, Collision {
-                    shape: CollisionShape::SingleBox(Cuboid2::new(Vec2::new(0.5, 0.5))),
-                });
-                data.sprite_info.add(&entity, SpriteInfo {
-                    width: 32.0,
-                    height: 32.0,
-                    texture_info: tex_info,
-                });
-                });
-
         let player = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                 let pos = Position { x: 0.0, y: 0.0 };
@@ -101,6 +88,21 @@ impl State<AppTransition> for GameState {
                 });
             }
             );
+
+        let wall = world.create_entity(
+            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
+                data.position.add(&entity, Position { x: 0.0, y: -20.0 });
+                data.collision.add(&entity, Collision {
+                    shape: CollisionShape::SingleBox(Cuboid2::new(Vec2::new(0.5, 0.5))),
+                });
+                data.sprite_info.add(&entity, SpriteInfo {
+                    width: 32.0,
+                    height: 32.0,
+                    texture_info: tex_info,
+                });
+                });
+
+        println!("player: {:?}, wall: {:?}", player, wall);
 
         process!(world, camera_system);
 

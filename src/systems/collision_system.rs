@@ -49,7 +49,7 @@ impl System for CollisionSystem {
     type Components = LevelComponents;
     type Services = LevelServices;
 
-    fn activated(&mut self, e: &EntityData<Self::Components>, comps: &Self::Components, services: &mut Self::Services) {
+fn activated(&mut self, e: &EntityData<Self::Components>, comps: &Self::Components, services: &mut Self::Services) {
         let uid = self.get_free_uid();
 
         let pos = &comps.position[*e];
@@ -103,8 +103,21 @@ impl EntityProcess for CollisionSystem {
 
         data.services.collision_world.update();
 
+        let mut contacts = Vec::new();
+
         data.services.collision_world.contacts(|d1, d2, c| {
             println!("d1: {:?}, d2: {:?}, c: {:?}", d1, d2, c);
+            contacts.push((d1.clone(), d2.clone(), c.clone()));
         });
+
+        // d1(index 0) == player, d2(index 1) == wall
+        if !contacts.is_empty() {
+            data.with_entity_data(&contacts[0].0.entity, | en, comps | {
+                let contact = &contacts[0].2;
+                let pos = &mut comps.position[en];
+
+                pos.y += contact.depth * 32.0;
+            });
+        }
     }
 }
