@@ -68,8 +68,7 @@ impl System for CollisionSystem {
             }
         };
 
-        let cpos = Vec2::new(pos.x / 32.0 + shape.half_extents().x, pos.y / 32.0 + shape.half_extents().y);
-        // let cpos = Vec2::new(pos.x / 32.0 + 0.0, pos.y / 32.0 + 0.0);
+        let cpos = Vec2::new(pos.x / 32.0, pos.y / 32.0);
 
         services.collision_world.add(uid,
                                      Iso2::new(cpos, na::zero()),
@@ -97,16 +96,10 @@ impl System for CollisionSystem {
 impl EntityProcess for CollisionSystem {
     fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
-            let pos = data.position[e];
             let uid = self.entity_uids[&**e];
+            let pos = data.position[e];
 
-            let cpos = {let coll = &data.collision[e];
-                        let shape = match coll.shape {
-                            CollisionShape::SingleBox(ref cuboid) => cuboid,
-                            CollisionShape::TwoBoxes{ x: _, y: _ } => unimplemented!(),
-                        };
-                        Vec2::new(pos.x / 32.0 + shape.half_extents().x, pos.y / 32.0 + shape.half_extents().y)
-            };
+            let cpos = Vec2::new(pos.x / 32.0, pos.y / 32.0);
 
             data.services.collision_world.defered_set_position(uid, Iso2::new(cpos, na::zero()),);
         }
@@ -124,9 +117,16 @@ impl EntityProcess for CollisionSystem {
         if !contacts.is_empty() {
             data.with_entity_data(&contacts[0].0.entity, | en, comps | {
                 let contact = &contacts[0].2;
+
+                // no penetration yet, TODO decide on how to handle this case/look for settings
+                if contact.depth <= 0.0 {
+                    return;
+                }
+
                 let pos = &mut comps.position[en];
 
-                pos.y += contact.depth * 32.0;
+                pos.y -= contact.normal.y * contact.depth * 32.0;
+                pos.x -= contact.normal.x * contact.depth * 32.0;
             });
         }
     }

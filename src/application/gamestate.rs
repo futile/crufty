@@ -91,7 +91,7 @@ impl State<AppTransition> for GameState {
 
         let wall = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: -35.0, y: -20.0 });
+                data.position.add(&entity, Position { x: -31.0, y: -40.0 });
                 data.collision.add(&entity, Collision {
                     shape: CollisionShape::SingleBox(Cuboid2::new(Vec2::new(0.5, 0.5))),
                 });
