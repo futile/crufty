@@ -49,7 +49,7 @@ impl System for CollisionSystem {
     type Components = LevelComponents;
     type Services = LevelServices;
 
-fn activated(&mut self, e: &EntityData<Self::Components>, comps: &Self::Components, services: &mut Self::Services) {
+    fn activated(&mut self, e: &EntityData<Self::Components>, comps: &Self::Components, services: &mut Self::Services) {
         let uid = self.get_free_uid();
 
         let pos = &comps.position[*e];
@@ -68,8 +68,11 @@ fn activated(&mut self, e: &EntityData<Self::Components>, comps: &Self::Componen
             }
         };
 
+        let cpos = Vec2::new(pos.x / 32.0 + shape.half_extents().x, pos.y / 32.0 + shape.half_extents().y);
+        // let cpos = Vec2::new(pos.x / 32.0 + 0.0, pos.y / 32.0 + 0.0);
+
         services.collision_world.add(uid,
-                                     Iso2::new(Vec2::new(pos.x / 32.0, pos.y / 32.0), na::zero()),
+                                     Iso2::new(cpos, na::zero()),
                                      Arc::new(Box::new(shape.clone()) as Box<Repr<Pnt2<f32>, Iso2<f32>>>),
                                      CollisionGroups::new(),
                                      data);
@@ -97,8 +100,15 @@ impl EntityProcess for CollisionSystem {
             let pos = data.position[e];
             let uid = self.entity_uids[&**e];
 
-            data.services.collision_world.defered_set_position(uid, Iso2::new(Vec2::new(pos.x / 32.0, pos.y / 32.0), na::zero()),
-);
+            let cpos = {let coll = &data.collision[e];
+                        let shape = match coll.shape {
+                            CollisionShape::SingleBox(ref cuboid) => cuboid,
+                            CollisionShape::TwoBoxes{ x: _, y: _ } => unimplemented!(),
+                        };
+                        Vec2::new(pos.x / 32.0 + shape.half_extents().x, pos.y / 32.0 + shape.half_extents().y)
+            };
+
+            data.services.collision_world.defered_set_position(uid, Iso2::new(cpos, na::zero()),);
         }
 
         data.services.collision_world.update();
