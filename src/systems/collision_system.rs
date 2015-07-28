@@ -3,11 +3,12 @@ use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::{LevelComponents, CollisionShape, CollisionAxis};
+use components::{LevelComponents, Position, CollisionShape, CollisionAxis};
 
 use na::{self, Pnt2, Iso2, Vec2};
 use nc::world::CollisionGroups;
 use nc::inspection::Repr;
+use nc::bounding_volume::aabb::HasAABB;
 
 use std::sync::Arc;
 use std::collections::HashMap;
@@ -45,6 +46,14 @@ pub struct CollisionEntityData {
     pub axis: CollisionAxis,
 }
 
+fn wpos_to_cpos(pos: &Position, shape: &CollisionShape) -> Vec2<f32> {
+    let pos = Vec2::new(pos.x / 32.0, pos.y / 32.0);
+    match *shape {
+        CollisionShape::SingleBox(ref cuboid) => cuboid.aabb(&Iso2::new(pos, na::zero())).center().to_vec(),
+        CollisionShape::TwoBoxes{ x: _, y: _ } => unimplemented!(),
+    }
+}
+
 impl System for CollisionSystem {
     type Components = LevelComponents;
     type Services = LevelServices;
@@ -68,10 +77,8 @@ impl System for CollisionSystem {
             }
         };
 
-        let cpos = Vec2::new(pos.x / 32.0, pos.y / 32.0);
-
         services.collision_world.add(uid,
-                                     Iso2::new(cpos, na::zero()),
+                                     Iso2::new(wpos_to_cpos(pos, &coll.shape), na::zero()),
                                      Arc::new(Box::new(shape.clone()) as Box<Repr<Pnt2<f32>, Iso2<f32>>>),
                                      CollisionGroups::new(),
                                      data);
@@ -97,9 +104,8 @@ impl EntityProcess for CollisionSystem {
     fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             let uid = self.entity_uids[&**e];
-            let pos = data.position[e];
 
-            let cpos = Vec2::new(pos.x / 32.0, pos.y / 32.0);
+            let cpos = wpos_to_cpos(&data.position[e], &data.collision[e].shape);
 
             data.services.collision_world.defered_set_position(uid, Iso2::new(cpos, na::zero()),);
         }
