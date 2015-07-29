@@ -10,6 +10,7 @@ extern crate image;
 
 extern crate nalgebra as na;
 extern crate ncollide as nc;
+extern crate num;
 
 extern crate hprof;
 

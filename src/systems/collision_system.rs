@@ -3,10 +3,11 @@ use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::{LevelComponents, Position, Collision};
+use components::{LevelComponents, Position, Collision, CollisionType};
 
-use na::{self, Iso2, Vec2};
+use na::{self, Iso2, Vec2, Norm};
 use nc::world::CollisionGroups;
+use num::traits::Zero;
 
 use std::collections::HashMap;
 
@@ -99,25 +100,56 @@ impl EntityProcess for CollisionSystem {
         let mut contacts = Vec::new();
 
         data.services.collision_world.contacts(|d1, d2, c| {
-            println!("d1: {:?}, d2: {:?}, c: {:?}", d1, d2, c);
+            // println!("d1: {:?}, d2: {:?}, c: {:?}", d1, d2, c);
             contacts.push((d1.clone(), d2.clone(), c.clone()));
         });
 
-        // d1(index 0) == player, d2(index 1) == wall
-        if !contacts.is_empty() {
-            data.with_entity_data(&contacts[0].0.entity, | en, comps | {
-                let contact = &contacts[0].2;
+        for contact in &contacts {
+            let en1 = &contact.0.entity;
+            let en2 = &contact.1.entity;
+            let c   = &contact.2;
 
-                // no penetration yet, ignore
-                if contact.depth <= 0.0 {
-                    return;
+            if c.depth <= 0.0 {
+                continue;
+            }
+
+            let (pos1, ovel1, ct1) = data.with_entity_data(en1, | en, comps | { (comps.position[en], comps.velocity.get(&en), comps.collision[en].collision_type()) }).unwrap();
+            let (pos2, ovel2, ct2) = data.with_entity_data(en2, | en, comps | { (comps.position[en], comps.velocity.get(&en), comps.collision[en].collision_type()) }).unwrap();
+
+            if ct1 == CollisionType::Solid || ct2 == CollisionType::Solid {
+                let vel1 = match ovel1 {
+                    Some(ref v) => Vec2::new(pos1.x - v.last_pos.x, pos1.y - v.last_pos.y),
+                    None => na::zero(),
+                };
+                let vel2 = match ovel2 {
+                    Some(ref v) => Vec2::new(pos2.x - v.last_pos.x, pos2.y - v.last_pos.y),
+                    None => na::zero(),
+                };
+
+                let (f1, f2) = if vel1.is_zero() && vel2.is_zero() {
+                    (1.0, 1.0)
+                } else {
+                    let sum_len = (vel1 + vel2).norm();
+                    (vel1.norm() / sum_len, vel2.norm() / sum_len)
+                };
+
+                if f1 > 0.0 {
+                    data.with_entity_data(en1, |en, comps| {
+                        let pos = &mut comps.position[en];
+
+                        pos.y -= c.normal.y * c.depth * f1 * 32.0;
+                        pos.x -= c.normal.x * c.depth * f1 * 32.0;
+                    });
                 }
+                if f2 > 0.0 {
+                    data.with_entity_data(en2, |en, comps| {
+                        let pos = &mut comps.position[en];
 
-                let pos = &mut comps.position[en];
-
-                pos.y -= contact.normal.y * contact.depth * 32.0;
-                pos.x -= contact.normal.x * contact.depth * 32.0;
-            });
+                        pos.y -= c.normal.y * c.depth * f2 * 32.0;
+                        pos.x -= c.normal.x * c.depth * f2 * 32.0;
+                    });
+                }
+            }
         }
     }
 }
