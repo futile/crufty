@@ -38,17 +38,25 @@ impl Gravity {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum CollisionType {
+    Solid,
+    Trigger,
+}
+
 #[derive(Clone)]
 pub struct Collision {
     shape: Arc<Box<Repr<Pnt2<f32>, Iso2<f32>>>>,
     cpos_offset: Vec2<f32>,
+    coll_type: CollisionType,
 }
 
 impl Collision {
-    pub fn new(shape: Arc<Box<Repr<Pnt2<f32>, Iso2<f32>>>>) -> Collision {
+    pub fn new(shape: Arc<Box<Repr<Pnt2<f32>, Iso2<f32>>>>, collision_type: CollisionType) -> Collision {
         Collision {
             cpos_offset: shape.aabb(&Iso2::new(na::zero(), na::zero())).center().to_vec(),
             shape: shape,
+            coll_type: collision_type,
         }
     }
 
@@ -58,6 +66,10 @@ impl Collision {
 
     pub fn shape(&self) -> &Arc<Box<Repr<Pnt2<f32>, Iso2<f32>>>> {
         &self.shape
+    }
+
+    pub fn collision_type(&self) -> CollisionType {
+        self.coll_type
     }
 }
 

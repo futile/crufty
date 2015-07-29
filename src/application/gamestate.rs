@@ -14,7 +14,7 @@ use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Position, Collision, SpriteInfo, Gravity, Camera, KeyboardInput, Intents, Velocity};
+use components::{LevelComponents, Position, Collision, CollisionType, SpriteInfo, Gravity, Camera, KeyboardInput, Intents, Velocity};
 
 use hprof;
 
@@ -70,7 +70,7 @@ impl State<AppTransition> for GameState {
                 let pos = Position { x: -31.0, y: 50.0 };
                 data.position.add(&entity, pos);
                 data.velocity.add(&entity, Velocity { vx: 00.0, vy: 00.0, last_pos: pos });
-                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.5, 0.5)))))));
+                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.5, 0.5))))), CollisionType::Solid));
                 data.gravity.add(&entity, Gravity::new());
                 data.sprite_info.add(&entity, SpriteInfo {
                     width: 32.0,
@@ -89,40 +89,20 @@ impl State<AppTransition> for GameState {
             }
             );
 
-        let wall = world.create_entity(
-            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 0.0, y: -40.0 });
-                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.49, 0.49)))))));
-                data.sprite_info.add(&entity, SpriteInfo {
-                    width: 32.0,
-                    height: 32.0,
-                    texture_info: tex_info,
+        for x in 0..3 {
+            let _ = world.create_entity(
+                |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
+                    data.position.add(&entity, Position { x: (x as f32) * 32.0, y: -40.0 });
+                    data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.49, 0.49))))), CollisionType::Solid));
+                    data.sprite_info.add(&entity, SpriteInfo {
+                        width: 32.0,
+                        height: 32.0,
+                        texture_info: tex_info,
+                    });
                 });
-                });
+        }
 
-        let _ = world.create_entity(
-            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 32.0, y: -40.0 });
-                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.49, 0.49)))))));
-                data.sprite_info.add(&entity, SpriteInfo {
-                    width: 32.0,
-                    height: 32.0,
-                    texture_info: tex_info,
-                });
-                });
-
-        let _ = world.create_entity(
-            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 64.0, y: -40.0 });
-                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.49, 0.49)))))));
-                data.sprite_info.add(&entity, SpriteInfo {
-                    width: 32.0,
-                    height: 32.0,
-                    texture_info: tex_info,
-                });
-                });
-
-        println!("player: {:?}, wall: {:?}", player, wall);
+        println!("player: {:?}", player);
 
         process!(world, camera_system);
 
