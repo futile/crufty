@@ -67,7 +67,7 @@ impl State<AppTransition> for GameState {
 
         let player = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                let pos = Position { x: 0.0, y: 50.0 };
+                let pos = Position { x: -31.0, y: 50.0 };
                 data.position.add(&entity, pos);
                 data.velocity.add(&entity, Velocity { vx: 00.0, vy: 00.0, last_pos: pos });
                 data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.5, 0.5)))))));
@@ -91,8 +91,30 @@ impl State<AppTransition> for GameState {
 
         let wall = world.create_entity(
             |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: -31.0, y: -40.0 });
-                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.5, 0.5)))))));
+                data.position.add(&entity, Position { x: 0.0, y: -40.0 });
+                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.49, 0.49)))))));
+                data.sprite_info.add(&entity, SpriteInfo {
+                    width: 32.0,
+                    height: 32.0,
+                    texture_info: tex_info,
+                });
+                });
+
+        let _ = world.create_entity(
+            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
+                data.position.add(&entity, Position { x: 32.0, y: -40.0 });
+                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.49, 0.49)))))));
+                data.sprite_info.add(&entity, SpriteInfo {
+                    width: 32.0,
+                    height: 32.0,
+                    texture_info: tex_info,
+                });
+                });
+
+        let _ = world.create_entity(
+            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
+                data.position.add(&entity, Position { x: 64.0, y: -40.0 });
+                data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.49, 0.49)))))));
                 data.sprite_info.add(&entity, SpriteInfo {
                     width: 32.0,
                     height: 32.0,

@@ -29,7 +29,7 @@ pub type CollisionWorld2<N, T> = CollisionWorld<Pnt2<N>, Iso2<N>, T>;
 services! {
     struct LevelServices {
         texture_store: TextureStore = TextureStore::new_invalid(),
-        collision_world: CollisionWorld2<f32, CollisionEntityData> = CollisionWorld2::new(0.10, 0.10, false),
+        collision_world: CollisionWorld2<f32, CollisionEntityData> = CollisionWorld2::new(0.0, 0.0, false),
         delta_time_s: f32 = 0.0,
     }
 }

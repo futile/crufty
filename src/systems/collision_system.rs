@@ -108,7 +108,7 @@ impl EntityProcess for CollisionSystem {
             data.with_entity_data(&contacts[0].0.entity, | en, comps | {
                 let contact = &contacts[0].2;
 
-                // no penetration yet, TODO decide on how to handle this case/look for settings
+                // no penetration yet, ignore
                 if contact.depth <= 0.0 {
                     return;
                 }
