@@ -1,12 +1,15 @@
 use std::collections::HashSet;
+use std::sync::Arc;
 
-use nc::bounding_volume::AABB2;
-use nc::shape::Cuboid2;
+use nc::bounding_volume::{HasAABB, AABB2};
+use nc::inspection::Repr;
 
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
 
 use util::TextureInfo;
+
+use na::{self, Vec2, Pnt2, Iso2};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Position {
@@ -35,25 +38,27 @@ impl Gravity {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub enum CollisionShape {
-    SingleBox(Cuboid2<f32>),
-    TwoBoxes {
-        x: Cuboid2<f32>,
-        y: Cuboid2<f32>
-    }
-}
-
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum CollisionAxis {
-    XY,
-    X,
-    Y,
-}
-
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone)]
 pub struct Collision {
-    pub shape: CollisionShape,
+    shape: Arc<Box<Repr<Pnt2<f32>, Iso2<f32>>>>,
+    cpos_offset: Vec2<f32>,
+}
+
+impl Collision {
+    pub fn new(shape: Arc<Box<Repr<Pnt2<f32>, Iso2<f32>>>>) -> Collision {
+        Collision {
+            cpos_offset: shape.aabb(&Iso2::new(na::zero(), na::zero())).center().to_vec(),
+            shape: shape,
+        }
+    }
+
+    pub fn cpos_offset(&self) -> &Vec2<f32> {
+        &self.cpos_offset
+    }
+
+    pub fn shape(&self) -> &Arc<Box<Repr<Pnt2<f32>, Iso2<f32>>>> {
+        &self.shape
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]

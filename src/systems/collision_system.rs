@@ -3,14 +3,11 @@ use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::{LevelComponents, Position, CollisionShape, CollisionAxis};
+use components::{LevelComponents, Position, Collision};
 
-use na::{self, Pnt2, Iso2, Vec2};
+use na::{self, Iso2, Vec2};
 use nc::world::CollisionGroups;
-use nc::inspection::Repr;
-use nc::bounding_volume::aabb::HasAABB;
 
-use std::sync::Arc;
 use std::collections::HashMap;
 
 pub struct CollisionSystem {
@@ -43,15 +40,10 @@ impl CollisionSystem {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct CollisionEntityData {
     pub entity: Entity,
-    pub axis: CollisionAxis,
 }
 
-fn wpos_to_cpos(pos: &Position, shape: &CollisionShape) -> Vec2<f32> {
-    let pos = Vec2::new(pos.x / 32.0, pos.y / 32.0);
-    match *shape {
-        CollisionShape::SingleBox(ref cuboid) => cuboid.aabb(&Iso2::new(pos, na::zero())).center().to_vec(),
-        CollisionShape::TwoBoxes{ x: _, y: _ } => unimplemented!(),
-    }
+fn wpos_to_cpos(pos: &Position, coll: &Collision) -> Vec2<f32> {
+    Vec2::new(pos.x / 32.0 + coll.cpos_offset().x, pos.y / 32.0 + coll.cpos_offset().y)
 }
 
 impl System for CollisionSystem {
@@ -64,22 +56,14 @@ impl System for CollisionSystem {
         let pos = &comps.position[*e];
         let coll = &comps.collision[*e];
 
-        let shape = match coll.shape {
-            CollisionShape::SingleBox(ref cuboid) => cuboid,
-            CollisionShape::TwoBoxes{ x: _, y: _ } => unimplemented!(),
-        };
-
         let data = CollisionEntityData {
             entity: ***e,
-            axis: match coll.shape {
-                CollisionShape::SingleBox(_) => CollisionAxis::XY,
-                CollisionShape::TwoBoxes{ x: _, y: _ } => unimplemented!(),
-            }
         };
 
         services.collision_world.add(uid,
-                                     Iso2::new(wpos_to_cpos(pos, &coll.shape), na::zero()),
-                                     Arc::new(Box::new(shape.clone()) as Box<Repr<Pnt2<f32>, Iso2<f32>>>),
+                                     Iso2::new(wpos_to_cpos(pos, &coll), na::zero()),
+                                     // Arc::new(Box::new(shape.clone()) as Box<Repr<Pnt2<f32>, Iso2<f32>>>),
+                                     coll.shape().clone(),
                                      CollisionGroups::new(),
                                      data);
 
@@ -105,7 +89,7 @@ impl EntityProcess for CollisionSystem {
         for e in entities {
             let uid = self.entity_uids[&**e];
 
-            let cpos = wpos_to_cpos(&data.position[e], &data.collision[e].shape);
+            let cpos = wpos_to_cpos(&data.position[e], &data.collision[e]);
 
             data.services.collision_world.defered_set_position(uid, Iso2::new(cpos, na::zero()),);
         }
