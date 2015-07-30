@@ -65,13 +65,13 @@ impl State<AppTransition> for GameState {
                     ));
                 });
 
-        for x in 0..2 {
+        for x in 1..8 {
             let _ = world.create_entity(
                 |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                     let pos = Position { x: x as f32 * 32.0 + x as f32 * 10.0, y: 50.0 };
                     data.position.add(&entity, pos);
                     data.velocity.add(&entity, Velocity { vx: 00.0, vy: 00.0, last_pos: pos });
-                    data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.5, 0.5))))), CollisionType::Solid));
+                    data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.50, 0.50))))), CollisionType::Solid));
                     data.gravity.add(&entity, Gravity::new());
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
@@ -91,7 +91,7 @@ impl State<AppTransition> for GameState {
                 );
         }
 
-        for x in 0..3 {
+        for x in 0..12 {
             let _ = world.create_entity(
                 |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                     data.position.add(&entity, Position { x: (x as f32) * 32.0, y: -40.0 });
