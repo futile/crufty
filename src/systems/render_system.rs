@@ -137,7 +137,7 @@ impl InteractProcess for RenderSystem {
                     let sprite_info = &data.sprite_info[*e];
 
                     let scale = Vec2::new(sprite_info.width, sprite_info.height);
-                    let view_pos = Vec2::new(position.x - (cpos.x - camera.world_viewport.width / 2.0), position.y - (cpos.y - camera.world_viewport.height / 2.0));
+                    let view_pos = Vec2::new(position.x.round() - (cpos.x - camera.world_viewport.width / 2.0), position.y.round() - (cpos.y - camera.world_viewport.height / 2.0));
 
                     let texture = data.services.texture_store.get_texture(&sprite_info.texture_info);
 
