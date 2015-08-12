@@ -1,7 +1,6 @@
 use std::thread;
 use std::collections::HashMap;
 use std::path::Path;
-use std::sync::Arc;
 
 use glium::{self};
 use glium::glutin::{self, ElementState, VirtualKeyCode};
@@ -23,8 +22,7 @@ use clock_ticks;
 use std::time::Duration;
 
 use nc::bounding_volume::AABB2;
-use nc::shape::Cuboid2;
-use na::{Vec2, Pnt2};
+use na::{Pnt2};
 
 pub struct GameState {
     display: glium::Display,
@@ -71,7 +69,7 @@ impl State<AppTransition> for GameState {
                     let pos = Position { x: x as f32 * 32.0 + x as f32 * 10.0, y: 50.0 };
                     data.position.add(&entity, pos);
                     data.velocity.add(&entity, Velocity { vx: 00.0, vy: 00.0, last_pos: pos });
-                    data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.50, 0.50))))), CollisionType::Solid));
+                    data.collision.add(&entity, Collision::new(32.0, 32.0, CollisionType::Solid));
                     data.gravity.add(&entity, Gravity::new());
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
@@ -95,7 +93,7 @@ impl State<AppTransition> for GameState {
             let _ = world.create_entity(
                 |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                     data.position.add(&entity, Position { x: (x as f32) * 32.0, y: -40.0 });
-                    data.collision.add(&entity, Collision::new(Arc::new(Box::new((Cuboid2::new(Vec2::new(0.49, 0.49))))), CollisionType::Solid));
+                    data.collision.add(&entity, Collision::new(32.0, 32.0, CollisionType::Solid));
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
                         height: 32.0,
