@@ -1,11 +1,13 @@
 use std::collections::HashSet;
 
+use nc::shape::Cuboid2;
 use nc::bounding_volume::{AABB2};
+use na::{Vec2};
 
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
 
-use util::{TextureInfo, Rect};
+use util::{TextureInfo};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Position {
@@ -43,24 +45,30 @@ pub enum CollisionType {
 #[derive(Debug, Clone)]
 pub struct Collision {
     coll_type: CollisionType,
-    rX: Rect,
-    rY: Rect,
+    r_x: Cuboid2<f32>,
+    off_x: Vec2<f32>,
+    r_y: Cuboid2<f32>,
+    off_y: Vec2<f32>,
 }
 
 impl Collision {
-    pub fn new_single(rect: Rect, collision_type: CollisionType) -> Collision {
+    pub fn new_single(rect: Cuboid2<f32>, off: Vec2<f32>, collision_type: CollisionType) -> Collision {
         Collision {
             coll_type: collision_type,
-            rX: rect.clone(),
-            rY: rect,
+            r_x: rect.clone(),
+            off_x: off.clone(),
+            r_y: rect,
+            off_y: off,
         }
     }
 
-    pub fn new_dual(rect_x: Rect, rect_y: Rect, collision_type: CollisionType) -> Collision {
+    pub fn new_dual(rect_x: Cuboid2<f32>, off_x: Vec2<f32>, rect_y: Cuboid2<f32>, off_y: Vec2<f32>, collision_type: CollisionType) -> Collision {
         Collision {
             coll_type: collision_type,
-            rX: rect_x,
-            rY: rect_y,
+            r_x: rect_x,
+            off_x: off_x,
+            r_y: rect_y,
+            off_y: off_y,
         }
     }
 
@@ -68,12 +76,20 @@ impl Collision {
         self.coll_type
     }
 
-    pub fn rect_x(&self) -> &Rect {
-        &self.rX
+    pub fn rect_x(&self) -> &Cuboid2<f32> {
+        &self.r_x
     }
 
-    pub fn rect_y(&self) -> &Rect {
-        &self.rY
+    pub fn off_x(&self) -> &Vec2<f32> {
+        &self.off_x
+    }
+
+    pub fn rect_y(&self) -> &Cuboid2<f32> {
+        &self.r_y
+    }
+
+    pub fn off_y(&self) -> &Vec2<f32> {
+        &self.off_y
     }
 }
 

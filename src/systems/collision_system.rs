@@ -31,6 +31,7 @@ impl InteractProcess for CollisionSystem {
                 let c2 = &data.collision[*e2];
 
                 // 1. detect if collision
+                // let collision_x = 
 
                 // 2. if both SOLID, resolve collision
             }

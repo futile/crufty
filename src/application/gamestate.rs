@@ -9,7 +9,7 @@ use ecs::{World, BuildData// , ModifyData
 };
 use ecs::system::{InteractSystem};
 
-use util::{State, TextureStore, Rect};
+use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
@@ -21,8 +21,9 @@ use clock_ticks;
 
 use std::time::Duration;
 
+use nc::shape::Cuboid2;
 use nc::bounding_volume::AABB2;
-use na::{Pnt2};
+use na::{Pnt2, Vec2};
 
 pub struct GameState {
     display: glium::Display,
@@ -69,7 +70,7 @@ impl State<AppTransition> for GameState {
                     let pos = Position { x: x as f32 * 32.0 + x as f32 * 10.0, y: 50.0 };
                     data.position.add(&entity, pos);
                     data.velocity.add(&entity, Velocity { vx: 00.0, vy: 00.0, last_pos: pos });
-                    data.collision.add(&entity, Collision::new_single(Rect::new(32.0, 32.0), CollisionType::Solid));
+                    data.collision.add(&entity, Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)), Vec2::new(16.0, 16.0), CollisionType::Solid));
                     data.gravity.add(&entity, Gravity::new());
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
@@ -93,7 +94,7 @@ impl State<AppTransition> for GameState {
             let _ = world.create_entity(
                 |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
                     data.position.add(&entity, Position { x: (x as f32) * 32.0, y: -40.0 });
-                    data.collision.add(&entity, Collision::new_single(Rect::new(32.0, 32.0), CollisionType::Solid));
+                    data.collision.add(&entity, Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)), Vec2::new(16.0, 16.0), CollisionType::Solid));
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
                         height: 32.0,
