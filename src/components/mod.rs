@@ -5,7 +5,7 @@ use nc::bounding_volume::{AABB2};
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
 
-use util::TextureInfo;
+use util::{TextureInfo, Rect};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Position {
@@ -40,19 +40,27 @@ pub enum CollisionType {
     Trigger,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Collision {
     coll_type: CollisionType,
-    width: f32,
-    height: f32
+    rX: Rect,
+    rY: Rect,
 }
 
 impl Collision {
-    pub fn new(width: f32, height: f32,collision_type: CollisionType) -> Collision {
+    pub fn new_single(rect: Rect, collision_type: CollisionType) -> Collision {
         Collision {
             coll_type: collision_type,
-            width: width,
-            height: height
+            rX: rect.clone(),
+            rY: rect,
+        }
+    }
+
+    pub fn new_dual(rect_x: Rect, rect_y: Rect, collision_type: CollisionType) -> Collision {
+        Collision {
+            coll_type: collision_type,
+            rX: rect_x,
+            rY: rect_y,
         }
     }
 
@@ -60,12 +68,12 @@ impl Collision {
         self.coll_type
     }
 
-    pub fn width(&self) -> f32 {
-        self.width
+    pub fn rect_x(&self) -> &Rect {
+        &self.rX
     }
 
-    pub fn height(&self) -> f32 {
-        self.height
+    pub fn rect_y(&self) -> &Rect {
+        &self.rY
     }
 }
 

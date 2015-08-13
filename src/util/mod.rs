@@ -18,6 +18,29 @@ pub fn run_state_machine<T: Transition>(initial: T) {
     }
 }
 
+#[derive(Debug, Default, PartialEq, PartialOrd, Clone)]
+pub struct Rect {
+    width: f32,
+    height: f32,
+}
+
+impl Rect {
+    pub fn new(width: f32, height: f32) -> Rect {
+        Rect {
+            width: width,
+            height: height,
+        }
+    }
+
+    pub fn width(&self) -> f32 {
+        self.width
+    }
+
+    pub fn height(&self) -> f32 {
+        self.height
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::{Transition, State, run_state_machine};
