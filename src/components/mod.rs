@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use nc::shape::Cuboid2;
-use nc::bounding_volume::{AABB2};
-use na::{Vec2};
+use nc::bounding_volume::{HasAABB, AABB2};
+use na::{self, Iso2, Vec2};
 
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
@@ -80,12 +80,20 @@ impl Collision {
         &self.r_x
     }
 
+    pub fn aabb_x(&self, pos: Vec2<f32>) -> AABB2<f32> {
+        self.r_x.aabb(&Iso2::new(pos + self.off_x, na::zero()))
+    }
+
     pub fn off_x(&self) -> &Vec2<f32> {
         &self.off_x
     }
 
     pub fn rect_y(&self) -> &Cuboid2<f32> {
         &self.r_y
+    }
+
+    pub fn aabb_y(&self, pos: Vec2<f32>) -> AABB2<f32> {
+        self.r_y.aabb(&Iso2::new(pos + self.off_y, na::zero()))
     }
 
     pub fn off_y(&self) -> &Vec2<f32> {

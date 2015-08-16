@@ -20,7 +20,8 @@ impl EntityProcess for GravitySystem {
             let gravity = data.gravity[e];
             let velocity = &mut data.velocity[e];
 
-            velocity.vy -= self.g * gravity.f;
+            // velocity.vy -= self.g * gravity.f;
+            velocity.vx += self.g * gravity.f;
         }
     }
 }
