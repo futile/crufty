@@ -67,10 +67,10 @@ impl State<AppTransition> for GameState {
         for x in 1..2 {
             let _ = world.create_entity(
                 |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                    let pos = Position { x: x as f32 * 32.0 + x as f32 * 10.0, y: 0.0 };
+                    let pos = Position { x: x as f32 * 32.0 + x as f32 * 10.0, y: 100.0 };
                     data.position.add(&entity, pos);
                     data.velocity.add(&entity, Velocity { vx: 00.0, vy: 00.0, last_pos: pos });
-                    data.collision.add(&entity, Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)), Vec2::new(16.0, 16.0), CollisionType::Solid));
+                    data.collision.add(&entity, Collision::new_dual(Cuboid2::new(Vec2::new(16.0, 5.0)), Vec2::new(16.0, 16.0), Cuboid2::new(Vec2::new(5.0, 16.0)), Vec2::new(16.0, 16.0), CollisionType::Solid));
                     data.gravity.add(&entity, Gravity::new());
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
@@ -93,7 +93,8 @@ impl State<AppTransition> for GameState {
         for x in 0..1 {
             let _ = world.create_entity(
                 |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                    data.position.add(&entity, Position { x: ((x + 3) as f32) * 32.0, y: 0.0 });
+                    // data.position.add(&entity, Position { x: (x  as f32) * 32.0, y: 0.0 });
+                    data.position.add(&entity, Position { x: 32.0, y: 0.0 });
                     data.collision.add(&entity, Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)), Vec2::new(16.0, 16.0), CollisionType::Solid));
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
