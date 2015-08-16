@@ -5,8 +5,8 @@ use super::LevelServices;
 
 use components::{LevelComponents, Position, Collision, CollisionType};
 
-use na::{Vec2};
-use nc::bounding_volume::{BoundingVolume};
+use na::{Pnt2, Vec2};
+use nc::bounding_volume::{BoundingVolume, AABB2};
 
 pub struct CollisionSystem;
 
@@ -21,6 +21,43 @@ impl System for CollisionSystem {
     type Services = LevelServices;
 }
 
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+enum Axis {
+    X,
+    Y,
+}
+
+fn find_depth(dyn: &AABB2<f32>, dyn_last: Pnt2<f32>, stat: &AABB2<f32>, axis: Axis) -> Option<f32> {
+    use self::Axis::{X,Y};
+
+    if !dyn.intersects(stat) {
+        return None;
+    }
+
+    let min_dist = match axis {
+        X => dyn.half_extents().x + stat.half_extents().x,
+        Y => dyn.half_extents().y + stat.half_extents().y,
+    };
+
+    let dist = match axis {
+        X => dyn.center().x - stat.center().x,
+        Y => dyn.center().y - stat.center().y,
+    }.abs();
+
+    let depth = min_dist - dist;
+
+    if depth <= 0.0 {
+        return None;
+    }
+
+    let dir = match axis {
+        X => dyn_last.x - stat.center().x,
+        Y => dyn_last.y - stat.center().y,
+    }.signum();
+
+    Some(dir * depth)
+}
+
 impl InteractProcess for CollisionSystem {
     fn process(&mut self, dynamic_entities: EntityIter<LevelComponents>, static_entities_iter: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
         let static_entities: Vec<_>= static_entities_iter.collect();
@@ -29,8 +66,6 @@ impl InteractProcess for CollisionSystem {
             let mut p1 = data.position[e1];
             let v1 = data.velocity[e1];
             let c1 = data.collision[e1].clone();
-
-            let aabb1_x = c1.aabb_x(Vec2::new(p1.x, p1.y)).merged(&c1.aabb_x(Vec2::new(v1.last_pos.x, v1.last_pos.y)));
 
             for e2 in &static_entities {
                 if **e1 == ***e2 {
@@ -49,31 +84,20 @@ impl InteractProcess for CollisionSystem {
                         continue;
                     }
 
-                    if aabb1_x.intersects(&aabb2_x) {
-                        // TODO fire event on collision
-                        if v1.last_pos.x <= p1.x {
-                            p1.x -= aabb1_x.maxs().x - aabb2_x.mins().x
-                        } else {
-                            p1.x -= aabb1_x.mins().x - aabb2_x.maxs().x
-                        }
-                    } else {
-                        let aabb1_y = c1.aabb_y(Vec2::new(p1.x, p1.y)).merged(&c1.aabb_y(Vec2::new(v1.last_pos.x, v1.last_pos.y)));
-                        let aabb2_y = c2.aabb_y(Vec2::new(p2.x, p2.y)).merged(&c2.aabb_y(other_pos));
+                    let aabb1_x = c1.aabb_x(Vec2::new(p1.x, p1.y)).merged(&c1.aabb_x(Vec2::new(v1.last_pos.x, v1.last_pos.y)));
 
-                        // TODO fire event on collision
-                        if aabb1_y.intersects(&aabb2_y) {
-                            if v1.last_pos.y <= p1.y {
-                                p1.y -= aabb1_y.maxs().y - aabb2_y.mins().y
-                            } else {
-                                p1.y -= aabb1_y.mins().y - aabb2_y.maxs().y
-                            }
-                        }
+                    let aabb1_y = c1.aabb_y(Vec2::new(p1.x, p1.y)).merged(&c1.aabb_y(Vec2::new(v1.last_pos.x, v1.last_pos.y)));
+                    let aabb2_y = c2.aabb_y(Vec2::new(p2.x, p2.y)).merged(&c2.aabb_y(other_pos));
+
+                    if let Some(depth_x) = find_depth(&aabb1_x, Pnt2::new(v1.last_pos.x, v1.last_pos.y), &aabb2_x, Axis::X) {
+                        p1.x += depth_x;
+                    } else if let Some(depth_y) = find_depth(&aabb1_y, Pnt2::new(v1.last_pos.x, v1.last_pos.y), &aabb2_y, Axis::Y) {
+                        p1.y += depth_y;
                     }
                 }
 
                 data.position[e1] = p1;
             }
-
         }
     }
 }
