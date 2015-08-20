@@ -17,6 +17,14 @@ impl System for MovementSystem {
     type Services = LevelServices;
 }
 
+fn add_clamp_to_zero(val: f32, add: f32, minmax: f32) -> f32 {
+    if val < 0.0 {
+        na::clamp(val + add, -minmax, 0.0)
+    } else {
+        na::clamp(val - add, 0.0, minmax)
+    }
+}
+
 impl EntityProcess for MovementSystem {
     fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
@@ -30,19 +38,22 @@ impl EntityProcess for MovementSystem {
                 let movement = &mut data.movement[e];
 
                 if move_left == move_right {
+                    if movement.vel.is_zero() {
+                        continue;
+                    }
+
                     // TODO reduce speed instead(e.g. by acc)
-                    movement.vel = Vec2::zero();
-
-                    continue;
-                }
-
-                let acc = if move_left {
-                    -movement.acc
+                    movement.vel.x = add_clamp_to_zero(movement.vel.x, /*movement.acc.x*/ 10.0, movement.max_vel.x);
+                    movement.vel.y = add_clamp_to_zero(movement.vel.y, movement.acc.y, movement.max_vel.y);
                 } else {
-                    movement.acc
-                };
+                    let acc = if move_left {
+                        -movement.acc
+                    } else {
+                        movement.acc
+                    };
 
-                movement.vel = na::partial_clamp(&(movement.vel + acc), &-movement.max_vel, &movement.max_vel).unwrap_or(&Vec2::zero()).clone();
+                    movement.vel = na::partial_clamp(&(movement.vel + acc), &-movement.max_vel, &movement.max_vel).unwrap_or(&Vec2::zero()).clone();
+                }
 
                 movement.vel.clone()
             };
