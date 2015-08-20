@@ -30,8 +30,6 @@ pub struct Movement {
     pub vel: Vec2<f32>,
     pub max_vel: Vec2<f32>,
     pub acc: Vec2<f32>,
-    pub moving_left: bool,
-    pub moving_right: bool,
 }
 
 impl Movement {
@@ -40,8 +38,6 @@ impl Movement {
             vel: Vec2::zero(),
             max_vel: max_vel,
             acc: acc,
-            moving_left: false,
-            moving_right: false,
         }
     }
 }

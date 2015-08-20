@@ -73,9 +73,7 @@ impl State<AppTransition> for GameState {
                     data.collision.add(&entity, Collision::new_dual(Cuboid2::new(Vec2::new(16.0, 5.0)), Vec2::new(16.0, 16.0),
                                                                     Cuboid2::new(Vec2::new(5.0, 16.0)), Vec2::new(16.0, 16.0),
                                                                     CollisionType::Solid));
-                    let mut movement = Movement::new(Vec2::new(25.0, 0.0), Vec2::new(10.0, 0.0));
-                    movement.moving_right = true;
-                    data.movement.add(&entity, movement);
+                    data.movement.add(&entity, Movement::new(Vec2::new(75.0, 0.0), Vec2::new(30.0, 0.0)));
                     data.gravity.add(&entity, Gravity::new());
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
@@ -88,6 +86,8 @@ impl State<AppTransition> for GameState {
                         input_context: {
                             let mut inputs = HashMap::new();
                             inputs.insert((VirtualKeyCode::O, InputState::PressedThisFrame), InputIntent::PrintDebugMessage);
+                            inputs.insert((VirtualKeyCode::Left, InputState::Pressed), InputIntent::MoveLeft);
+                            inputs.insert((VirtualKeyCode::Right, InputState::Pressed), InputIntent::MoveRight);
                             inputs
                         },
                     });
@@ -165,12 +165,10 @@ impl State<AppTransition> for GameState {
                         glutin::Event::KeyboardInput(ElementState::Pressed, _, Some(vkc))
                             => {
                                 input_manager.handle_event(ElementState::Pressed, vkc);
-                                println!("pressed: {:?}", vkc);
                             },
                         glutin::Event::KeyboardInput(ElementState::Released, _, Some(vkc))
                             => {
                                 input_manager.handle_event(ElementState::Released, vkc);
-                                println!("released: {:?}", vkc);
                             },
                         glutin::Event::ReceivedCharacter(c)
                             => println!("char: {:?}", c),

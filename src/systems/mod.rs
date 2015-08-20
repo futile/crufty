@@ -31,6 +31,9 @@ services! {
 
 systems! {
     struct LevelSystems<LevelComponents, LevelServices> {
+        keyboard_system: EntitySystem<KeyboardSystem> = EntitySystem::new(
+            KeyboardSystem::new(),
+            aspect!(<LevelComponents> all: [keyboard_input])),
         gravity_system: EntitySystem<GravitySystem> = EntitySystem::new(
             GravitySystem { g: 99.0 },
             aspect!(<LevelComponents> all: [gravity, velocity]),
@@ -48,13 +51,10 @@ systems! {
             aspect!(<LevelComponents> all: [position, velocity, collision]),
             aspect!(<LevelComponents> all: [position, collision]),
             ),
-        render_system: LazySystem<InteractSystem<RenderSystem>> = LazySystem::new(),
         camera_system: EntitySystem<CameraSystem> = EntitySystem::new(
             CameraSystem::new(),
             aspect!(<LevelComponents> all: [camera])),
-        keyboard_system: EntitySystem<KeyboardSystem> = EntitySystem::new(
-            KeyboardSystem::new(),
-            aspect!(<LevelComponents> all: [keyboard_input])),
+        render_system: LazySystem<InteractSystem<RenderSystem>> = LazySystem::new(),
         intent_system: EntitySystem<IntentSystem> = EntitySystem::new(
             IntentSystem,
             aspect!(<LevelComponents> all: [intents])),

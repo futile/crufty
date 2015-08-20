@@ -76,7 +76,11 @@ impl InputManager {
                 continue;
             }
 
-            let state = if self.keyboard_state.is_pressed(vkc) { InputState::PressedThisFrame } else { InputState::ReleasedThisFrame };
+            let state = if self.keyboard_state.is_pressed(vkc) {
+                InputState::PressedThisFrame
+            } else {
+                InputState::ReleasedThisFrame
+            };
 
             if key_handler.handle_key(state, *vkc) {
                 self.consumed.insert(*vkc);

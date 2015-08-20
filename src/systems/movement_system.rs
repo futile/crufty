@@ -4,6 +4,7 @@ use ecs::system::EntityProcess;
 use super::LevelServices;
 
 use components::{LevelComponents};
+use application::InputIntent;
 
 use na::{self, Vec2};
 
@@ -19,17 +20,23 @@ impl System for MovementSystem {
 impl EntityProcess for MovementSystem {
     fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
+            let (move_left, move_right) = {
+                let intents = &data.intents[e];
+
+                (intents.contains(&InputIntent::MoveLeft), intents.contains(&InputIntent::MoveRight))
+            };
+
             let vel = {
                 let movement = &mut data.movement[e];
 
-                if movement.moving_left == movement.moving_right {
+                if move_left == move_right {
                     // TODO reduce speed instead(e.g. by acc)
                     movement.vel = Vec2::zero();
 
                     continue;
                 }
 
-                let acc = if movement.moving_left {
+                let acc = if move_left {
                     -movement.acc
                 } else {
                     movement.acc
