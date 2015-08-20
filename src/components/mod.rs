@@ -9,6 +9,8 @@ use application::{InputContext, InputIntent};
 
 use util::{TextureInfo};
 
+use num::traits::Zero;
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Position {
     pub x: f32,
@@ -21,6 +23,27 @@ pub struct Velocity {
     pub vy: f32,
 
     pub last_pos: Position,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Movement {
+    pub vel: Vec2<f32>,
+    pub max_vel: Vec2<f32>,
+    pub acc: Vec2<f32>,
+    pub moving_left: bool,
+    pub moving_right: bool,
+}
+
+impl Movement {
+    pub fn new(max_vel: Vec2<f32>, acc: Vec2<f32>) -> Movement {
+        Movement {
+            vel: Vec2::zero(),
+            max_vel: max_vel,
+            acc: acc,
+            moving_left: false,
+            moving_right: false,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -146,6 +169,7 @@ components! {
         #[hot] position: Position,
         #[hot] collision: Collision,
         #[hot] sprite_info: SpriteInfo,
+        #[cold] movement: Movement,
         #[cold] velocity: Velocity,
         #[cold] gravity: Gravity,
         #[cold] camera: Camera,

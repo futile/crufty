@@ -5,6 +5,7 @@ pub use self::intent_system::IntentSystem;
 pub use self::velocity_system::VelocitySystem;
 pub use self::gravity_system::GravitySystem;
 pub use self::collision_system::{CollisionSystem};
+pub use self::movement_system::MovementSystem;
 
 use ecs::system::{ LazySystem, EntitySystem, InteractSystem };
 
@@ -19,6 +20,7 @@ mod intent_system;
 mod velocity_system;
 mod gravity_system;
 mod collision_system;
+mod movement_system;
 
 services! {
     struct LevelServices {
@@ -30,8 +32,12 @@ services! {
 systems! {
     struct LevelSystems<LevelComponents, LevelServices> {
         gravity_system: EntitySystem<GravitySystem> = EntitySystem::new(
-            GravitySystem { g: 20.0 },
+            GravitySystem { g: 99.0 },
             aspect!(<LevelComponents> all: [gravity, velocity]),
+            ),
+        movement_system: EntitySystem<MovementSystem> = EntitySystem::new(
+            MovementSystem,
+            aspect!(<LevelComponents> all: [velocity, movement, intents]),
             ),
         velocity_system: EntitySystem<VelocitySystem> = EntitySystem::new(
             VelocitySystem,

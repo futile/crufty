@@ -1,9 +1,9 @@
-use ecs::{ System, DataHelper, EntityIter, EntityData, Entity };
+use ecs::{ System, DataHelper, EntityIter};
 use ecs::system::InteractProcess;
 
 use super::LevelServices;
 
-use components::{LevelComponents, Position, Collision, CollisionType};
+use components::{LevelComponents, CollisionType};
 
 use na::{Pnt2, Vec2};
 use nc::bounding_volume::{BoundingVolume, AABB2};

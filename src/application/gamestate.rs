@@ -13,7 +13,7 @@ use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Position, Collision, CollisionType, SpriteInfo, Gravity, Camera, KeyboardInput, Intents, Velocity};
+use components::{LevelComponents, Movement, Position, Collision, CollisionType, SpriteInfo, Gravity, Camera, KeyboardInput, Intents, Velocity};
 
 use hprof;
 
@@ -64,15 +64,18 @@ impl State<AppTransition> for GameState {
                     ));
                 });
 
-        for x in 1..8 {
+        for x in 1..2 {
             let _ = world.create_entity(
                 |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                    let pos = Position { x: x as f32 * 32.0 + x as f32 * 10.0, y: 50.0 };
+                    let pos = Position { x: x as f32 * 32.0 + x as f32 * 10.0, y: 400.0 };
                     data.position.add(&entity, pos);
                     data.velocity.add(&entity, Velocity { vx: 00.0, vy: 00.0, last_pos: pos });
                     data.collision.add(&entity, Collision::new_dual(Cuboid2::new(Vec2::new(16.0, 5.0)), Vec2::new(16.0, 16.0),
                                                                     Cuboid2::new(Vec2::new(5.0, 16.0)), Vec2::new(16.0, 16.0),
                                                                     CollisionType::Solid));
+                    let mut movement = Movement::new(Vec2::new(25.0, 0.0), Vec2::new(10.0, 0.0));
+                    movement.moving_right = true;
+                    data.movement.add(&entity, movement);
                     data.gravity.add(&entity, Gravity::new());
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
@@ -104,6 +107,17 @@ impl State<AppTransition> for GameState {
                     });
                 });
         }
+
+        let _ = world.create_entity(
+            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
+                data.position.add(&entity, Position { x: 352.0, y: 32.0 });
+                data.collision.add(&entity, Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)), Vec2::new(16.0, 16.0), CollisionType::Solid));
+                data.sprite_info.add(&entity, SpriteInfo {
+                    width: 32.0,
+                    height: 32.0,
+                    texture_info: tex_info,
+                });
+            });
 
         process!(world, camera_system);
 
@@ -176,10 +190,6 @@ impl State<AppTransition> for GameState {
                 let _ = hprof::enter("world-update");
                 world.update();
                 lag_behind_simulation -= NS_PER_UPDATE;
-                // world.modify_entity(player,
-                //                     |entity: ModifyData<LevelComponents>, data: &mut LevelComponents| {
-                //                         data.collision.remove(&entity);
-                //                     });
             }
 
             process!(world, intent_system);
