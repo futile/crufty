@@ -34,6 +34,8 @@ impl EntityProcess for MovementSystem {
                 (intents.contains(&InputIntent::MoveLeft), intents.contains(&InputIntent::MoveRight))
             };
 
+            let delta = data.services.delta_time_s;
+
             let vel = {
                 let movement = &mut data.movement[e];
 
@@ -43,14 +45,14 @@ impl EntityProcess for MovementSystem {
                     }
 
                     // TODO reduce speed instead(e.g. by acc)
-                    movement.vel.x = add_clamp_to_zero(movement.vel.x, /*movement.acc.x*/ 10.0, movement.max_vel.x);
-                    movement.vel.y = add_clamp_to_zero(movement.vel.y, movement.acc.y, movement.max_vel.y);
+                    movement.vel.x = add_clamp_to_zero(movement.vel.x, movement.acc.x * delta, movement.max_vel.x);
+                    movement.vel.y = add_clamp_to_zero(movement.vel.y, movement.acc.y * delta, movement.max_vel.y);
                 } else {
                     let acc = if move_left {
                         -movement.acc
                     } else {
                         movement.acc
-                    };
+                    } * delta;
 
                     movement.vel = na::partial_clamp(&(movement.vel + acc), &-movement.max_vel, &movement.max_vel).unwrap_or(&Vec2::zero()).clone();
                 }
@@ -60,8 +62,8 @@ impl EntityProcess for MovementSystem {
 
             {
                 let velocity = &mut data.velocity[e];
-                velocity.vx += vel.x;
-                velocity.vy += vel.y;
+                velocity.vx += delta * vel.x;
+                velocity.vy += delta * vel.y;
             }
         }
     }

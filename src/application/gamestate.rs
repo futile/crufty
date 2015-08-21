@@ -73,7 +73,7 @@ impl State<AppTransition> for GameState {
                     data.collision.add(&entity, Collision::new_dual(Cuboid2::new(Vec2::new(16.0, 5.0)), Vec2::new(16.0, 16.0),
                                                                     Cuboid2::new(Vec2::new(5.0, 16.0)), Vec2::new(16.0, 16.0),
                                                                     CollisionType::Solid));
-                    data.movement.add(&entity, Movement::new(Vec2::new(75.0, 0.0), Vec2::new(30.0, 0.0)));
+                    data.movement.add(&entity, Movement::new(Vec2::new(75.0, 0.0), Vec2::new(150.0, 0.0)));
                     data.gravity.add(&entity, Gravity::new());
                     data.sprite_info.add(&entity, SpriteInfo {
                         width: 32.0,
