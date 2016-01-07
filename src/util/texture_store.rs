@@ -1,7 +1,7 @@
 use std::collections::{HashMap};
 
 use std::path::{Path, PathBuf};
-use std::fs::{self, PathExt};
+use std::fs::{self};
 
 use image;
 
@@ -20,6 +20,10 @@ pub struct TextureStore {
     info_store: HashMap<PathBuf, TextureInfo>,
 
     display: Option<glium::Display>,
+}
+
+impl Default for TextureStore {
+    fn default() -> TextureStore { TextureStore::new_invalid() }
 }
 
 impl TextureStore {
@@ -70,7 +74,11 @@ impl TextureStore {
 
         let images = file_paths.iter()
             .filter(|fpath| !fpath.is_dir())
-            .map(|fpath| image::open(fpath).unwrap())
+            .map(|fpath| image::open(fpath).unwrap().to_rgba())
+            .map(|image| {
+                let image_dimensions = image.dimensions();
+                glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(), image_dimensions)
+            })
             .collect::<Vec<_>>();
 
         println!("paths loaded: {:?}", file_paths);

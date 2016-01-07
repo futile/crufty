@@ -7,6 +7,7 @@ pub use self::gravity_system::GravitySystem;
 pub use self::collision_system::{CollisionSystem};
 pub use self::movement_system::MovementSystem;
 
+use ecs::ServiceManager;
 use ecs::system::{ LazySystem, EntitySystem, InteractSystem };
 
 use components::LevelComponents;
@@ -22,12 +23,15 @@ mod gravity_system;
 mod collision_system;
 mod movement_system;
 
-services! {
-    struct LevelServices {
-        texture_store: TextureStore = TextureStore::new_invalid(),
-        delta_time_s: f32 = 0.0,
-    }
+#[derive(Default)]
+pub struct LevelServices {
+    pub texture_store: TextureStore // = TextureStore::new_invalid()
+        ,
+    pub delta_time_s: f32 // = 0.0
+        ,
 }
+
+impl ServiceManager for LevelServices {}
 
 systems! {
     struct LevelSystems<LevelComponents, LevelServices> {
