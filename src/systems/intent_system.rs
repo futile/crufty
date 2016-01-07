@@ -1,4 +1,4 @@
-use ecs::{ System, DataHelper, EntityIter };
+use ecs::{System, DataHelper, EntityIter};
 use ecs::system::EntityProcess;
 
 use super::LevelServices;
@@ -13,11 +13,15 @@ impl System for IntentSystem {
     type Components = LevelComponents;
     type Services = LevelServices;
 
-    fn is_active(&self) -> bool { false }
+    fn is_active(&self) -> bool {
+        false
+    }
 }
 
 impl EntityProcess for IntentSystem {
-    fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(&mut self,
+               entities: EntityIter<LevelComponents>,
+               data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             if data.intents[e].contains(&InputIntent::PrintDebugMessage) {
                 println!("debug message!");
@@ -27,4 +31,3 @@ impl EntityProcess for IntentSystem {
         }
     }
 }
-

@@ -13,9 +13,7 @@ struct KeyboardState {
 
 impl KeyboardState {
     pub fn new() -> KeyboardState {
-        KeyboardState {
-            keys: HashSet::new(),
-        }
+        KeyboardState { keys: HashSet::new() }
     }
 
     pub fn handle_event(&mut self, state: ElementState, vkc: VirtualKeyCode) {
@@ -26,7 +24,7 @@ impl KeyboardState {
     }
 
     pub fn is_pressed(&self, vkc: &VirtualKeyCode) -> bool {
-       self.keys.contains(vkc)
+        self.keys.contains(vkc)
     }
 
     pub fn pressed_keys<'a>(&'a self) -> ::std::collections::hash_set::Iter<'a, VirtualKeyCode> {

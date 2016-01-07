@@ -1,4 +1,4 @@
-use ecs::{ System, DataHelper, EntityIter };
+use ecs::{System, DataHelper, EntityIter};
 use ecs::system::EntityProcess;
 
 use super::LevelServices;
@@ -13,9 +13,7 @@ pub struct CameraSystem {
 
 impl CameraSystem {
     pub fn new() -> CameraSystem {
-        CameraSystem {
-            resized: None,
-        }
+        CameraSystem { resized: None }
     }
 }
 
@@ -24,11 +22,15 @@ impl System for CameraSystem {
     type Services = LevelServices;
 
     // make system passive, so we have to call it manually
-    fn is_active(&self) -> bool { false }
+    fn is_active(&self) -> bool {
+        false
+    }
 }
 
 impl EntityProcess for CameraSystem {
-    fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(&mut self,
+               entities: EntityIter<LevelComponents>,
+               data: &mut DataHelper<LevelComponents, LevelServices>) {
         if let Some((win_width, win_height)) = self.resized {
             self.resized = None;
 

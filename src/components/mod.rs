@@ -7,7 +7,7 @@ use na::{self, Iso2, Vec2};
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
 
-use util::{TextureInfo};
+use util::TextureInfo;
 
 use num::traits::Zero;
 
@@ -49,9 +49,7 @@ pub struct Gravity {
 
 impl Gravity {
     pub fn new() -> Gravity {
-        Gravity {
-            f: 1.0,
-        }
+        Gravity { f: 1.0 }
     }
 }
 
@@ -71,7 +69,10 @@ pub struct Collision {
 }
 
 impl Collision {
-    pub fn new_single(rect: Cuboid2<f32>, off: Vec2<f32>, collision_type: CollisionType) -> Collision {
+    pub fn new_single(rect: Cuboid2<f32>,
+                      off: Vec2<f32>,
+                      collision_type: CollisionType)
+                      -> Collision {
         Collision {
             coll_type: collision_type,
             r_x: rect.clone(),
@@ -81,7 +82,12 @@ impl Collision {
         }
     }
 
-    pub fn new_dual(rect_x: Cuboid2<f32>, off_x: Vec2<f32>, rect_y: Cuboid2<f32>, off_y: Vec2<f32>, collision_type: CollisionType) -> Collision {
+    pub fn new_dual(rect_x: Cuboid2<f32>,
+                    off_x: Vec2<f32>,
+                    rect_y: Cuboid2<f32>,
+                    off_y: Vec2<f32>,
+                    collision_type: CollisionType)
+                    -> Collision {
         Collision {
             coll_type: collision_type,
             r_x: rect_x,
@@ -142,7 +148,10 @@ pub struct KeyboardInput {
 pub type Intents = HashSet<InputIntent>;
 
 impl Camera {
-    pub fn new(world_viewport: WorldViewport, screen_viewport: AABB2<f32>, resize_world_to_window: bool) -> Camera {
+    pub fn new(world_viewport: WorldViewport,
+               screen_viewport: AABB2<f32>,
+               resize_world_to_window: bool)
+               -> Camera {
         Camera {
             world_viewport: world_viewport,
             screen_viewport: screen_viewport,

@@ -1,7 +1,7 @@
-use ecs::{ System, DataHelper, EntityIter };
+use ecs::{System, DataHelper, EntityIter};
 use ecs::system::EntityProcess;
 
-use glium::glutin::{VirtualKeyCode};
+use glium::glutin::VirtualKeyCode;
 
 use std::collections::HashSet;
 
@@ -17,9 +17,7 @@ pub struct KeyboardSystem {
 
 impl KeyboardSystem {
     pub fn new() -> KeyboardSystem {
-        KeyboardSystem {
-            keys: HashSet::new(),
-        }
+        KeyboardSystem { keys: HashSet::new() }
     }
 }
 
@@ -37,7 +35,9 @@ impl KeyHandler for KeyboardSystem {
 }
 
 impl EntityProcess for KeyboardSystem {
-    fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(&mut self,
+               entities: EntityIter<LevelComponents>,
+               data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             for combination in &self.keys {
                 if let Some(&intent) = data.keyboard_input[e].input_context.get(combination) {

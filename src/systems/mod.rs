@@ -1,14 +1,14 @@
-pub use self::render_system::{ RenderSystem, WorldViewport };
-pub use self::camera_system::{ CameraSystem };
+pub use self::render_system::{RenderSystem, WorldViewport};
+pub use self::camera_system::CameraSystem;
 pub use self::keyboard_system::KeyboardSystem;
 pub use self::intent_system::IntentSystem;
 pub use self::velocity_system::VelocitySystem;
 pub use self::gravity_system::GravitySystem;
-pub use self::collision_system::{CollisionSystem};
+pub use self::collision_system::CollisionSystem;
 pub use self::movement_system::MovementSystem;
 
 use ecs::ServiceManager;
-use ecs::system::{ LazySystem, EntitySystem, InteractSystem };
+use ecs::system::{LazySystem, EntitySystem, InteractSystem};
 
 use components::LevelComponents;
 
@@ -25,10 +25,8 @@ mod movement_system;
 
 #[derive(Default)]
 pub struct LevelServices {
-    pub texture_store: TextureStore // = TextureStore::new_invalid()
-        ,
-    pub delta_time_s: f32 // = 0.0
-        ,
+    pub texture_store: TextureStore, // = TextureStore::new_invalid()
+    pub delta_time_s: f32, // = 0.0
 }
 
 impl ServiceManager for LevelServices {}
@@ -64,4 +62,3 @@ systems! {
             aspect!(<LevelComponents> all: [intents])),
     }
 }
-

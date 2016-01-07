@@ -25,7 +25,7 @@ mod test {
     enum TestTransition {
         First,
         Last,
-        Over
+        Over,
     }
 
     impl Transition for TestTransition {

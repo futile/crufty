@@ -1,9 +1,9 @@
-use ecs::{ System, DataHelper, EntityIter };
+use ecs::{System, DataHelper, EntityIter};
 use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::{LevelComponents};
+use components::LevelComponents;
 
 pub struct VelocitySystem;
 
@@ -13,7 +13,9 @@ impl System for VelocitySystem {
 }
 
 impl EntityProcess for VelocitySystem {
-    fn process(&mut self, entities: EntityIter<LevelComponents>, data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(&mut self,
+               entities: EntityIter<LevelComponents>,
+               data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             let velocity = data.velocity[e];
 

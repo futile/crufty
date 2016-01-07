@@ -21,8 +21,8 @@ mod application;
 mod systems;
 mod components;
 
-use util::{run_state_machine};
-use application::{AppTransition};
+use util::run_state_machine;
+use application::AppTransition;
 
 #[allow(dead_code)]
 fn main() {

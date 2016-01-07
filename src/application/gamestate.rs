@@ -2,18 +2,18 @@ use std::thread;
 use std::collections::HashMap;
 use std::path::Path;
 
-use glium::{self};
+use glium;
 use glium::glutin::{self, ElementState, VirtualKeyCode};
 
-use ecs::{World, BuildData// , ModifyData
-};
-use ecs::system::{InteractSystem};
+use ecs::{World, BuildData /* , ModifyData */};
+use ecs::system::InteractSystem;
 
 use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Movement, Position, Collision, CollisionType, SpriteInfo, Gravity, Camera, KeyboardInput, Intents, Velocity};
+use components::{LevelComponents, Movement, Position, Collision, CollisionType, SpriteInfo,
+                 Gravity, Camera, KeyboardInput, Intents, Velocity};
 
 use hprof;
 
@@ -31,9 +31,7 @@ pub struct GameState {
 
 impl GameState {
     pub fn new(display: glium::Display) -> GameState {
-        GameState{
-            display: display,
-        }
+        GameState { display: display }
     }
 }
 
@@ -46,78 +44,115 @@ impl State<AppTransition> for GameState {
 
         world.services.texture_store = TextureStore::new(self.display.clone());
 
-        world.systems.render_system.init(InteractSystem::new(
-            render_system,
-            aspect!(<LevelComponents> all: [camera]),
-            aspect!(<LevelComponents> all: [position, sprite_info])
-                ));
+        world.systems
+             .render_system
+             .init(InteractSystem::new(render_system,
+                                       aspect!(<LevelComponents> all: [camera]),
+                                       aspect!(<LevelComponents> all: [position, sprite_info])));
 
-        let tex_info = world.services.texture_store.get_texture_info(Path::new("assets/textures/tilesets/cave/tile1.png"));
+        let tex_info = world.services
+                            .texture_store
+                            .get_texture_info(Path::new("assets/textures/tilesets/cave/tile1.png"));
 
-        let _ = world.create_entity(
-            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 0.0, y: 0.0 });
-                data.camera.add(&entity, Camera::new(
-                    WorldViewport::new((width / 1) as f32, ( height / 1 )as f32),
-                    AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),
-                    true
-                    ));
-                });
+        let _ = world.create_entity(|entity: BuildData<LevelComponents>,
+                                     data: &mut LevelComponents| {
+            data.position.add(&entity, Position { x: 0.0, y: 0.0 });
+            data.camera.add(&entity,
+                            Camera::new(WorldViewport::new((width / 1) as f32,
+                                                           (height / 1) as f32),
+                                        AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),
+                                        true));
+        });
 
         for x in 1..2 {
-            let _ = world.create_entity(
-                |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                    let pos = Position { x: x as f32 * 32.0 + x as f32 * 10.0, y: 400.0 };
-                    data.position.add(&entity, pos);
-                    data.velocity.add(&entity, Velocity { vx: 00.0, vy: 00.0, last_pos: pos });
-                    data.collision.add(&entity, Collision::new_dual(Cuboid2::new(Vec2::new(16.0, 5.0)), Vec2::new(16.0, 16.0),
-                                                                    Cuboid2::new(Vec2::new(5.0, 16.0)), Vec2::new(16.0, 16.0),
-                                                                    CollisionType::Solid));
-                    data.movement.add(&entity, Movement::new(Vec2::new(75.0, 0.0), Vec2::new(150.0, 0.0)));
-                    data.gravity.add(&entity, Gravity::new());
-                    data.sprite_info.add(&entity, SpriteInfo {
-                        width: 32.0,
-                        height: 32.0,
-                        texture_info: tex_info,
-                    });
-                    data.intents.add(&entity, Intents::new());
+            let _ = world.create_entity(|entity: BuildData<LevelComponents>,
+                                         data: &mut LevelComponents| {
+                let pos = Position {
+                    x: x as f32 * 32.0 + x as f32 * 10.0,
+                    y: 400.0,
+                };
+                data.position.add(&entity, pos);
+                data.velocity.add(&entity,
+                                  Velocity {
+                                      vx: 00.0,
+                                      vy: 00.0,
+                                      last_pos: pos,
+                                  });
+                data.collision.add(&entity,
+                                   Collision::new_dual(Cuboid2::new(Vec2::new(16.0, 5.0)),
+                                                       Vec2::new(16.0, 16.0),
+                                                       Cuboid2::new(Vec2::new(5.0, 16.0)),
+                                                       Vec2::new(16.0, 16.0),
+                                                       CollisionType::Solid));
+                data.movement.add(&entity,
+                                  Movement::new(Vec2::new(75.0, 0.0), Vec2::new(150.0, 0.0)));
+                data.gravity.add(&entity, Gravity::new());
+                data.sprite_info.add(&entity,
+                                     SpriteInfo {
+                                         width: 32.0,
+                                         height: 32.0,
+                                         texture_info: tex_info,
+                                     });
+                data.intents.add(&entity, Intents::new());
 
-                    data.keyboard_input.add(&entity, KeyboardInput{
-                        input_context: {
-                            let mut inputs = HashMap::new();
-                            inputs.insert((VirtualKeyCode::O, InputState::PressedThisFrame), InputIntent::PrintDebugMessage);
-                            inputs.insert((VirtualKeyCode::Left, InputState::Pressed), InputIntent::MoveLeft);
-                            inputs.insert((VirtualKeyCode::Right, InputState::Pressed), InputIntent::MoveRight);
-                            inputs
-                        },
-                    });
-                }
-                );
+                data.keyboard_input.add(&entity,
+                                        KeyboardInput {
+                                            input_context: {
+                                                let mut inputs = HashMap::new();
+                                                inputs.insert((VirtualKeyCode::O,
+                                                               InputState::PressedThisFrame),
+                                                              InputIntent::PrintDebugMessage);
+                                                inputs.insert((VirtualKeyCode::Left,
+                                                               InputState::Pressed),
+                                                              InputIntent::MoveLeft);
+                                                inputs.insert((VirtualKeyCode::Right,
+                                                               InputState::Pressed),
+                                                              InputIntent::MoveRight);
+                                                inputs
+                                            },
+                                        });
+            });
         }
 
         for x in 0..12 {
-            let _ = world.create_entity(
-                |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                    data.position.add(&entity, Position { x: (x  as f32) * 32.0, y: 0.0 });
-                    data.collision.add(&entity, Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)), Vec2::new(16.0, 16.0), CollisionType::Solid));
-                    data.sprite_info.add(&entity, SpriteInfo {
-                        width: 32.0,
-                        height: 32.0,
-                        texture_info: tex_info,
-                    });
-                });
+            let _ = world.create_entity(|entity: BuildData<LevelComponents>,
+                                         data: &mut LevelComponents| {
+                data.position.add(&entity,
+                                  Position {
+                                      x: (x as f32) * 32.0,
+                                      y: 0.0,
+                                  });
+                data.collision.add(&entity,
+                                   Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)),
+                                                         Vec2::new(16.0, 16.0),
+                                                         CollisionType::Solid));
+                data.sprite_info.add(&entity,
+                                     SpriteInfo {
+                                         width: 32.0,
+                                         height: 32.0,
+                                         texture_info: tex_info,
+                                     });
+            });
         }
 
-        let _ = world.create_entity(
-            |entity: BuildData<LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 352.0, y: 32.0 });
-                data.collision.add(&entity, Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)), Vec2::new(16.0, 16.0), CollisionType::Solid));
-                data.sprite_info.add(&entity, SpriteInfo {
-                    width: 32.0,
-                    height: 32.0,
-                    texture_info: tex_info,
-                });
-            });
+        let _ = world.create_entity(|entity: BuildData<LevelComponents>,
+                                     data: &mut LevelComponents| {
+            data.position.add(&entity,
+                              Position {
+                                  x: 352.0,
+                                  y: 32.0,
+                              });
+            data.collision.add(&entity,
+                               Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)),
+                                                     Vec2::new(16.0, 16.0),
+                                                     CollisionType::Solid));
+            data.sprite_info.add(&entity,
+                                 SpriteInfo {
+                                     width: 32.0,
+                                     height: 32.0,
+                                     texture_info: tex_info,
+                                 });
+        });
 
         process!(world, camera_system);
 
@@ -158,25 +193,28 @@ impl State<AppTransition> for GameState {
                 for event in self.display.poll_events() {
                     match event {
                         glutin::Event::Closed |
-                        glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::Escape))
-                            => return AppTransition::Shutdown,
-                        glutin::Event::KeyboardInput(ElementState::Released, _, Some(VirtualKeyCode::P))
-                            => profiler_ticks += 3,
-                        glutin::Event::KeyboardInput(ElementState::Pressed, _, Some(vkc))
-                            => {
-                                input_manager.handle_event(ElementState::Pressed, vkc);
-                            },
-                        glutin::Event::KeyboardInput(ElementState::Released, _, Some(vkc))
-                            => {
-                                input_manager.handle_event(ElementState::Released, vkc);
-                            },
-                        glutin::Event::ReceivedCharacter(c)
-                            => println!("char: {:?}", c),
+                        glutin::Event::KeyboardInput(ElementState::Released,
+                                                     _,
+                                                     Some(VirtualKeyCode::Escape)) => {
+                            return AppTransition::Shutdown
+                        }
+                        glutin::Event::KeyboardInput(ElementState::Released,
+                                                     _,
+                                                     Some(VirtualKeyCode::P)) => {
+                            profiler_ticks += 3
+                        }
+                        glutin::Event::KeyboardInput(ElementState::Pressed, _, Some(vkc)) => {
+                            input_manager.handle_event(ElementState::Pressed, vkc);
+                        }
+                        glutin::Event::KeyboardInput(ElementState::Released, _, Some(vkc)) => {
+                            input_manager.handle_event(ElementState::Released, vkc);
+                        }
+                        glutin::Event::ReceivedCharacter(c) => println!("char: {:?}", c),
                         glutin::Event::Resized(width, height) => {
                             world.systems.camera_system.resized = Some((width, height));
                             process!(world, camera_system);
-                        },
-                        _ => ()
+                        }
+                        _ => (),
                     }
                 }
             }

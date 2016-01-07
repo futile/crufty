@@ -13,8 +13,7 @@ pub enum AppTransition {
     Startup,
     StartGame(glium::Display),
     Shutdown,
-    TerminateApplication
-
+    TerminateApplication,
 }
 
 impl Transition for AppTransition {
@@ -23,7 +22,7 @@ impl Transition for AppTransition {
             AppTransition::Startup => Some(Box::new(StartupState)),
             AppTransition::StartGame(d) => Some(Box::new(GameState::new(d))),
             AppTransition::Shutdown => Some(Box::new(ShutdownState)),
-            AppTransition::TerminateApplication => None
+            AppTransition::TerminateApplication => None,
         }
     }
 }
@@ -35,9 +34,10 @@ impl State<AppTransition> for StartupState {
         use glium::DisplayBuild;
 
         let display = glutin::WindowBuilder::new()
-            .with_dimensions(800, 600)
-            .with_title("Crufty".to_string())
-            .build_glium().unwrap();
+                          .with_dimensions(800, 600)
+                          .with_title("Crufty".to_string())
+                          .build_glium()
+                          .unwrap();
 
         AppTransition::StartGame(display)
     }
