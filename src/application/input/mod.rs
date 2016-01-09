@@ -57,7 +57,6 @@ impl InputManager {
     pub fn new() -> InputManager {
         InputManager {
             keyboard_state: KeyboardState::new(),
-
             new_this_frame: HashSet::new(),
             consumed: HashSet::new(),
         }

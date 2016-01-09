@@ -73,25 +73,29 @@ impl InteractProcess for CollisionSystem {
             let c1 = data.collision[e1].clone();
 
             for e2 in &static_entities {
+                // skip self-collisions
                 if **e1 == ***e2 {
                     continue;
                 }
 
                 {
-                    let p2 = &data.position[*e2];
+                    // setup, initialise some variables
                     let c2 = &data.collision[*e2];
+
+                    if c1.collision_type() != CollisionType::Solid ||
+                       c2.collision_type() != CollisionType::Solid {
+                        // TODO fire event ect?
+                        continue;
+                    }
+
+                    let p2 = &data.position[*e2];
                     let v2 = data.velocity.get(e2);
 
                     let other_pos = v2.as_ref().map_or(Vec2::new(p2.x, p2.y), |vel| {
                         Vec2::new(vel.last_pos.x, vel.last_pos.y)
                     });
+
                     let aabb2_x = c2.aabb_x(Vec2::new(p2.x, p2.y)).merged(&c2.aabb_x(other_pos));
-
-                    if c1.collision_type() != CollisionType::Solid ||
-                       c2.collision_type() != CollisionType::Solid {
-                        continue;
-                    }
-
                     let aabb1_x = c1.aabb_x(Vec2::new(p1.x, p1.y))
                                     .merged(&c1.aabb_x(Vec2::new(v1.last_pos.x, v1.last_pos.y)));
 
@@ -99,6 +103,7 @@ impl InteractProcess for CollisionSystem {
                                     .merged(&c1.aabb_y(Vec2::new(v1.last_pos.x, v1.last_pos.y)));
                     let aabb2_y = c2.aabb_y(Vec2::new(p2.x, p2.y)).merged(&c2.aabb_y(other_pos));
 
+                    // check for collision in x or y direction, and move entity to resolve the collision
                     if let Some(depth_x) = find_depth(&aabb1_x,
                                                       Pnt2::new(v1.last_pos.x, v1.last_pos.y),
                                                       &aabb2_x,
