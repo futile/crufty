@@ -33,32 +33,36 @@ impl ServiceManager for LevelServices {}
 
 systems! {
     struct LevelSystems<LevelComponents, LevelServices> {
-        keyboard_system: EntitySystem<KeyboardSystem> = EntitySystem::new(
-            KeyboardSystem::new(),
-            aspect!(<LevelComponents> all: [keyboard_input])),
-        gravity_system: EntitySystem<GravitySystem> = EntitySystem::new(
-            GravitySystem { g: 99.0 },
-            aspect!(<LevelComponents> all: [gravity, velocity]),
+        active: {
+            keyboard_system: EntitySystem<KeyboardSystem> = EntitySystem::new(
+                KeyboardSystem::new(),
+                aspect!(<LevelComponents> all: [keyboard_input])),
+            gravity_system: EntitySystem<GravitySystem> = EntitySystem::new(
+                GravitySystem { g: 99.0 },
+                aspect!(<LevelComponents> all: [gravity, velocity]),
             ),
-        movement_system: EntitySystem<MovementSystem> = EntitySystem::new(
-            MovementSystem,
-            aspect!(<LevelComponents> all: [velocity, movement, intents]),
+            movement_system: EntitySystem<MovementSystem> = EntitySystem::new(
+                MovementSystem,
+                aspect!(<LevelComponents> all: [velocity, movement, intents]),
             ),
-        velocity_system: EntitySystem<VelocitySystem> = EntitySystem::new(
-            VelocitySystem,
-            aspect!(<LevelComponents> all: [velocity]),
+            velocity_system: EntitySystem<VelocitySystem> = EntitySystem::new(
+                VelocitySystem,
+                aspect!(<LevelComponents> all: [velocity]),
             ),
-        collision_system: InteractSystem<CollisionSystem> = InteractSystem::new(
-            CollisionSystem::new(),
-            aspect!(<LevelComponents> all: [position, velocity, collision]),
-            aspect!(<LevelComponents> all: [position, collision]),
+            collision_system: InteractSystem<CollisionSystem> = InteractSystem::new(
+                CollisionSystem::new(),
+                aspect!(<LevelComponents> all: [position, velocity, collision]),
+                aspect!(<LevelComponents> all: [position, collision]),
             ),
-        camera_system: EntitySystem<CameraSystem> = EntitySystem::new(
-            CameraSystem::new(),
-            aspect!(<LevelComponents> all: [camera])),
-        render_system: LazySystem<InteractSystem<RenderSystem>> = LazySystem::new(),
-        intent_system: EntitySystem<IntentSystem> = EntitySystem::new(
-            IntentSystem,
-            aspect!(<LevelComponents> all: [intents])),
+        },
+        passive: {
+            camera_system: EntitySystem<CameraSystem> = EntitySystem::new(
+                CameraSystem::new(),
+                aspect!(<LevelComponents> all: [camera])),
+            render_system: LazySystem<InteractSystem<RenderSystem>> = LazySystem::new(),
+            intent_system: EntitySystem<IntentSystem> = EntitySystem::new(
+                IntentSystem,
+                aspect!(<LevelComponents> all: [intents])),
+        }
     }
 }

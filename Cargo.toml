@@ -4,14 +4,14 @@ version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 
 [dependencies.glium]
-version = "0.13"
+version = "0.13.5"
 # features = ["glutin", "image", "nalgebra"]
 
 [dependencies]
-image = "*"
-ecs = "0.22"
-nalgebra = "*"
-hprof = "*"
-clock_ticks = "*"
-ncollide = "*"
-num = "*"
+image = "0.7.0"
+ecs = "0.23.0"
+nalgebra = "0.5.1"
+hprof = "0.1.3"
+clock_ticks = "0.1.0"
+ncollide = "0.6.0"
+num = "0.1.31"

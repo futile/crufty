@@ -12,10 +12,6 @@ pub struct IntentSystem;
 impl System for IntentSystem {
     type Components = LevelComponents;
     type Services = LevelServices;
-
-    fn is_active(&self) -> bool {
-        false
-    }
 }
 
 impl EntityProcess for IntentSystem {
