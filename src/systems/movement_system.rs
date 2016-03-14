@@ -71,11 +71,9 @@ impl EntityProcess for MovementSystem {
                 movement.vel.clone()
             };
 
-            {
-                let velocity = &mut data.velocity[e];
-                velocity.vx += delta * vel.x;
-                velocity.vy += delta * vel.y;
-            }
+            let velocity = &mut data.velocity[e];
+            velocity.vx += delta * vel.x;
+            velocity.vy += delta * vel.y;
         }
     }
 }
