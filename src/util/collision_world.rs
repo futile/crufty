@@ -19,7 +19,7 @@ struct CollisionTreeLeafs {
 
 pub struct CollisionWorld {
     dbvt: DBVT<Pnt2<f32>, Entity, AABB2<f32>>,
-    mapping: HashMap<Entity, CollisionTreeLeafs>
+    mapping: HashMap<Entity, CollisionTreeLeafs>,
 }
 
 impl CollisionWorld {

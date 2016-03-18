@@ -3,7 +3,7 @@ use ecs::system::InteractProcess;
 
 use super::LevelServices;
 
-use components::{LevelComponents, CollisionType, Collision, Position};
+use components::{LevelComponents, CollisionType, /*Collision, Position*/};
 
 use na::{Pnt2, Vec2};
 use nc::bounding_volume::{BoundingVolume, AABB2};
@@ -20,13 +20,20 @@ impl System for CollisionSystem {
     type Components = LevelComponents;
     type Services = LevelServices;
 
-    fn activated(&mut self, e: &EntityData<Self::Components>, data: &Self::Components, services: &mut Self::Services) {
+    fn activated(&mut self,
+                 e: &EntityData<Self::Components>,
+                 data: &Self::Components,
+                 services: &mut Self::Services) {
         // TODO `&data.collision[*e]` causes a clone, find a way which doesn't
         services.collision_world.add(***e, &data.collision[*e]);
     }
 
-    fn deactivated(&mut self, e: &EntityData<Self::Components>, data: &Self::Components, services: &mut Self::Services) {
+    fn deactivated(&mut self,
+                   e: &EntityData<Self::Components>,
+                   _data: &Self::Components,
+                   services: &mut Self::Services) {
         // TODO remove from tree + drop leaf
+        services.collision_world.remove(***e);
     }
 }
 
