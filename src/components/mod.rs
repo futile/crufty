@@ -56,10 +56,10 @@ impl Gravity {
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum CollisionType {
     Solid,
-    Trigger,
+    // Trigger,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Collision {
     coll_type: CollisionType,
     r_x: Cuboid2<f32>,
@@ -73,13 +73,7 @@ impl Collision {
                       off: Vec2<f32>,
                       collision_type: CollisionType)
                       -> Collision {
-        Collision {
-            coll_type: collision_type,
-            r_x: rect.clone(),
-            off_x: off.clone(),
-            r_y: rect,
-            off_y: off,
-        }
+        Self::new_dual(rect.clone(), off.clone(), rect, off, collision_type)
     }
 
     pub fn new_dual(rect_x: Cuboid2<f32>,
@@ -101,29 +95,29 @@ impl Collision {
         self.coll_type
     }
 
-    pub fn rect_x(&self) -> &Cuboid2<f32> {
-        &self.r_x
-    }
+    // pub fn rect_x(&self) -> &Cuboid2<f32> {
+    //     &self.r_x
+    // }
 
     pub fn aabb_x(&self, pos: Vec2<f32>) -> AABB2<f32> {
         self.r_x.bounding_volume(&Iso2::new(pos + self.off_x, na::zero()))
     }
 
-    pub fn off_x(&self) -> &Vec2<f32> {
-        &self.off_x
-    }
+    // pub fn off_x(&self) -> &Vec2<f32> {
+    //     &self.off_x
+    // }
 
-    pub fn rect_y(&self) -> &Cuboid2<f32> {
-        &self.r_y
-    }
+    // pub fn rect_y(&self) -> &Cuboid2<f32> {
+    //     &self.r_y
+    // }
 
     pub fn aabb_y(&self, pos: Vec2<f32>) -> AABB2<f32> {
         self.r_y.bounding_volume(&Iso2::new(pos + self.off_y, na::zero()))
     }
 
-    pub fn off_y(&self) -> &Vec2<f32> {
-        &self.off_y
-    }
+    // pub fn off_y(&self) -> &Vec2<f32> {
+    //     &self.off_y
+    // }
 }
 
 #[derive(Clone, Debug, PartialEq)]

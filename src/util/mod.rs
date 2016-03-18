@@ -1,6 +1,8 @@
 pub use self::texture_store::{TextureStore, TextureInfo};
+pub use self::collision_world::CollisionWorld;
 
 mod texture_store;
+mod collision_world;
 
 pub trait Transition {
     fn create_state(self) -> Option<Box<State<Self>>>;
