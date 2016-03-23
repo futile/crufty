@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use nc::shape::Cuboid2;
 use nc::bounding_volume::{HasBoundingVolume, AABB2};
-use na::{self, Iso2, Vec2};
+use na::{self, Iso2, Vec2, Pnt2};
 
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
@@ -15,6 +15,16 @@ use num::traits::Zero;
 pub struct Position {
     pub x: f32,
     pub y: f32,
+}
+
+impl Position {
+    pub fn as_vec(&self) -> Vec2<f32> {
+        Vec2::new(self.x, self.y)
+    }
+
+    pub fn as_pnt(&self) -> Pnt2<f32> {
+        Pnt2::new(self.x, self.y)
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]

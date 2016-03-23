@@ -14,6 +14,8 @@ extern crate hprof;
 
 extern crate clock_ticks;
 
+extern crate ordered_float;
+
 #[macro_use]
 mod util;
 
