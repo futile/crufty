@@ -22,6 +22,7 @@ impl Position {
         Vec2::new(self.x, self.y)
     }
 
+    #[allow(unused)]
     pub fn as_pnt(&self) -> Pnt2<f32> {
         Pnt2::new(self.x, self.y)
     }
