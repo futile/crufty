@@ -9,6 +9,8 @@ use nc::partitioning::{DBVT, DBVTLeaf};
 use nc::partitioning::BoundingVolumeInterferencesCollector;
 use nc::bounding_volume::AABB2;
 use nc::bounding_volume::BoundingVolume;
+use nc::ray::Ray2;
+use nc::ray::RayInterferencesCollector;
 
 use na::Pnt2;
 use na::Vec2;
@@ -161,19 +163,25 @@ impl CollisionWorld {
 
         // 2. call move_axis for both axes, X first
         if let Some(depth_x) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::X) {
-            let mut lx = leafs.x.borrow_mut();
             updated_pos.x += depth_x;
 
-            lx.center.x = lx.center.x + depth_x;
-            lx.bounding_volume.append_translation_mut(&Vec2::new(depth_x, 0.0));
         }
 
         if let Some(depth_y) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::Y) {
-            let mut ly = leafs.y.borrow_mut();
             updated_pos.y += depth_y;
 
-            ly.center.y = ly.center.y + depth_y;
-            ly.bounding_volume.append_translation_mut(&Vec2::new(0.0, depth_y));
+        }
+
+        {
+            let mut lx = leafs.x.borrow_mut();
+            let new_center = updated_pos.as_pnt() + *coll.off_x();
+            lx.center = new_center;
+            lx.bounding_volume.set_translation(-new_center.to_vec());
+
+            let mut ly = leafs.y.borrow_mut();
+            let new_center = updated_pos.as_pnt() + *coll.off_y();
+            ly.center = new_center;
+            ly.bounding_volume.set_translation(-new_center.to_vec());
         }
 
         // 3. re-insert into trees
@@ -185,6 +193,29 @@ impl CollisionWorld {
 
         // return new position after collisions have been resolved
         return updated_pos;
+    }
+
+    #[allow(unused)]
+    pub fn on_ground(&self, e: Entity) -> bool {
+        let leafs: &CollisionTreeLeafs = self.mapping.get(&e).unwrap();
+        let leaf_y = leafs.y.borrow();
+
+        let mut colls = Vec::new();
+        self.dbvt_y.visit(& mut RayInterferencesCollector::new(&Ray2::new(leaf_y.center, Vec2::new(0.0, -1.0)), &mut colls));
+
+        let bot_y = leaf_y.bounding_volume.mins().y;
+
+        const ON_GROUND_THRESHOLD: f32 = 0.000015; // chosen through experiments
+
+        colls.iter()
+            .filter(|other| e != **other) // no self-collisions
+            .map(|other| {
+                let other_leaf_y = self.mapping.get(other).unwrap().y.borrow();
+                let other_top_y = other_leaf_y.bounding_volume.maxs().y;
+                let dist = (other_top_y - bot_y).abs();
+                dist
+            })
+            .any(|dist| dist < ON_GROUND_THRESHOLD)
     }
 
     pub fn remove(&mut self, e: Entity) {

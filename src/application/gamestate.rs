@@ -64,7 +64,7 @@ impl State<AppTransition> for GameState {
                                         true));
         });
 
-        for x in 1..2 {
+        for x in 0..1 {
             let _ = world.create_entity(|entity: BuildData<LevelComponents>,
                                          data: &mut LevelComponents| {
                 let pos = Position {

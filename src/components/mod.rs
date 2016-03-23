@@ -113,9 +113,9 @@ impl Collision {
         self.r_x.bounding_volume(&Iso2::new(pos + self.off_x, na::zero()))
     }
 
-    // pub fn off_x(&self) -> &Vec2<f32> {
-    //     &self.off_x
-    // }
+    pub fn off_x(&self) -> &Vec2<f32> {
+        &self.off_x
+    }
 
     // pub fn rect_y(&self) -> &Cuboid2<f32> {
     //     &self.r_y
@@ -125,9 +125,9 @@ impl Collision {
         self.r_y.bounding_volume(&Iso2::new(pos + self.off_y, na::zero()))
     }
 
-    // pub fn off_y(&self) -> &Vec2<f32> {
-    //     &self.off_y
-    // }
+    pub fn off_y(&self) -> &Vec2<f32> {
+        &self.off_y
+    }
 }
 
 #[derive(Clone, Debug, PartialEq)]
