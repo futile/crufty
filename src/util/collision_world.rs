@@ -42,7 +42,11 @@ enum Axis {
     Y,
 }
 
-fn find_depth(dyn: &AABB2<f32>, dyn_last: &Pnt2<f32>, stat: &AABB2<f32>, axis: Axis) -> Option<f32> {
+fn find_depth(dyn: &AABB2<f32>,
+              dyn_last: &Pnt2<f32>,
+              stat: &AABB2<f32>,
+              axis: Axis)
+              -> Option<f32> {
     use self::Axis::{X, Y};
 
     if !dyn.intersects(stat) {
@@ -55,9 +59,10 @@ fn find_depth(dyn: &AABB2<f32>, dyn_last: &Pnt2<f32>, stat: &AABB2<f32>, axis: A
     };
 
     let dist = match axis {
-        X => dyn.center().x - stat.center().x,
-        Y => dyn.center().y - stat.center().y,
-    }.abs();
+                   X => dyn.center().x - stat.center().x,
+                   Y => dyn.center().y - stat.center().y,
+               }
+               .abs();
 
     let depth = min_dist - dist;
 
@@ -66,9 +71,10 @@ fn find_depth(dyn: &AABB2<f32>, dyn_last: &Pnt2<f32>, stat: &AABB2<f32>, axis: A
     }
 
     let dir = match axis {
-        X => dyn_last.x - stat.center().x,
-        Y => dyn_last.y - stat.center().y,
-    }.signum();
+                  X => dyn_last.x - stat.center().x,
+                  Y => dyn_last.y - stat.center().y,
+              }
+              .signum();
 
     Some(dir * depth)
 }
@@ -87,15 +93,22 @@ impl CollisionWorld {
         self.remove(e);
 
         // then add leafs for both trees
-        self.mapping.insert(e, CollisionTreeLeafs {
-            x: self.dbvt_x.insert_new(e, coll.aabb_x(Vec2::new(pos.x, pos.y))),
-            y: self.dbvt_y.insert_new(e, coll.aabb_y(Vec2::new(pos.x, pos.y))),
-            coll_type: coll.collision_type(),
-        });
+        self.mapping.insert(e,
+                            CollisionTreeLeafs {
+                                x: self.dbvt_x.insert_new(e, coll.aabb_x(Vec2::new(pos.x, pos.y))),
+                                y: self.dbvt_y.insert_new(e, coll.aabb_y(Vec2::new(pos.x, pos.y))),
+                                coll_type: coll.collision_type(),
+                            });
     }
 
     // move an entity along one exis, return collision depth if a collision occured
-    fn move_axis(&mut self, leafs: &mut CollisionTreeLeafs, coll: &Collision, new_pos: &Position, last_pos: &Position, axis: Axis) -> Option<f32> {
+    fn move_axis(&mut self,
+                 leafs: &mut CollisionTreeLeafs,
+                 coll: &Collision,
+                 new_pos: &Position,
+                 last_pos: &Position,
+                 axis: Axis)
+                 -> Option<f32> {
         let aabb = match axis {
             Axis::X => coll.aabb_x(new_pos.as_vec()).merged(&coll.aabb_x(last_pos.as_vec())),
             Axis::Y => coll.aabb_y(new_pos.as_vec()).merged(&coll.aabb_y(last_pos.as_vec())),
@@ -110,7 +123,8 @@ impl CollisionWorld {
         let mut colls: Vec<Entity> = Vec::new();
         let closest: Option<&Entity> = match axis {
             Axis::X => {
-                self.dbvt_x.visit(&mut BoundingVolumeInterferencesCollector::new(&aabb, &mut colls));
+                self.dbvt_x
+                    .visit(&mut BoundingVolumeInterferencesCollector::new(&aabb, &mut colls));
 
                 let center_x = leaf.center;
 
@@ -118,9 +132,10 @@ impl CollisionWorld {
                     let other_leafs = self.mapping.get(other).unwrap();
                     NotNaN::new((other_leafs.x.borrow().center.x - center_x.x).abs()).unwrap()
                 })
-            },
+            }
             Axis::Y => {
-                self.dbvt_y.visit(&mut BoundingVolumeInterferencesCollector::new(&aabb, &mut colls));
+                self.dbvt_y
+                    .visit(&mut BoundingVolumeInterferencesCollector::new(&aabb, &mut colls));
 
                 let center_y = leaf.center;
 
@@ -136,10 +151,10 @@ impl CollisionWorld {
             let other_leafs = self.mapping.get(other).unwrap();
 
             if leafs.coll_type != CollisionType::Solid ||
-                other_leafs.coll_type != CollisionType::Solid {
-                    // TODO fire event, return event, etc.?
-                    return None;
-                }
+               other_leafs.coll_type != CollisionType::Solid {
+                // TODO fire event, return event, etc.?
+                return None;
+            }
 
             let other_leaf = match axis {
                 Axis::X => other_leafs.x.borrow(),
@@ -152,7 +167,12 @@ impl CollisionWorld {
         return None;
     }
 
-    pub fn move_entity(&mut self, e: Entity, coll: &Collision, new_pos: &Position, last_pos: &Position) -> Position {
+    pub fn move_entity(&mut self,
+                       e: Entity,
+                       coll: &Collision,
+                       new_pos: &Position,
+                       last_pos: &Position)
+                       -> Position {
         // 1. remove both leafs
         let mut leafs: CollisionTreeLeafs = self.mapping.remove(&e).unwrap();
 
@@ -201,7 +221,9 @@ impl CollisionWorld {
         let leaf_y = leafs.y.borrow();
 
         let mut colls = Vec::new();
-        self.dbvt_y.visit(& mut RayInterferencesCollector::new(&Ray2::new(leaf_y.center, Vec2::new(0.0, -1.0)), &mut colls));
+        self.dbvt_y.visit(&mut RayInterferencesCollector::new(&Ray2::new(leaf_y.center,
+                                                                         Vec2::new(0.0, -1.0)),
+                                                              &mut colls));
 
         let bot_y = leaf_y.bounding_volume.mins().y;
 
@@ -212,7 +234,7 @@ impl CollisionWorld {
             .map(|other| {
                 let other_leaf_y = self.mapping.get(other).unwrap().y.borrow();
                 let other_top_y = other_leaf_y.bounding_volume.maxs().y;
-                let dist = (other_top_y - bot_y).abs();
+                let dist = (other_top_y - bot_y).abs(); // maybe remove the abs(), but shouldn't matter too much
                 dist
             })
             .any(|dist| dist < ON_GROUND_THRESHOLD)
