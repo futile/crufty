@@ -53,6 +53,28 @@ impl Movement {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub enum JumpState {
+    Idle,
+    Rising,
+    MidairIdle,
+}
+
+#[derive(Copy, Clone, Debug)]
+pub struct Jump {
+    pub state: JumpState,
+    pub jump_time_remaining: f32,
+}
+
+impl Jump {
+    pub fn new() -> Jump {
+        Jump {
+            state: JumpState::Idle,
+            jump_time_remaining: 0.0,
+        }
+    }
+}
+
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Gravity {
     pub f: f32,
@@ -179,6 +201,7 @@ components! {
         #[hot] collision: Collision,
         #[hot] sprite_info: SpriteInfo,
         #[cold] movement: Movement,
+        #[cold] jump: Jump,
         #[cold] velocity: Velocity,
         #[cold] gravity: Gravity,
         #[cold] camera: Camera,

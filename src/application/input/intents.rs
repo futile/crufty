@@ -3,4 +3,5 @@ pub enum InputIntent {
     PrintDebugMessage,
     MoveLeft,
     MoveRight,
+    Jump,
 }

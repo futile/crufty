@@ -6,6 +6,7 @@ pub use self::velocity_system::VelocitySystem;
 pub use self::gravity_system::GravitySystem;
 pub use self::collision_system::CollisionSystem;
 pub use self::movement_system::MovementSystem;
+pub use self::jump_system::JumpSystem;
 
 use ecs::ServiceManager;
 use ecs::system::{LazySystem, EntitySystem, InteractSystem};
@@ -22,10 +23,12 @@ mod velocity_system;
 mod gravity_system;
 mod collision_system;
 mod movement_system;
+mod jump_system;
 
 pub struct LevelServices {
     pub texture_store: TextureStore,
     pub delta_time_s: f32,
+    pub gravity: f32,
     pub collision_world: CollisionWorld,
 }
 
@@ -34,6 +37,7 @@ impl Default for LevelServices {
         LevelServices {
             texture_store: TextureStore::new_invalid(),
             delta_time_s: 0.0,
+            gravity: 99.0,
             collision_world: CollisionWorld::new(),
         }
     }
@@ -48,12 +52,16 @@ systems! {
                 KeyboardSystem::new(),
                 aspect!(<LevelComponents> all: [keyboard_input])),
             gravity_system: EntitySystem<GravitySystem> = EntitySystem::new(
-                GravitySystem { g: 99.0 },
+                GravitySystem,
                 aspect!(<LevelComponents> all: [gravity, velocity]),
             ),
             movement_system: EntitySystem<MovementSystem> = EntitySystem::new(
                 MovementSystem,
                 aspect!(<LevelComponents> all: [velocity, movement, intents]),
+            ),
+            jump_system: EntitySystem<JumpSystem> = EntitySystem::new(
+                JumpSystem,
+                aspect!(<LevelComponents> all: [velocity, jump, intents]),
             ),
             velocity_system: EntitySystem<VelocitySystem> = EntitySystem::new(
                 VelocitySystem,

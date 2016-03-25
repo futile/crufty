@@ -39,6 +39,18 @@ pub enum InputState {
     ReleasedThisFrame,
 }
 
+impl InputState {
+    #[allow(unused)]
+    pub fn is_pressed(&self) -> bool {
+        use self::InputState::*;
+
+        match *self {
+            Pressed | PressedThisFrame => true,
+            ReleasedThisFrame => false,
+        }
+    }
+}
+
 pub trait KeyHandler {
     // returns whether the key was consumed
     fn handle_key(&mut self, state: InputState, key: VirtualKeyCode) -> bool;

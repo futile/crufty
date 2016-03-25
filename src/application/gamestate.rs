@@ -12,7 +12,7 @@ use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Movement, Position, Collision, CollisionType, SpriteInfo,
+use components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
                  Gravity, Camera, KeyboardInput, Intents, Velocity};
 
 use hprof;
@@ -86,6 +86,7 @@ impl State<AppTransition> for GameState {
                                                        CollisionType::Solid));
                 data.movement.add(&entity,
                                   Movement::new(Vec2::new(75.0, 0.0), Vec2::new(150.0, 0.0)));
+                data.jump.add(&entity, Jump::new());
                 data.gravity.add(&entity, Gravity::new());
                 data.sprite_info.add(&entity,
                                      SpriteInfo {
@@ -108,6 +109,9 @@ impl State<AppTransition> for GameState {
                                                 inputs.insert((VirtualKeyCode::Right,
                                                                InputState::Pressed),
                                                               InputIntent::MoveRight);
+                                                inputs.insert((VirtualKeyCode::Space,
+                                                               InputState::Pressed),
+                                                              InputIntent::Jump);
                                                 inputs
                                             },
                                         });
@@ -209,7 +213,7 @@ impl State<AppTransition> for GameState {
                         glutin::Event::KeyboardInput(ElementState::Released, _, Some(vkc)) => {
                             input_manager.handle_event(ElementState::Released, vkc);
                         }
-                        glutin::Event::ReceivedCharacter(c) => println!("char: {:?}", c),
+                        // glutin::Event::ReceivedCharacter(c) => println!("char: {:?}", c),
                         glutin::Event::Resized(width, height) => {
                             world.systems.camera_system.resized = Some((width, height));
                             process!(world, camera_system);
