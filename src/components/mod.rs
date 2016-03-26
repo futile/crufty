@@ -53,7 +53,7 @@ impl Movement {
     }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum JumpState {
     Idle,
     Rising,

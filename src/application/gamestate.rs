@@ -54,6 +54,10 @@ impl State<AppTransition> for GameState {
                             .texture_store
                             .get_texture_info(Path::new("assets/textures/tilesets/cave/tile1.png"));
 
+        let player_tex_info = world.services
+            .texture_store
+            .get_texture_info(Path::new("assets/textures/sprites/player/p_stand.png"));
+
         let _ = world.create_entity(|entity: BuildData<LevelComponents>,
                                      data: &mut LevelComponents| {
             data.position.add(&entity, Position { x: 0.0, y: 0.0 });
@@ -69,7 +73,7 @@ impl State<AppTransition> for GameState {
                                          data: &mut LevelComponents| {
                 let pos = Position {
                     x: x as f32 * 32.0 + x as f32 * 10.0,
-                    y: 400.0,
+                    y: 150.0,
                 };
                 data.position.add(&entity, pos);
                 data.velocity.add(&entity,
@@ -92,7 +96,7 @@ impl State<AppTransition> for GameState {
                                      SpriteInfo {
                                          width: 32.0,
                                          height: 32.0,
-                                         texture_info: tex_info,
+                                         texture_info: player_tex_info,
                                      });
                 data.intents.add(&entity, Intents::new());
 
