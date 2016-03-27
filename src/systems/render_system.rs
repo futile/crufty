@@ -12,6 +12,7 @@ use image::GenericImage;
 use na::{Vec2, OrthoMat3};
 
 use components::LevelComponents;
+use components::Facing;
 
 use hprof;
 
@@ -163,12 +164,18 @@ impl InteractProcess for RenderSystem {
                                       .texture_store
                                       .get_texture(&sprite_info.texture_info);
 
+                    let invert_tex_x = match data.facing.get(e) {
+                        Some(Facing::Left) => true,
+                        _ => false,
+                    };
+
                     let uniforms = uniform! {
                         view_pos: *view_pos.as_ref(),
                         scale: *scale.as_ref(),
                         proj: *ortho_proj.as_ref(),
                         tex: texture,
                         tex_index: sprite_info.texture_info.idx,
+                        invert_tex_x: invert_tex_x,
                         win_scale: *screen_size.as_ref(),
                         win_trans: *camera.screen_viewport.mins().to_vec().as_ref(),
                     };
