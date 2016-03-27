@@ -4,6 +4,7 @@ use ecs::system::EntityProcess;
 use super::LevelServices;
 
 use components::LevelComponents;
+use components::Facing;
 use application::InputIntent;
 
 use na::{self, Vec2};
@@ -38,6 +39,16 @@ impl EntityProcess for MovementSystem {
             };
 
             let delta = data.services.delta_time_s;
+
+            if move_left || move_right {
+                if let Some(facing) = data.facing.borrow(&e) {
+                    *facing = if move_right {
+                        Facing::Right
+                    } else {
+                        Facing::Left
+                    }
+                }
+            }
 
             let vel = {
                 let movement = &mut data.movement[e];

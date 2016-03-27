@@ -159,6 +159,11 @@ pub struct SpriteInfo {
     pub texture_info: TextureInfo,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Facing {
+    Left, Right
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct Camera {
     pub world_viewport: WorldViewport,
@@ -201,6 +206,7 @@ components! {
         #[hot] collision: Collision,
         #[hot] sprite_info: SpriteInfo,
         #[cold] movement: Movement,
+        #[cold] facing: Facing,
         #[cold] jump: Jump,
         #[cold] velocity: Velocity,
         #[cold] gravity: Gravity,

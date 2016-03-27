@@ -13,7 +13,7 @@ use application::{AppTransition, InputIntent, InputState, InputManager};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
 use components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
-                 Gravity, Camera, KeyboardInput, Intents, Velocity};
+                 Gravity, Camera, KeyboardInput, Intents, Velocity, Facing};
 
 use hprof;
 
@@ -90,6 +90,7 @@ impl State<AppTransition> for GameState {
                                                        CollisionType::Solid));
                 data.movement.add(&entity,
                                   Movement::new(Vec2::new(75.0, 0.0), Vec2::new(150.0, 0.0)));
+                data.facing.add(&entity, Facing::Right);
                 data.jump.add(&entity, Jump::new());
                 data.gravity.add(&entity, Gravity::new());
                 data.sprite_info.add(&entity,
