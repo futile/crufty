@@ -159,6 +159,13 @@ pub struct SpriteInfo {
     pub texture_info: TextureInfo,
 }
 
+pub type SpritesheetId = u32;
+
+#[derive(Copy, Clone, Debug)]
+pub struct SpritesheetAnimation {
+    pub id: SpritesheetId,
+}
+
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Facing {
     Left, Right
@@ -205,6 +212,7 @@ components! {
         #[hot] position: Position,
         #[hot] collision: Collision,
         #[hot] sprite_info: SpriteInfo,
+        #[cold] animation: SpritesheetAnimation,
         #[cold] movement: Movement,
         #[cold] facing: Facing,
         #[cold] jump: Jump,
