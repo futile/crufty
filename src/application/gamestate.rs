@@ -144,6 +144,27 @@ impl State<AppTransition> for GameState {
             });
         }
 
+        for x in 1..12 {
+            let _ = world.create_entity(|entity: BuildData<LevelComponents>,
+                                         data: &mut LevelComponents| {
+                data.position.add(&entity,
+                                  Position {
+                                      x: (x as f32) * 32.0,
+                                      y: 96.0,
+                                  });
+                data.collision.add(&entity,
+                                   Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)),
+                                                         Vec2::new(16.0, 16.0),
+                                                         CollisionType::Solid));
+                data.sprite_info.add(&entity,
+                                     SpriteInfo {
+                                         width: 32.0,
+                                         height: 32.0,
+                                         texture_info: tex_info,
+                                     });
+            });
+        }
+
         let _ = world.create_entity(|entity: BuildData<LevelComponents>,
                                      data: &mut LevelComponents| {
             data.position.add(&entity,

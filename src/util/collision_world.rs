@@ -71,10 +71,10 @@ fn find_depth(dyn: &AABB2<f32>,
     }
 
     let dir = match axis {
-                  X => dyn_last.x - stat.center().x,
-                  Y => dyn_last.y - stat.center().y,
-              }
-              .signum();
+        X => dyn_last.x - stat.center().x,
+        Y => dyn_last.y - stat.center().y,
+    }
+    .signum();
 
     Some(dir * depth)
 }
@@ -106,12 +106,17 @@ impl CollisionWorld {
                  leafs: &mut CollisionTreeLeafs,
                  coll: &Collision,
                  new_pos: &Position,
-                 last_pos: &Position,
+                 _last_pos: &Position, // currently unused, see comment below
                  axis: Axis)
                  -> Option<f32> {
         let aabb = match axis {
-            Axis::X => coll.aabb_x(new_pos.as_vec()).merged(&coll.aabb_x(last_pos.as_vec())),
-            Axis::Y => coll.aabb_y(new_pos.as_vec()).merged(&coll.aabb_y(last_pos.as_vec())),
+            Axis::X => coll.aabb_x(new_pos.as_vec()),
+            Axis::Y => coll.aabb_y(new_pos.as_vec()),
+
+            // this caused problems, but was taken from the cavestory tutorial.
+            // keeping it to not forget about it!
+            // Axis::X => coll.aabb_x(new_pos.as_vec()).merged(&coll.aabb_x(last_pos.as_vec())),
+            // Axis::Y => coll.aabb_y(new_pos.as_vec()).merged(&coll.aabb_y(last_pos.as_vec())),
         };
 
         let leaf = match axis {
@@ -189,7 +194,6 @@ impl CollisionWorld {
 
         if let Some(depth_y) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::Y) {
             updated_pos.y += depth_y;
-
         }
 
         {
