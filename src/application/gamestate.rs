@@ -54,9 +54,10 @@ impl State<AppTransition> for GameState {
                             .texture_store
                             .get_texture_info(Path::new("assets/textures/tilesets/cave/tile1.png"));
 
-        let player_tex_info = world.services
-            .texture_store
-            .get_texture_info(Path::new("assets/textures/sprites/player/p_stand.png"));
+        let player_tex_info =
+            world.services
+                 .texture_store
+                 .get_texture_info(Path::new("assets/textures/sprites/player/p_stand.png"));
 
         let _ = world.create_entity(|entity: BuildData<LevelComponents>,
                                      data: &mut LevelComponents| {

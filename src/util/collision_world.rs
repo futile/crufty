@@ -71,10 +71,10 @@ fn find_depth(dyn: &AABB2<f32>,
     }
 
     let dir = match axis {
-        X => dyn_last.x - stat.center().x,
-        Y => dyn_last.y - stat.center().y,
-    }
-    .signum();
+                  X => dyn_last.x - stat.center().x,
+                  Y => dyn_last.y - stat.center().y,
+              }
+              .signum();
 
     Some(dir * depth)
 }

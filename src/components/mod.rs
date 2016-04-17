@@ -168,7 +168,8 @@ pub struct SpritesheetAnimation {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Facing {
-    Left, Right
+    Left,
+    Right,
 }
 
 #[derive(Clone, Debug, PartialEq)]
