@@ -74,7 +74,7 @@ impl State<AppTransition> for GameState {
                                          data: &mut LevelComponents| {
                 let pos = Position {
                     x: x as f32 * 32.0 + x as f32 * 10.0,
-                    y: 150.0,
+                    y: 500.0,
                 };
                 data.position.add(&entity, pos);
                 data.velocity.add(&entity,

@@ -19,7 +19,7 @@ impl System for JumpSystem {
 }
 
 const JUMP_RISE_TIME_S: f32 = 0.5;
-const JUMP_RISE_VEL: Vec2<f32> = Vec2 { x: 0.0, y: 100.0 };
+const JUMP_RISE_VEL: Vec2<f32> = Vec2 { x: 0.0, y: 150.0 };
 
 impl EntityProcess for JumpSystem {
     fn process(&mut self,

@@ -37,7 +37,7 @@ impl Default for LevelServices {
         LevelServices {
             texture_store: TextureStore::new_invalid(),
             delta_time_s: 0.0,
-            gravity: 99.0,
+            gravity: 150.0,
             collision_world: CollisionWorld::new(),
         }
     }
