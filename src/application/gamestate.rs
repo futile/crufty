@@ -10,10 +10,11 @@ use ecs::system::InteractSystem;
 
 use util::{State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
+use game::Animation;
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
 use components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
-                 Gravity, Camera, KeyboardInput, Intents, Velocity, Facing};
+                 SpriteSheetAnimation, Gravity, Camera, KeyboardInput, Intents, Velocity, Facing};
 
 use hprof;
 
@@ -59,6 +60,19 @@ impl State<AppTransition> for GameState {
                  .texture_store
                  .get_texture_info(Path::new("assets/textures/sprites/player/p_stand.png"));
 
+        let player_walk_start_info =
+            world.services
+            .texture_store
+            .get_texture_info(Path::new("assets/textures/sprites/player/walk/p_walk01.png"));
+
+        let player_walk_animation = Animation {
+            start_info: player_walk_start_info,
+            num_frames: 10,
+            frame_durations: vec![0.1; 10],
+            width: 32.0,
+            height: 32.0,
+        };
+
         let _ = world.create_entity(|entity: BuildData<LevelComponents>,
                                      data: &mut LevelComponents| {
             data.position.add(&entity, Position { x: 0.0, y: 0.0 });
@@ -100,6 +114,13 @@ impl State<AppTransition> for GameState {
                                          height: 32.0,
                                          texture_info: player_tex_info,
                                      });
+                data.sprite_sheet_animation.add(&entity,
+                                                SpriteSheetAnimation {
+                                                    id: 0,
+                                                    animation: player_walk_animation.clone(),
+                                                    current_frame: 0,
+                                                    frame_time_remaining: 0.1,
+                                                });
                 data.intents.add(&entity, Intents::new());
 
                 data.keyboard_input.add(&entity,

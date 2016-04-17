@@ -7,6 +7,7 @@ pub use self::gravity_system::GravitySystem;
 pub use self::collision_system::CollisionSystem;
 pub use self::movement_system::MovementSystem;
 pub use self::jump_system::JumpSystem;
+pub use self::ssanimation_system::SpriteSheetAnimationSystem;
 
 use ecs::ServiceManager;
 use ecs::system::{LazySystem, EntitySystem, InteractSystem};
@@ -24,6 +25,7 @@ mod gravity_system;
 mod collision_system;
 mod movement_system;
 mod jump_system;
+mod ssanimation_system;
 
 pub struct LevelServices {
     pub texture_store: TextureStore,
@@ -71,6 +73,10 @@ systems! {
                 CollisionSystem::new(),
                 aspect!(<LevelComponents> all: [position, velocity, collision]),
                 aspect!(<LevelComponents> all: [position, collision]),
+            ),
+            sprite_sheet_animation_system: EntitySystem<SpriteSheetAnimationSystem> = EntitySystem::new(
+                SpriteSheetAnimationSystem::new(),
+                aspect!(<LevelComponents> all: [sprite_sheet_animation, sprite_info]),
             ),
         },
         passive: {

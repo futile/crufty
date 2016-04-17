@@ -22,6 +22,7 @@ mod util;
 mod application;
 mod systems;
 mod components;
+mod game;
 
 use util::run_state_machine;
 use application::AppTransition;

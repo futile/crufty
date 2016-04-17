@@ -7,6 +7,8 @@ use na::{self, Iso2, Vec2, Pnt2};
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
 
+use game::Animation;
+
 use util::TextureInfo;
 
 use num::traits::Zero;
@@ -161,9 +163,12 @@ pub struct SpriteInfo {
 
 pub type SpritesheetId = u32;
 
-#[derive(Copy, Clone, Debug)]
-pub struct SpritesheetAnimation {
+#[derive(Clone, Debug)]
+pub struct SpriteSheetAnimation {
     pub id: SpritesheetId,
+    pub animation: Animation,
+    pub current_frame: u8,
+    pub frame_time_remaining: f32,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -213,7 +218,7 @@ components! {
         #[hot] position: Position,
         #[hot] collision: Collision,
         #[hot] sprite_info: SpriteInfo,
-        #[cold] animation: SpritesheetAnimation,
+        #[cold] sprite_sheet_animation: SpriteSheetAnimation,
         #[cold] movement: Movement,
         #[cold] facing: Facing,
         #[cold] jump: Jump,
