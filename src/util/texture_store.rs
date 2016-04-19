@@ -62,21 +62,19 @@ impl TextureStore {
             panic!("Is not a directory: '{:?}'", path);
         }
 
-        let mut file_paths = Vec::new();
-
-        for entry in fs::read_dir(path).unwrap() {
-            let entry = entry.unwrap();
-
-            if !entry.path().is_dir() {
-                file_paths.push(entry.path());
-            }
-        }
+        let mut file_paths = fs::read_dir(path)
+                                 .unwrap()
+                                 .map(|res| res.unwrap().path())
+                                 .filter(|fpath| fpath.is_file())
+                                 .filter(|fpath| {
+                                     fpath.extension().map_or(false, |ext| ext == "png")
+                                 })
+                                 .collect::<Vec<_>>();
 
         file_paths.sort();
 
         let images =
             file_paths.iter()
-                      .filter(|fpath| !fpath.is_dir())
                       .map(|fpath| image::open(fpath).unwrap().to_rgba())
                       .map(|image| {
                           let image_dimensions = image.dimensions();

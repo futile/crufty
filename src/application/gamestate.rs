@@ -62,8 +62,8 @@ impl State<AppTransition> for GameState {
 
         let player_walk_start_info =
             world.services
-            .texture_store
-            .get_texture_info(Path::new("assets/textures/sprites/player/walk/p_walk01.png"));
+                 .texture_store
+                 .get_texture_info(Path::new("assets/textures/sprites/player/walk/p_walk01.png"));
 
         let player_walk_animation = Animation {
             start_info: player_walk_start_info,
