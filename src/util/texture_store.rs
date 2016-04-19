@@ -57,6 +57,10 @@ impl TextureStore {
         self.tex_store.get(tex_info.id).unwrap()
     }
 
+    fn should_load(&self, path: &Path) -> bool {
+        path.extension().map_or(false, |ext| ext == "png")
+    }
+
     fn load_dir(&mut self, path: &Path) {
         if !path.is_dir() {
             panic!("Is not a directory: '{:?}'", path);
@@ -66,9 +70,7 @@ impl TextureStore {
                                  .unwrap()
                                  .map(|res| res.unwrap().path())
                                  .filter(|fpath| fpath.is_file())
-                                 .filter(|fpath| {
-                                     fpath.extension().map_or(false, |ext| ext == "png")
-                                 })
+                                 .filter(|fpath| self.should_load(fpath))
                                  .collect::<Vec<_>>();
 
         file_paths.sort();
@@ -91,11 +93,13 @@ impl TextureStore {
         let tex_id = self.tex_store.len() - 1;
 
         for (idx, fpath) in file_paths.into_iter().enumerate() {
-            self.info_store.insert(fpath,
+            let previous = self.info_store.insert(fpath,
                                    TextureInfo {
                                        id: tex_id,
                                        idx: idx as f32,
                                    });
+
+            assert_eq!(previous, None);
         }
     }
 }
