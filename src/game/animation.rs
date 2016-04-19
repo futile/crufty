@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use util::TextureInfo;
 use components::SpriteInfo;
 
@@ -20,5 +22,20 @@ impl Animation {
             height: self.height,
             texture_info: new_tex_info,
         }
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct SpriteSheet {
+    animations: HashMap<String, Animation>,
+}
+
+impl SpriteSheet {
+    pub fn new() -> SpriteSheet {
+        SpriteSheet::default()
+    }
+
+    pub fn get(&self, animation_name: &str) -> Option<&Animation> {
+        self.animations.get(animation_name)
     }
 }

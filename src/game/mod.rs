@@ -1,3 +1,3 @@
-pub use self::animation::Animation;
+pub use self::animation::{Animation, SpriteSheet};
 
 mod animation;
