@@ -8,7 +8,7 @@ use glium::glutin::{self, ElementState, VirtualKeyCode};
 use ecs::{World, BuildData /* , ModifyData */};
 use ecs::system::InteractSystem;
 
-use util::{State, TextureStore};
+use util::{self, State, TextureStore};
 use application::{AppTransition, InputIntent, InputState, InputManager};
 use game::Animation;
 
@@ -44,6 +44,11 @@ impl State<AppTransition> for GameState {
         let render_system = RenderSystem::new(self.display.clone());
 
         world.services.texture_store = TextureStore::new(self.display.clone());
+
+        let ss = util::load_sprite_sheet(&mut world.services.texture_store,
+                                         Path::new("assets/textures/sprites/player/animations.toml"));
+
+        println!("ss: {:#?}", ss);
 
         world.systems
              .render_system
