@@ -94,10 +94,10 @@ impl TextureStore {
 
         for (idx, fpath) in file_paths.into_iter().enumerate() {
             let previous = self.info_store.insert(fpath,
-                                   TextureInfo {
-                                       id: tex_id,
-                                       idx: idx as f32,
-                                   });
+                                                  TextureInfo {
+                                                      id: tex_id,
+                                                      idx: idx as f32,
+                                                  });
 
             assert_eq!(previous, None);
         }

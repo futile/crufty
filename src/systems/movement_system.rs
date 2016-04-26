@@ -7,7 +7,7 @@ use components::LevelComponents;
 use components::Facing;
 use application::InputIntent;
 
-use na::{self, Vec2};
+use na::{self, Vector2};
 
 use num::traits::Zero;
 
@@ -75,7 +75,7 @@ impl EntityProcess for MovementSystem {
                     movement.vel = na::partial_clamp(&(movement.vel + acc),
                                                      &-movement.max_vel,
                                                      &movement.max_vel)
-                                       .unwrap_or(&Vec2::zero())
+                                       .unwrap_or(&Vector2::zero())
                                        .clone();
                 }
 

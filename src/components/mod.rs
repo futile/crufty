@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use nc::shape::Cuboid2;
 use nc::bounding_volume::{HasBoundingVolume, AABB2};
-use na::{self, Iso2, Vec2, Pnt2};
+use na::{self, Isometry2, Vector2, Point2};
 
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
@@ -20,13 +20,13 @@ pub struct Position {
 }
 
 impl Position {
-    pub fn as_vec(&self) -> Vec2<f32> {
-        Vec2::new(self.x, self.y)
+    pub fn as_vec(&self) -> Vector2<f32> {
+        Vector2::new(self.x, self.y)
     }
 
     #[allow(unused)]
-    pub fn as_pnt(&self) -> Pnt2<f32> {
-        Pnt2::new(self.x, self.y)
+    pub fn as_pnt(&self) -> Point2<f32> {
+        Point2::new(self.x, self.y)
     }
 }
 
@@ -40,15 +40,15 @@ pub struct Velocity {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Movement {
-    pub vel: Vec2<f32>,
-    pub max_vel: Vec2<f32>,
-    pub acc: Vec2<f32>,
+    pub vel: Vector2<f32>,
+    pub max_vel: Vector2<f32>,
+    pub acc: Vector2<f32>,
 }
 
 impl Movement {
-    pub fn new(max_vel: Vec2<f32>, acc: Vec2<f32>) -> Movement {
+    pub fn new(max_vel: Vector2<f32>, acc: Vector2<f32>) -> Movement {
         Movement {
-            vel: Vec2::zero(),
+            vel: Vector2::zero(),
             max_vel: max_vel,
             acc: acc,
         }
@@ -97,23 +97,23 @@ pub enum CollisionType {
 pub struct Collision {
     coll_type: CollisionType,
     r_x: Cuboid2<f32>,
-    off_x: Vec2<f32>,
+    off_x: Vector2<f32>,
     r_y: Cuboid2<f32>,
-    off_y: Vec2<f32>,
+    off_y: Vector2<f32>,
 }
 
 impl Collision {
     pub fn new_single(rect: Cuboid2<f32>,
-                      off: Vec2<f32>,
+                      off: Vector2<f32>,
                       collision_type: CollisionType)
                       -> Collision {
         Self::new_dual(rect.clone(), off.clone(), rect, off, collision_type)
     }
 
     pub fn new_dual(rect_x: Cuboid2<f32>,
-                    off_x: Vec2<f32>,
+                    off_x: Vector2<f32>,
                     rect_y: Cuboid2<f32>,
-                    off_y: Vec2<f32>,
+                    off_y: Vector2<f32>,
                     collision_type: CollisionType)
                     -> Collision {
         Collision {
@@ -133,11 +133,11 @@ impl Collision {
     //     &self.r_x
     // }
 
-    pub fn aabb_x(&self, pos: Vec2<f32>) -> AABB2<f32> {
-        self.r_x.bounding_volume(&Iso2::new(pos + self.off_x, na::zero()))
+    pub fn aabb_x(&self, pos: Vector2<f32>) -> AABB2<f32> {
+        self.r_x.bounding_volume(&Isometry2::new(pos + self.off_x, na::zero()))
     }
 
-    pub fn off_x(&self) -> &Vec2<f32> {
+    pub fn off_x(&self) -> &Vector2<f32> {
         &self.off_x
     }
 
@@ -145,11 +145,11 @@ impl Collision {
     //     &self.r_y
     // }
 
-    pub fn aabb_y(&self, pos: Vec2<f32>) -> AABB2<f32> {
-        self.r_y.bounding_volume(&Iso2::new(pos + self.off_y, na::zero()))
+    pub fn aabb_y(&self, pos: Vector2<f32>) -> AABB2<f32> {
+        self.r_y.bounding_volume(&Isometry2::new(pos + self.off_y, na::zero()))
     }
 
-    pub fn off_y(&self) -> &Vec2<f32> {
+    pub fn off_y(&self) -> &Vector2<f32> {
         &self.off_y
     }
 }

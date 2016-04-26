@@ -11,10 +11,9 @@ extern crate ncollide as nc;
 extern crate num;
 
 extern crate hprof;
-
 extern crate clock_ticks;
-
 extern crate ordered_float;
+extern crate toml;
 
 #[macro_use]
 mod util;

@@ -7,7 +7,7 @@ use components::LevelComponents;
 use components::{Jump, JumpState};
 use application::InputIntent;
 
-use na::Vec2;
+use na::Vector2;
 
 use num::traits::Zero;
 
@@ -19,7 +19,7 @@ impl System for JumpSystem {
 }
 
 const JUMP_RISE_TIME_S: f32 = 0.5;
-const JUMP_RISE_VEL: Vec2<f32> = Vec2 { x: 0.0, y: 150.0 };
+const JUMP_RISE_VEL: Vector2<f32> = Vector2 { x: 0.0, y: 150.0 };
 
 impl EntityProcess for JumpSystem {
     fn process(&mut self,
@@ -61,19 +61,19 @@ impl EntityProcess for JumpSystem {
             let jump = jump;
             data.jump[e] = jump;
 
-            let vel_change: Vec2<f32> = {
+            let vel_change: Vector2<f32> = {
                 let get_antigrav_vel = || {
                     if let Some(gravity) = data.gravity.get(&e) {
-                        Vec2::new(0.0, g * gravity.f)
+                        Vector2::new(0.0, g * gravity.f)
                     } else {
-                        Vec2::zero()
+                        Vector2::zero()
                     }
                 };
 
                 match jump.state {
                     JumpState::Rising => JUMP_RISE_VEL + get_antigrav_vel(),
                     JumpState::MidairIdle if do_jump => get_antigrav_vel() / 2.0,
-                    JumpState::MidairIdle | JumpState::Idle => Vec2::zero(),
+                    JumpState::MidairIdle | JumpState::Idle => Vector2::zero(),
                 }
             };
 

@@ -31,8 +31,8 @@ pub struct SpriteSheet {
 }
 
 impl SpriteSheet {
-    pub fn new() -> SpriteSheet {
-        SpriteSheet::default()
+    pub fn new(animations: HashMap<String, Animation>) -> SpriteSheet {
+        SpriteSheet { animations: animations }
     }
 
     pub fn get(&self, animation_name: &str) -> Option<&Animation> {

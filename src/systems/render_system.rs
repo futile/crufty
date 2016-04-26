@@ -9,7 +9,7 @@ use std::io::Read;
 
 use image::GenericImage;
 
-use na::{Vec2, OrthoMat3};
+use na::{Vector2, OrthographicMatrix3};
 
 use components::LevelComponents;
 use components::Facing;
@@ -144,22 +144,24 @@ impl InteractProcess for RenderSystem {
                 let screen_size = camera.screen_viewport.half_extents() * 2.0;
 
                 let _g = hprof::enter("ortho");
-                let ortho_proj = OrthoMat3::new(camera.world_viewport.width,
-                                                camera.world_viewport.height,
-                                                0.0,
-                                                -2.0)
-                                     .to_mat();
+                let ortho_proj = OrthographicMatrix3::new(0.0 - camera.world_viewport.width / 2.0,
+                                                          0.0 + camera.world_viewport.width / 2.0,
+                                                          0.0 - camera.world_viewport.height / 2.0,
+                                                          0.0 + camera.world_viewport.height / 2.0,
+                                                          -2.0,
+                                                          0.0)
+                                     .to_matrix();
                 drop(_g);
 
                 for e in &sprites {
                     let position = &data.position[*e];
                     let sprite_info = &data.sprite_info[*e];
 
-                    let scale = Vec2::new(sprite_info.width, sprite_info.height);
-                    let view_pos = Vec2::new(position.x.round() -
-                                             (cpos.x - camera.world_viewport.width / 2.0),
-                                             position.y.round() -
-                                             (cpos.y - camera.world_viewport.height / 2.0));
+                    let scale = Vector2::new(sprite_info.width, sprite_info.height);
+                    let view_pos = Vector2::new(position.x.round() -
+                                                (cpos.x - camera.world_viewport.width / 2.0),
+                                                position.y.round() -
+                                                (cpos.y - camera.world_viewport.height / 2.0));
                     let texture = data.services
                                       .texture_store
                                       .get_texture(&sprite_info.texture_info);
@@ -177,7 +179,7 @@ impl InteractProcess for RenderSystem {
                         tex_index: sprite_info.texture_info.idx,
                         invert_tex_x: invert_tex_x,
                         win_scale: *screen_size.as_ref(),
-                        win_trans: *camera.screen_viewport.mins().to_vec().as_ref(),
+                        win_trans: *camera.screen_viewport.mins().to_vector().as_ref(),
                     };
 
                     target.draw(&self.unit_quad,

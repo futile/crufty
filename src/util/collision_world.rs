@@ -12,8 +12,8 @@ use nc::bounding_volume::BoundingVolume;
 use nc::ray::Ray2;
 use nc::ray::RayInterferencesCollector;
 
-use na::Pnt2;
-use na::Vec2;
+use na::Point2;
+use na::Vector2;
 use na::Translation;
 
 use components::Collision;
@@ -22,7 +22,7 @@ use components::CollisionType;
 
 use ordered_float::NotNaN;
 
-type CollisionTreeLeaf = Rc<RefCell<DBVTLeaf<Pnt2<f32>, Entity, AABB2<f32>>>>;
+type CollisionTreeLeaf = Rc<RefCell<DBVTLeaf<Point2<f32>, Entity, AABB2<f32>>>>;
 
 struct CollisionTreeLeafs {
     x: CollisionTreeLeaf,
@@ -31,8 +31,8 @@ struct CollisionTreeLeafs {
 }
 
 pub struct CollisionWorld {
-    dbvt_x: DBVT<Pnt2<f32>, Entity, AABB2<f32>>,
-    dbvt_y: DBVT<Pnt2<f32>, Entity, AABB2<f32>>,
+    dbvt_x: DBVT<Point2<f32>, Entity, AABB2<f32>>,
+    dbvt_y: DBVT<Point2<f32>, Entity, AABB2<f32>>,
     mapping: HashMap<Entity, CollisionTreeLeafs>,
 }
 
@@ -43,7 +43,7 @@ enum Axis {
 }
 
 fn find_depth(dyn: &AABB2<f32>,
-              dyn_last: &Pnt2<f32>,
+              dyn_last: &Point2<f32>,
               stat: &AABB2<f32>,
               axis: Axis)
               -> Option<f32> {
@@ -95,8 +95,10 @@ impl CollisionWorld {
         // then add leafs for both trees
         self.mapping.insert(e,
                             CollisionTreeLeafs {
-                                x: self.dbvt_x.insert_new(e, coll.aabb_x(Vec2::new(pos.x, pos.y))),
-                                y: self.dbvt_y.insert_new(e, coll.aabb_y(Vec2::new(pos.x, pos.y))),
+                                x: self.dbvt_x
+                                       .insert_new(e, coll.aabb_x(Vector2::new(pos.x, pos.y))),
+                                y: self.dbvt_y
+                                       .insert_new(e, coll.aabb_y(Vector2::new(pos.x, pos.y))),
                                 coll_type: coll.collision_type(),
                             });
     }
@@ -200,12 +202,12 @@ impl CollisionWorld {
             let mut lx = leafs.x.borrow_mut();
             let new_center = updated_pos.as_pnt() + *coll.off_x();
             lx.center = new_center;
-            lx.bounding_volume.set_translation(-new_center.to_vec());
+            lx.bounding_volume.set_translation(-new_center.to_vector());
 
             let mut ly = leafs.y.borrow_mut();
             let new_center = updated_pos.as_pnt() + *coll.off_y();
             ly.center = new_center;
-            ly.bounding_volume.set_translation(-new_center.to_vec());
+            ly.bounding_volume.set_translation(-new_center.to_vector());
         }
 
         // 3. re-insert into trees
@@ -226,7 +228,7 @@ impl CollisionWorld {
 
         let mut colls = Vec::new();
         self.dbvt_y.visit(&mut RayInterferencesCollector::new(&Ray2::new(leaf_y.center,
-                                                                         Vec2::new(0.0, -1.0)),
+                                                                         Vector2::new(0.0, -1.0)),
                                                               &mut colls));
 
         let bot_y = leaf_y.bounding_volume.mins().y;

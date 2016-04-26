@@ -24,7 +24,7 @@ use std::time::Duration;
 
 use nc::shape::Cuboid2;
 use nc::bounding_volume::AABB2;
-use na::{Pnt2, Vec2};
+use na::{Point2, Vector2};
 
 pub struct GameState {
     display: glium::Display,
@@ -79,7 +79,8 @@ impl State<AppTransition> for GameState {
             data.camera.add(&entity,
                             Camera::new(WorldViewport::new((width / 1) as f32,
                                                            (height / 1) as f32),
-                                        AABB2::new(Pnt2::new(-1.0, -1.0), Pnt2::new(1.0, 1.0)),
+                                        AABB2::new(Point2::new(-1.0, -1.0),
+                                                   Point2::new(1.0, 1.0)),
                                         true));
         });
 
@@ -98,13 +99,13 @@ impl State<AppTransition> for GameState {
                                       last_pos: pos,
                                   });
                 data.collision.add(&entity,
-                                   Collision::new_dual(Cuboid2::new(Vec2::new(16.0, 5.0)),
-                                                       Vec2::new(16.0, 16.0),
-                                                       Cuboid2::new(Vec2::new(5.0, 16.0)),
-                                                       Vec2::new(16.0, 16.0),
+                                   Collision::new_dual(Cuboid2::new(Vector2::new(16.0, 5.0)),
+                                                       Vector2::new(16.0, 16.0),
+                                                       Cuboid2::new(Vector2::new(5.0, 16.0)),
+                                                       Vector2::new(16.0, 16.0),
                                                        CollisionType::Solid));
                 data.movement.add(&entity,
-                                  Movement::new(Vec2::new(75.0, 0.0), Vec2::new(150.0, 0.0)));
+                                  Movement::new(Vector2::new(75.0, 0.0), Vector2::new(150.0, 0.0)));
                 data.facing.add(&entity, Facing::Right);
                 data.jump.add(&entity, Jump::new());
                 data.gravity.add(&entity, Gravity::new());
@@ -154,8 +155,8 @@ impl State<AppTransition> for GameState {
                                       y: 0.0,
                                   });
                 data.collision.add(&entity,
-                                   Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)),
-                                                         Vec2::new(16.0, 16.0),
+                                   Collision::new_single(Cuboid2::new(Vector2::new(16.0, 16.0)),
+                                                         Vector2::new(16.0, 16.0),
                                                          CollisionType::Solid));
                 data.sprite_info.add(&entity,
                                      SpriteInfo {
@@ -175,8 +176,8 @@ impl State<AppTransition> for GameState {
                                       y: 96.0,
                                   });
                 data.collision.add(&entity,
-                                   Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)),
-                                                         Vec2::new(16.0, 16.0),
+                                   Collision::new_single(Cuboid2::new(Vector2::new(16.0, 16.0)),
+                                                         Vector2::new(16.0, 16.0),
                                                          CollisionType::Solid));
                 data.sprite_info.add(&entity,
                                      SpriteInfo {
@@ -195,8 +196,8 @@ impl State<AppTransition> for GameState {
                                   y: 32.0,
                               });
             data.collision.add(&entity,
-                               Collision::new_single(Cuboid2::new(Vec2::new(16.0, 16.0)),
-                                                     Vec2::new(16.0, 16.0),
+                               Collision::new_single(Cuboid2::new(Vector2::new(16.0, 16.0)),
+                                                     Vector2::new(16.0, 16.0),
                                                      CollisionType::Solid));
             data.sprite_info.add(&entity,
                                  SpriteInfo {
