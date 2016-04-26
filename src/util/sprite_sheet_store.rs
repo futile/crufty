@@ -5,8 +5,8 @@ pub struct SpriteSheetHandle(usize);
 
 #[derive(Default)]
 pub struct SpriteSheetStore {
-    sprite_sheet_store: Vec<SpriteSheet>,
-    handle_store: HashMap<PathBuf, SpriteSheetHandle>,
+    sprite_sheets: Vec<SpriteSheet>,
+    handles: HashMap<PathBuf, SpriteSheetHandle>,
 }
 
 impl SpriteSheetStore {
@@ -15,15 +15,15 @@ impl SpriteSheetStore {
     }
 
     pub fn get_sprite_sheet_info(&mut self, path: &Path) -> SpriteSheetHandle {
-        if !self.handle_store.contains_key(path) {
+        if !self.handles.contains_key(path) {
             self.load_dir(path.parent().unwrap());
         }
 
-        *self.handle_store.get(path).unwrap()
+        *self.handles.get(path).unwrap()
     }
 
     pub fn get_sprite_sheet(&self, handle: &SpriteSheetHandle) -> &SpriteSheet {
-        self.sprite_sheet_store.get(handle.id).unwrap()
+        self.sprite_sheets.get(handle.id).unwrap()
     }
 
     fn should_load(&self, path: &Path) -> bool {
@@ -63,13 +63,13 @@ impl SpriteSheetStore {
         println!("paths loaded: {:?}", file_paths);
 
         // TODO save to the store
-        self.sprite_sheet_store
+        self.sprite_sheets
             .push(CompressedSrgbSprite_Sheet2dArray::new(self.display.as_ref().unwrap(), images)
                       .unwrap());
-        let ss_id = self.sprite_sheet_store.len() - 1;
+        let ss_id = self.sprite_sheets.len() - 1;
 
         for (idx, fpath) in file_paths.into_iter().enumerate() {
-            let previous = self.handle_store.insert(fpath, SpriteSheetHandle(ss_id));
+            let previous = self.handles.insert(fpath, SpriteSheetHandle(ss_id));
 
             assert_eq!(previous, None);
         }
