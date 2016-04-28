@@ -163,8 +163,8 @@ impl InteractProcess for RenderSystem {
                                                 position.y.round() -
                                                 (cpos.y - camera.world_viewport.height / 2.0));
                     let texture = data.services
-                                      .texture_store
-                                      .get_texture(&sprite_info.texture_info);
+                                      .resource_store
+                                      .get_texture(sprite_info.texture_info);
 
                     let invert_tex_x = match data.facing.get(e) {
                         Some(Facing::Left) => true,

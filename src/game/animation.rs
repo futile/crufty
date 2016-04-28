@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use util::TextureInfo;
+use game::TextureInfo;
 use components::SpriteInfo;
 
 #[derive(Clone, Debug)]

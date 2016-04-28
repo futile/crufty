@@ -53,7 +53,7 @@ impl TextureStore {
         *self.info_store.get(path).unwrap()
     }
 
-    pub fn get_texture(&self, tex_info: &TextureInfo) -> &CompressedSrgbTexture2dArray {
+    pub fn get_texture(&self, tex_info: TextureInfo) -> &CompressedSrgbTexture2dArray {
         self.tex_store.get(tex_info.id).unwrap()
     }
 
@@ -85,7 +85,7 @@ impl TextureStore {
                       })
                       .collect::<Vec<_>>();
 
-        println!("paths loaded: {:?}", file_paths);
+        println!("textures loaded: {:?}", file_paths);
 
         self.tex_store
             .push(CompressedSrgbTexture2dArray::new(self.display.as_ref().unwrap(), images)

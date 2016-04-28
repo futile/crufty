@@ -7,9 +7,7 @@ use na::{self, Isometry2, Vector2, Point2};
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
 
-use game::Animation;
-
-use util::TextureInfo;
+use game::{SpriteSheetHandle, TextureInfo, Animation};
 
 use num::traits::Zero;
 
@@ -161,11 +159,9 @@ pub struct SpriteInfo {
     pub texture_info: TextureInfo,
 }
 
-pub type SpritesheetId = u32;
-
 #[derive(Clone, Debug)]
 pub struct SpriteSheetAnimation {
-    pub id: SpritesheetId,
+    pub sheet_handle: SpriteSheetHandle,
     pub animation: Animation,
     pub current_frame: u8,
     pub frame_time_remaining: f32,

@@ -14,7 +14,8 @@ use ecs::system::{LazySystem, EntitySystem, InteractSystem};
 
 use components::LevelComponents;
 
-use util::{TextureStore, CollisionWorld};
+use util::CollisionWorld;
+use game::ResourceStore;
 
 mod render_system;
 mod camera_system;
@@ -28,7 +29,7 @@ mod jump_system;
 mod sprite_sheet_animation_system;
 
 pub struct LevelServices {
-    pub texture_store: TextureStore,
+    pub resource_store: ResourceStore,
     pub delta_time_s: f32,
     pub gravity: f32,
     pub collision_world: CollisionWorld,
@@ -37,7 +38,7 @@ pub struct LevelServices {
 impl Default for LevelServices {
     fn default() -> LevelServices {
         LevelServices {
-            texture_store: TextureStore::new_invalid(),
+            resource_store: ResourceStore::default(),
             delta_time_s: 0.0,
             gravity: 150.0,
             collision_world: CollisionWorld::new(),

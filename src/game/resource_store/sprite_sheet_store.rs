@@ -1,14 +1,62 @@
-use game::{SpriteSheet, Animation};
-use util::TextureStore;
+use super::texture_store::TextureStore;
 
-use std::fs::File;
-use std::path::Path;
-use std::io::Read;
+use game::SpriteSheet;
+
+use std::path::{Path, PathBuf};
 use std::collections::HashMap;
 
-use toml::{Parser, Value};
+#[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
+pub struct SpriteSheetHandle(usize);
 
-pub fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteSheet {
+#[derive(Default)]
+pub struct SpriteSheetStore {
+    sprite_sheets: Vec<SpriteSheet>,
+    handles: HashMap<PathBuf, SpriteSheetHandle>,
+}
+
+impl SpriteSheetStore {
+    pub fn new() -> SpriteSheetStore {
+        SpriteSheetStore::default()
+    }
+
+    pub fn get_sprite_sheet_handle(&mut self,
+                                   texture_store: &mut TextureStore,
+                                   path: &Path)
+                                   -> SpriteSheetHandle {
+        if !self.handles.contains_key(path) {
+            return self.load_sheet(texture_store, path);
+        }
+
+        *self.handles.get(path).unwrap()
+    }
+
+    pub fn get_sprite_sheet(&self, handle: SpriteSheetHandle) -> &SpriteSheet {
+        self.sprite_sheets.get(handle.0).unwrap()
+    }
+
+    fn load_sheet(&mut self, texture_store: &mut TextureStore, path: &Path) -> SpriteSheetHandle {
+        let sprite_sheet = load_sprite_sheet(texture_store, path);
+
+        self.sprite_sheets.push(sprite_sheet);
+        let ss_id = self.sprite_sheets.len() - 1;
+
+        let previous = self.handles.insert(path.to_owned(), SpriteSheetHandle(ss_id));
+        assert_eq!(previous, None);
+
+        println!("sprite sheet loaded: {:?}", path);
+
+        return SpriteSheetHandle(ss_id);
+    }
+}
+
+fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteSheet {
+    use game::{SpriteSheet, Animation};
+
+    use std::fs::File;
+    use std::io::Read;
+
+    use toml::{Parser, Value};
+
     let mut file_content = String::new();
     File::open(path).and_then(|mut f| f.read_to_string(&mut file_content)).unwrap();
 
@@ -29,17 +77,14 @@ pub fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> Sprit
 
     let anim_toml = res.expect("sprite sheet parsing failed");
 
-    // println!("toml: {:#?}", anim_toml);
-
     let mut animations: HashMap<String, Animation> = HashMap::new();
 
     for (name, value) in anim_toml {
-        let anim_table = match value {
-            Value::Table(ref t) => t,
-            _ => panic!("{:?} is not a table!", value),
-        };
-
-        // println!("anim_table: {:#?}", anim_table);
+        // let anim_table = match value {
+        //     Value::Table(ref t) => t,
+        //     _ => panic!("{:?} is not a table!", value),
+        // };
+        let anim_table = value.as_table().expect("<value> is not a table");
 
         let width = anim_table.get("width")
                               .and_then(|val| val.as_float())
@@ -80,14 +125,3 @@ pub fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> Sprit
 
     SpriteSheet::new(animations)
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::load_sprite_sheet;
-//     use std::path::Path;
-
-//     #[test]
-//     fn simple_example() {
-//         load_sprite_sheet(Path::new("tests/animations.toml"));
-//     }
-// }

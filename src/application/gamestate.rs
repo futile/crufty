@@ -8,9 +8,9 @@ use glium::glutin::{self, ElementState, VirtualKeyCode};
 use ecs::{World, BuildData /* , ModifyData */};
 use ecs::system::InteractSystem;
 
-use util::{self, State, TextureStore};
+use util::State;
 use application::{AppTransition, InputIntent, InputState, InputManager};
-use game::Animation;
+use game::ResourceStore;
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
 use components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
@@ -43,12 +43,12 @@ impl State<AppTransition> for GameState {
         let (width, height) = self.display.get_framebuffer_dimensions();
         let render_system = RenderSystem::new(self.display.clone());
 
-        world.services.texture_store = TextureStore::new(self.display.clone());
+        world.services.resource_store = ResourceStore::new(self.display.clone());
 
-        let ss = util::load_sprite_sheet(&mut world.services.texture_store,
-                                         Path::new("assets/textures/sprites/player/animations.toml"));
-
-        println!("ss: {:#?}", ss);
+        let ss_handle =
+            world.services
+                 .resource_store
+                 .load_sprite_sheet(Path::new("assets/textures/sprites/player/animations.toml"));
 
         world.systems
              .render_system
@@ -57,26 +57,20 @@ impl State<AppTransition> for GameState {
                                        aspect!(<LevelComponents> all: [position, sprite_info])));
 
         let tex_info = world.services
-                            .texture_store
-                            .get_texture_info(Path::new("assets/textures/tilesets/cave/tile1.png"));
+                            .resource_store
+                            .load_texture(Path::new("assets/textures/tilesets/cave/tile1.png"));
 
-        let player_tex_info =
-            world.services
-                 .texture_store
-                 .get_texture_info(Path::new("assets/textures/sprites/player/p_stand.png"));
+        let player_tex_info = world.services
+                                   .resource_store
+                                   .load_texture(Path::new("assets/textures/sprites/player/p_stand.\
+                                                            png"));
 
-        let player_walk_start_info =
-            world.services
-                 .texture_store
-                 .get_texture_info(Path::new("assets/textures/sprites/player/walk/p_walk01.png"));
-
-        let player_walk_animation = Animation {
-            start_info: player_walk_start_info,
-            num_frames: 10,
-            frame_durations: vec![0.1; 10],
-            width: 32.0,
-            height: 32.0,
-        };
+        let player_walk_animation = world.services
+                                         .resource_store
+                                         .get_sprite_sheet(ss_handle)
+                                         .get("walk")
+                                         .unwrap()
+                                         .clone();
 
         let _ = world.create_entity(|entity: BuildData<LevelComponents>,
                                      data: &mut LevelComponents| {
@@ -122,7 +116,7 @@ impl State<AppTransition> for GameState {
                                      });
                 data.sprite_sheet_animation.add(&entity,
                                                 SpriteSheetAnimation {
-                                                    id: 0,
+                                                    sheet_handle: ss_handle,
                                                     animation: player_walk_animation.clone(),
                                                     current_frame: 0,
                                                     frame_time_remaining: 0.1,
