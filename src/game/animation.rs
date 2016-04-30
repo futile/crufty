@@ -16,7 +16,7 @@ pub struct Animation {
 
 impl Animation {
     pub fn create_sprite_info(&self, frame_idx: u8) -> SpriteInfo {
-        let mut new_tex_info = self.start_info.clone();
+        let mut new_tex_info = self.start_info;
         new_tex_info.idx += frame_idx as f32;
 
         SpriteInfo {
