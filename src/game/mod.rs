@@ -1,5 +1,47 @@
 pub use self::animation::{Animation, SpriteSheet};
 pub use self::resource_store::*;
 
+use ecs::{DataHelper, Entity};
+
+use components::LevelComponents;
+use systems::LevelServices;
+
 mod animation;
 mod resource_store;
+
+pub trait EntityOps {
+    fn play_animation(&mut self, e: Entity, anim_name: &str);
+}
+
+impl EntityOps for DataHelper<LevelComponents, LevelServices> {
+    fn play_animation(&mut self, e: Entity, anim_name: &str) {
+        // TODO this whole thing could be nicer, but ecs-rs currently doesn't let us.
+        // especially having to clone `anim` twice is annoying. but it's infrequent code,
+        // so we don't care for now.
+
+        let ss_handle = self.with_entity_data(&e, |en, comps| {
+            comps.sprite_sheet_animation.borrow(&en).map(|ssa| ssa.sheet_handle)
+        });
+
+        let ss_handle = match ss_handle {
+            Some(Some(handle)) => handle,
+            _ => return,
+        };
+
+        let anim = match self.services.resource_store.get_sprite_sheet(ss_handle).get(anim_name) {
+            Some(anim) => anim.clone(),
+            _ => return,
+        };
+
+        self.with_entity_data(&e, move |en, comps| {
+            let ssa = match comps.sprite_sheet_animation.borrow(&en) {
+                Some(ssa) => ssa,
+                _ => return,
+            };
+
+            ssa.current_frame = 0;
+            ssa.frame_time_remaining = anim.frame_durations[0];
+            ssa.animation = anim.clone();
+        });
+    }
+}

@@ -5,5 +5,12 @@ durations = 0.1
 start-sprite = "walk/p_walk01.png"
 num-frames = 10
 
+[stand]
+width = 32.0
+height = 32.0
+durations = 100.0
+start-sprite = "p_stand.png"
+num-frames = 1
+
 # sprites = [ { path = "non_existent1.png"},
 #             { path = "non_existent2.png", duration = 0.2} ]

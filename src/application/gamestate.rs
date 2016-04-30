@@ -10,7 +10,7 @@ use ecs::system::InteractSystem;
 
 use util::State;
 use application::{AppTransition, InputIntent, InputState, InputManager};
-use game::ResourceStore;
+use game::{ResourceStore, EntityOps};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
 use components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
@@ -65,10 +65,10 @@ impl State<AppTransition> for GameState {
                                    .load_texture(Path::new("assets/textures/sprites/player/p_stand.\
                                                             png"));
 
-        let player_walk_animation = world.services
+        let player_stand_animation = world.services
                                          .resource_store
                                          .get_sprite_sheet(ss_handle)
-                                         .get("walk")
+                                         .get("stand")
                                          .unwrap()
                                          .clone();
 
@@ -83,67 +83,67 @@ impl State<AppTransition> for GameState {
                                         true));
         });
 
-        for x in 0..1 {
-            let _ = world.create_entity(|entity: BuildData<LevelComponents>,
-                                         data: &mut LevelComponents| {
-                let pos = Position {
-                    x: x as f32 * 32.0 + x as f32 * 10.0,
-                    y: 500.0,
-                };
-                data.position.add(&entity, pos);
-                data.velocity.add(&entity,
-                                  Velocity {
-                                      vx: 00.0,
-                                      vy: 00.0,
-                                      last_pos: pos,
-                                  });
-                data.collision.add(&entity,
-                                   Collision::new_dual(Cuboid2::new(Vector2::new(16.0, 5.0)),
-                                                       Vector2::new(16.0, 16.0),
-                                                       Cuboid2::new(Vector2::new(5.0, 16.0)),
-                                                       Vector2::new(16.0, 16.0),
-                                                       CollisionType::Solid));
-                data.movement.add(&entity,
-                                  Movement::new(Vector2::new(75.0, 0.0), Vector2::new(150.0, 0.0)));
-                data.facing.add(&entity, Facing::Right);
-                data.jump.add(&entity, Jump::new());
-                data.gravity.add(&entity, Gravity::new());
-                data.sprite_info.add(&entity,
-                                     SpriteInfo {
-                                         width: 32.0,
-                                         height: 32.0,
-                                         texture_info: player_tex_info,
-                                     });
-                data.sprite_sheet_animation.add(&entity,
-                                                SpriteSheetAnimation {
-                                                    sheet_handle: ss_handle,
-                                                    animation: player_walk_animation.clone(),
-                                                    current_frame: 0,
-                                                    frame_time_remaining: 0.1,
-                                                });
-                data.intents.add(&entity, Intents::new());
+        let player = world.create_entity(|entity: BuildData<LevelComponents>,
+                                          data: &mut LevelComponents| {
+            let pos = Position {
+                x: 0.0 * 32.0 + 0.0 * 10.0,
+                y: 500.0,
+            };
+            data.position.add(&entity, pos);
+            data.velocity.add(&entity,
+                              Velocity {
+                                  vx: 00.0,
+                                  vy: 00.0,
+                                  last_pos: pos,
+                              });
+            data.collision.add(&entity,
+                               Collision::new_dual(Cuboid2::new(Vector2::new(16.0, 5.0)),
+                                                   Vector2::new(16.0, 16.0),
+                                                   Cuboid2::new(Vector2::new(5.0, 16.0)),
+                                                   Vector2::new(16.0, 16.0),
+                                                   CollisionType::Solid));
+            data.movement.add(&entity,
+                              Movement::new(Vector2::new(75.0, 0.0), Vector2::new(150.0, 0.0)));
+            data.facing.add(&entity, Facing::Right);
+            data.jump.add(&entity, Jump::new());
+            data.gravity.add(&entity, Gravity::new());
+            data.sprite_info.add(&entity,
+                                 SpriteInfo {
+                                     width: 32.0,
+                                     height: 32.0,
+                                     texture_info: player_tex_info,
+                                 });
+            data.sprite_sheet_animation.add(&entity,
+                                            SpriteSheetAnimation {
+                                                sheet_handle: ss_handle,
+                                                animation: player_stand_animation.clone(),
+                                                current_frame: 0,
+                                                frame_time_remaining: 0.1,
+                                            });
+            data.intents.add(&entity, Intents::new());
 
-                data.keyboard_input.add(&entity,
-                                        KeyboardInput {
-                                            input_context: {
-                                                let mut inputs = HashMap::new();
-                                                inputs.insert((VirtualKeyCode::O,
-                                                               InputState::PressedThisFrame),
-                                                              InputIntent::PrintDebugMessage);
-                                                inputs.insert((VirtualKeyCode::Left,
-                                                               InputState::Pressed),
-                                                              InputIntent::MoveLeft);
-                                                inputs.insert((VirtualKeyCode::Right,
-                                                               InputState::Pressed),
-                                                              InputIntent::MoveRight);
-                                                inputs.insert((VirtualKeyCode::Space,
-                                                               InputState::Pressed),
-                                                              InputIntent::Jump);
-                                                inputs
-                                            },
-                                        });
-            });
-        }
+            data.keyboard_input.add(&entity,
+                                    KeyboardInput {
+                                        input_context: {
+                                            let mut inputs = HashMap::new();
+                                            inputs.insert((VirtualKeyCode::O,
+                                                           InputState::PressedThisFrame),
+                                                          InputIntent::PrintDebugMessage);
+                                            inputs.insert((VirtualKeyCode::Left,
+                                                           InputState::Pressed),
+                                                          InputIntent::MoveLeft);
+                                            inputs.insert((VirtualKeyCode::Right,
+                                                           InputState::Pressed),
+                                                          InputIntent::MoveRight);
+                                            inputs.insert((VirtualKeyCode::Space,
+                                                           InputState::Pressed),
+                                                          InputIntent::Jump);
+                                            inputs
+                                        },
+                                    });
+        });
+
+        world.data.play_animation(player, "walk");
 
         for x in 0..12 {
             let _ = world.create_entity(|entity: BuildData<LevelComponents>,
