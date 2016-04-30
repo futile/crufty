@@ -171,7 +171,7 @@ impl CollisionWorld {
             return find_depth(&aabb, &leaf.center, &other_leaf.bounding_volume, axis);
         };
 
-        return None;
+        None
     }
 
     pub fn move_entity(&mut self,
@@ -186,7 +186,7 @@ impl CollisionWorld {
         self.dbvt_x.remove(&mut leafs.x);
         self.dbvt_y.remove(&mut leafs.y);
 
-        let mut updated_pos = new_pos.clone();
+        let mut updated_pos = *new_pos;
 
         // 2. call move_axis for both axes, X first
         if let Some(depth_x) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::X) {
@@ -218,7 +218,7 @@ impl CollisionWorld {
         self.mapping.insert(e, leafs);
 
         // return new position after collisions have been resolved
-        return updated_pos;
+        updated_pos
     }
 
     #[allow(unused)]

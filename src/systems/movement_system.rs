@@ -79,14 +79,13 @@ impl EntityProcess for MovementSystem {
                         movement.acc
                     } * delta;
 
-                    movement.vel = na::partial_clamp(&(movement.vel + acc),
-                                                     &-movement.max_vel,
-                                                     &movement.max_vel)
-                                       .unwrap_or(&Vector2::zero())
-                                       .clone();
+                    movement.vel = *na::partial_clamp(&(movement.vel + acc),
+                                                      &-movement.max_vel,
+                                                      &movement.max_vel)
+                                        .unwrap_or(&Vector2::zero())
                 }
 
-                movement.vel.clone()
+                movement.vel
             };
 
             let velocity = &mut data.velocity[e];

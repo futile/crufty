@@ -10,7 +10,7 @@ use ecs::system::InteractSystem;
 
 use util::State;
 use application::{AppTransition, InputIntent, InputState, InputManager};
-use game::{ResourceStore};
+use game::ResourceStore;
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
 use components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
@@ -66,11 +66,11 @@ impl State<AppTransition> for GameState {
                                                             png"));
 
         let player_stand_animation = world.services
-                                         .resource_store
-                                         .get_sprite_sheet(ss_handle)
-                                         .get("stand")
-                                         .unwrap()
-                                         .clone();
+                                          .resource_store
+                                          .get_sprite_sheet(ss_handle)
+                                          .get("stand")
+                                          .unwrap()
+                                          .clone();
 
         let _ = world.create_entity(|entity: BuildData<LevelComponents>,
                                      data: &mut LevelComponents| {
@@ -84,7 +84,7 @@ impl State<AppTransition> for GameState {
         });
 
         let _player = world.create_entity(|entity: BuildData<LevelComponents>,
-                                          data: &mut LevelComponents| {
+                                           data: &mut LevelComponents| {
             let pos = Position {
                 x: 0.0 * 32.0 + 0.0 * 10.0,
                 y: 500.0,

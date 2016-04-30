@@ -46,7 +46,7 @@ impl SpriteSheetStore {
 
         println!("sprite sheet loaded: {:?}", path);
 
-        return SpriteSheetHandle(ss_id);
+        SpriteSheetHandle(ss_id)
     }
 }
 
@@ -101,9 +101,9 @@ fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteShe
                                .expect("start-sprite not found or not a string");
         let durations = anim_table.get("durations").expect("durations not found");
 
-        let vec_durations = match durations {
-            &Value::Float(f) => vec![f as f32; num_frames as usize],
-            &Value::Array(ref v) => {
+        let vec_durations = match *durations {
+            Value::Float(f) => vec![f as f32; num_frames as usize],
+            Value::Array(ref v) => {
                 v.iter()
                  .map(|v| v.as_float().expect("a duration is not a float") as f32)
                  .collect::<Vec<_>>()

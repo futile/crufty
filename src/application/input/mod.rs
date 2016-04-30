@@ -95,10 +95,9 @@ impl InputManager {
                 self.consumed.insert(*vkc);
             }
 
-            if state == InputState::PressedThisFrame {
-                if key_handler.handle_key(InputState::Pressed, *vkc) {
-                    self.consumed.insert(*vkc);
-                }
+            if state == InputState::PressedThisFrame &&
+               key_handler.handle_key(InputState::Pressed, *vkc) {
+                self.consumed.insert(*vkc);
             }
         }
 

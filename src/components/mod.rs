@@ -105,7 +105,7 @@ impl Collision {
                       off: Vector2<f32>,
                       collision_type: CollisionType)
                       -> Collision {
-        Self::new_dual(rect.clone(), off.clone(), rect, off, collision_type)
+        Self::new_dual(rect.clone(), off, rect, off, collision_type)
     }
 
     pub fn new_dual(rect_x: Cuboid2<f32>,
