@@ -20,7 +20,14 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
         // so we don't care for now.
 
         let ss_handle = self.with_entity_data(&e, |en, comps| {
-            comps.sprite_sheet_animation.borrow(&en).map(|ssa| ssa.sheet_handle)
+            comps.sprite_sheet_animation.borrow(&en).and_then(|ssa| {
+                // if the animation is already running, don't restart it
+                if &ssa.animation.name[..] == anim_name {
+                    None
+                } else {
+                    Some(ssa.sheet_handle)
+                }
+            })
         });
 
         let ss_handle = match ss_handle {

@@ -4,6 +4,7 @@ use game::SpriteSheet;
 
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
+use std::rc::Rc;
 
 #[derive(Debug, Copy, Clone, Hash, PartialEq, Eq)]
 pub struct SpriteSheetHandle(usize);
@@ -113,9 +114,10 @@ fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteShe
         // sprite path is relative to current folder of the spritesheet file
         let sprite_path = path.parent().unwrap().join(sprite);
 
-        animations.insert(name,
+        animations.insert(name.clone(),
                           Animation {
                               start_info: texture_store.get_texture_info(&sprite_path),
+                              name: Rc::new(name),
                               num_frames: num_frames as u8,
                               frame_durations: vec_durations,
                               width: width as f32,

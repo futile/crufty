@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::rc::Rc;
 
 use game::TextureInfo;
 use components::SpriteInfo;
@@ -6,6 +7,7 @@ use components::SpriteInfo;
 #[derive(Clone, Debug)]
 pub struct Animation {
     pub start_info: TextureInfo,
+    pub name: Rc<String>,
     pub num_frames: u8,
     pub frame_durations: Vec<f32>, // in seconds
     pub width: f32,

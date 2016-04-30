@@ -6,6 +6,7 @@ use super::LevelServices;
 use components::LevelComponents;
 use components::Facing;
 use application::InputIntent;
+use game::EntityOps;
 
 use na::{self, Vector2};
 
@@ -48,6 +49,12 @@ impl EntityProcess for MovementSystem {
                         Facing::Left
                     }
                 }
+            }
+
+            if move_left == move_right {
+                data.play_animation(**e, "stand");
+            } else {
+                data.play_animation(**e, "walk");
             }
 
             let vel = {

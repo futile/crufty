@@ -10,7 +10,7 @@ use ecs::system::InteractSystem;
 
 use util::State;
 use application::{AppTransition, InputIntent, InputState, InputManager};
-use game::{ResourceStore, EntityOps};
+use game::{ResourceStore};
 
 use systems::{LevelSystems, RenderSystem, WorldViewport};
 use components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
@@ -83,7 +83,7 @@ impl State<AppTransition> for GameState {
                                         true));
         });
 
-        let player = world.create_entity(|entity: BuildData<LevelComponents>,
+        let _player = world.create_entity(|entity: BuildData<LevelComponents>,
                                           data: &mut LevelComponents| {
             let pos = Position {
                 x: 0.0 * 32.0 + 0.0 * 10.0,
@@ -142,8 +142,6 @@ impl State<AppTransition> for GameState {
                                         },
                                     });
         });
-
-        world.data.play_animation(player, "walk");
 
         for x in 0..12 {
             let _ = world.create_entity(|entity: BuildData<LevelComponents>,
