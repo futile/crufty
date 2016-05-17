@@ -34,6 +34,7 @@ pub struct CollisionWorld {
     dbvt_x: DBVT<Point2<f32>, Entity, AABB2<f32>>,
     dbvt_y: DBVT<Point2<f32>, Entity, AABB2<f32>>,
     mapping: HashMap<Entity, CollisionTreeLeafs>,
+    on_ground_cache: RefCell<HashMap<Entity, bool>>,
 }
 
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
@@ -85,6 +86,7 @@ impl CollisionWorld {
             dbvt_x: DBVT::new(),
             dbvt_y: DBVT::new(),
             mapping: HashMap::new(),
+            on_ground_cache: RefCell::new(HashMap::new()),
         }
     }
 
@@ -217,12 +219,18 @@ impl CollisionWorld {
         // 4. update mapping
         self.mapping.insert(e, leafs);
 
+        // clear on_ground cache
+        self.on_ground_cache.borrow_mut().clear();
+
         // return new position after collisions have been resolved
         updated_pos
     }
 
-    #[allow(unused)]
     pub fn on_ground(&self, e: Entity) -> bool {
+        if let Some(on_ground) = self.on_ground_cache.borrow().get(&e) {
+            return *on_ground;
+        }
+
         let leafs: &CollisionTreeLeafs = self.mapping.get(&e).unwrap();
         let leaf_y = leafs.y.borrow();
 
@@ -235,7 +243,7 @@ impl CollisionWorld {
 
         const ON_GROUND_THRESHOLD: f32 = 0.000015; // chosen through experiments
 
-        colls.iter()
+        let on_ground = colls.iter()
             .filter(|other| e != **other) // no self-collisions
             .map(|other| {
                 let other_leaf_y = self.mapping.get(other).unwrap().y.borrow();
@@ -243,7 +251,11 @@ impl CollisionWorld {
                 let dist = (other_top_y - bot_y).abs(); // maybe remove the abs(), but shouldn't matter too much
                 dist
             })
-            .any(|dist| dist < ON_GROUND_THRESHOLD)
+            .any(|dist| dist < ON_GROUND_THRESHOLD);
+
+        self.on_ground_cache.borrow_mut().insert(e, on_ground);
+
+        on_ground
     }
 
     pub fn remove(&mut self, e: Entity) {
