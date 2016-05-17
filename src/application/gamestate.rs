@@ -62,8 +62,8 @@ impl State<AppTransition> for GameState {
 
         let player_tex_info = world.services
                                    .resource_store
-                                   .load_texture(Path::new("assets/textures/sprites/player/p_stand.\
-                                                            png"));
+                                   // .load_texture(Path::new("assets/textures/sprites/player/stand/p_stand.png"));
+                                    .load_texture(Path::new("assets/textures/sprites/player/jump/p_jump.png"));
 
         let player_stand_animation = world.services
                                           .resource_store

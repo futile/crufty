@@ -51,10 +51,12 @@ impl EntityProcess for MovementSystem {
                 }
             }
 
-            if move_left == move_right {
-                data.play_animation(**e, "stand");
-            } else {
-                data.play_animation(**e, "walk");
+            if data.services.collision_world.on_ground(**e) {
+                if move_left == move_right {
+                    data.play_animation(**e, "stand");
+                } else {
+                    data.play_animation(**e, "walk");
+                }
             }
 
             let vel = {

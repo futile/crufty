@@ -6,6 +6,7 @@ use super::LevelServices;
 use components::LevelComponents;
 use components::{Jump, JumpState};
 use application::InputIntent;
+use game::EntityOps;
 
 use na::Vector2;
 
@@ -44,6 +45,8 @@ impl EntityProcess for JumpSystem {
 
                     jump.state = JumpState::Rising;
                     jump.jump_time_remaining = JUMP_RISE_TIME_S;
+
+                    data.play_animation(**e, "jump");
                 }
                 s @ JumpState::Rising |
                 s @ JumpState::MidairIdle => {
@@ -53,6 +56,7 @@ impl EntityProcess for JumpSystem {
                     }
                     if s == JumpState::Rising && !do_jump {
                         jump.state = JumpState::MidairIdle;
+                        data.play_animation(**e, "stand");
                     }
                 }
             }
