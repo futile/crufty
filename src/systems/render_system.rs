@@ -7,8 +7,6 @@ use glium::index::PrimitiveType;
 use std::fs::File;
 use std::io::Read;
 
-use image::GenericImage;
-
 use na::{Vector2, OrthographicMatrix3};
 
 use components::LevelComponents;
