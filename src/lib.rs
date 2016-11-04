@@ -16,16 +16,9 @@ extern crate ordered_float;
 extern crate toml;
 
 #[macro_use]
-mod util;
+pub mod util;
 
-mod application;
-mod systems;
-mod components;
-mod game;
-
-use util::run_state_machine;
-use application::AppTransition;
-
-fn main() {
-    run_state_machine(AppTransition::Startup);
-}
+pub mod application;
+pub mod systems;
+pub mod components;
+pub mod game;
