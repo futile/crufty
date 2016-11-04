@@ -15,10 +15,14 @@ extern crate clock_ticks;
 extern crate ordered_float;
 extern crate toml;
 
+extern crate mio;
+extern crate byteorder;
+
 #[macro_use]
 pub mod util;
 
 pub mod application;
+pub mod net;
 pub mod systems;
 pub mod components;
 pub mod game;
