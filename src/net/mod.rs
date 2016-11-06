@@ -1,5 +1,6 @@
 pub mod server;
 pub mod client;
+pub mod udp;
 
 pub type ClientId = u16;
 
