@@ -3,7 +3,7 @@ use std::time::{Duration, Instant};
 use std::num::Wrapping;
 use std::ops::Sub;
 use std::io::{self, Cursor};
-use std::io::prelude::Write;
+use std::io::prelude::{Write, Read};
 use std::collections::VecDeque;
 
 use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
@@ -30,6 +30,12 @@ impl SequenceNumber {
 
     pub fn write_to_packet<W: Write>(&self, writer: &mut W) -> io::Result<()> {
         writer.write_u16::<EncodingType>((self.0).0)
+    }
+
+    pub fn read_from_packet<R: Read>(reader: &mut R) -> io::Result<SequenceNumber> {
+        let raw = reader.read_u16::<EncodingType>()?;
+
+        Ok(SequenceNumber::new(raw))
     }
 }
 
@@ -73,14 +79,15 @@ impl From<SequenceNumberPrecision> for SequenceNumber {
 
 type EarlierAcksBitfield = u32;
 
-struct AckControl {
+#[derive(Debug, Copy, Clone)]
+struct AckHeader {
     remote_sequence_number: Option<SequenceNumber>,
     earlier_acks: EarlierAcksBitfield,
 }
 
-impl AckControl {
-    fn new() -> AckControl {
-        AckControl {
+impl AckHeader {
+    fn new() -> AckHeader {
+        AckHeader {
             remote_sequence_number: None,
             earlier_acks: 0,
         }
@@ -109,7 +116,7 @@ impl AckControl {
 
             // check if we have skipped too many sequence numbers for our bitfield to save
             if overflowed {
-                println!("warning: AckControl::ack(): skipped sequence numbers due to too big diff: {}", diff);
+                println!("warning: AckHeader::ack(): skipped sequence numbers due to too big diff: {}", diff);
             }
 
             // set `seq_num` as the most recent remote sequence number we have acked
@@ -119,7 +126,7 @@ impl AckControl {
 
             // check if this packet is too old to be acked by us
             if diff < -(::std::mem::size_of::<EarlierAcksBitfield>() as i32 * 8) {
-                println!("warning: AckControl::ack(): can't save ack for an old packet, diff: {}", diff);
+                println!("warning: AckHeader::ack(): can't save ack for an old packet, diff: {}", diff);
                 return;
             }
 
@@ -129,7 +136,7 @@ impl AckControl {
             // sanity check: make sure we didn't receive a packet with the same sequence number before
             if (self.earlier_acks & 0x1 << offset) > 0 {
                 // a sequence number was received at least twice
-                println!("warning: AckControl::ack(): duplicate (old) sequence number received, ignoring.");
+                println!("warning: AckHeader::ack(): duplicate (old) sequence number received, ignoring.");
                 return;
             }
 
@@ -137,7 +144,7 @@ impl AckControl {
             self.earlier_acks |= 0x1 << offset;
         } else {
             // a sequence number was received at least twice
-            println!("warning: AckControl::ack(): duplicate sequence number received, ignoring.");
+            println!("warning: AckHeader::ack(): duplicate sequence number received, ignoring.");
             return;
         }
     }
@@ -150,6 +157,16 @@ impl AckControl {
 
         rsn.write_to_packet(writer)?;
         writer.write_u32::<EncodingType>(self.earlier_acks)
+    }
+
+    fn read_from_packet<R: Read>(reader: &mut R) -> io::Result<AckHeader> {
+        let rsn = SequenceNumber::read_from_packet(reader)?;
+        let ack_bits = reader.read_u32::<EncodingType>()?;
+
+        Ok(AckHeader{
+            remote_sequence_number: Some(rsn),
+            earlier_acks: ack_bits,
+        })
     }
 }
 
@@ -189,11 +206,17 @@ const MAGIC_PROTOCOL_ID: u32 = 0xABFECDFE;
 
 type EncodingType = BigEndian;
 
+#[derive(Debug, Copy, Clone)]
+struct PacketHeader {
+    seq_num: SequenceNumber,
+    acks: AckHeader,
+}
+
 pub struct UdpConnection {
     socket: UdpSocket,
     remote_addr: SocketAddr,
     next_local_sequence_number: SequenceNumber,
-    ack_control: AckControl,
+    ack_control: AckHeader,
     rtt: Duration,
 
     next_message_id: MessageId,
@@ -209,7 +232,7 @@ impl UdpConnection {
             socket: socket,
             remote_addr: remote_addr,
             next_local_sequence_number: SequenceNumber::first(),
-            ack_control: AckControl::new(),
+            ack_control: AckHeader::new(),
             rtt: Duration::new(0, 0),
 
             next_message_id: MessageId(0),
@@ -227,6 +250,22 @@ impl UdpConnection {
 
         // write acks
         self.ack_control.write_to_packet(writer)
+    }
+
+    fn read_header<R: Read>(reader: &mut R) -> io::Result<PacketHeader> {
+        let magic = reader.read_u32::<EncodingType>()?;
+
+        if magic != MAGIC_PROTOCOL_ID {
+            return Err(io::Error::new(io::ErrorKind::Other, "wrong protocol id"));
+        }
+
+        let seq_num = SequenceNumber::read_from_packet(reader)?;
+        let acks = AckHeader::read_from_packet(reader)?;
+
+        Ok(PacketHeader {
+            seq_num: seq_num,
+            acks: acks,
+        })
     }
 
     pub fn send_bytes(&mut self, msg: &[u8]) -> MessageId {
@@ -265,7 +304,7 @@ impl UdpConnection {
 
 #[cfg(test)]
 mod tests {
-    use super::{UdpConnection, SequenceNumber, AckControl};
+    use super::{SequenceNumber, AckHeader};
 
     #[test]
     fn test_sub_seq_nums() {
@@ -280,7 +319,7 @@ mod tests {
 
     #[test]
     fn test_ack_control_basic() {
-        let mut acks = AckControl::new();
+        let mut acks = AckHeader::new();
 
         // empty in the beginning
         assert_eq!(acks.remote_sequence_number, None);
@@ -308,7 +347,7 @@ mod tests {
 
     #[test]
     fn test_ack_control_wraparound() {
-        let mut acks = AckControl::new();
+        let mut acks = AckHeader::new();
 
         let mut seq_num = 65535.into();
 
