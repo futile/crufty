@@ -21,6 +21,10 @@ impl AckStatus  {
         }
     }
 
+    fn bitfield_size_bits() -> usize {
+        return ::std::mem::size_of::<EarlierAcksBitfield>() * 8
+    }
+
     pub fn ack(&mut self, seq_num: SequenceNumber) {
         let remote_sequence_number = match self.remote_sequence_number {
             Some(ref mut rsn) => rsn,
@@ -53,7 +57,7 @@ impl AckStatus  {
             // a packet with an older sequence number was received
 
             // check if this packet is too old to be acked by us
-            if diff < -(::std::mem::size_of::<EarlierAcksBitfield>() as i32 * 8) {
+            if diff < -(Self::bitfield_size_bits() as i32) {
                 println!("warning: AckStatus ::ack(): can't save ack for an old packet, diff: {}", diff);
                 return;
             }
@@ -95,6 +99,38 @@ impl AckStatus  {
             remote_sequence_number: Some(rsn),
             earlier_acks: ack_bits,
         })
+    }
+
+    pub fn is_acked(&self, seq_num: SequenceNumber) -> bool {
+        // check if we have seen an ack before
+        let rsn = match self.remote_sequence_number {
+            Some(rsn) => rsn,
+            None => return false,
+        };
+
+        // check if last seen one
+        if seq_num == rsn {
+            return true;
+        }
+
+        // check if too new
+        if seq_num > rsn {
+            return false;
+        }
+
+        // search in earlier acks
+        let diff = rsn - seq_num;
+
+        // find in bitfield
+        let (shifted, overflow) = self.earlier_acks.overflowing_shr(diff as u32 - 1);
+
+        // overflow means too old for us to have the ack
+        if overflow {
+            return false;
+        }
+
+        // extract from shift result
+        (shifted & 0x1) != 0
     }
 }
 
