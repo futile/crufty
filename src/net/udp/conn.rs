@@ -70,7 +70,7 @@ pub struct UdpConnection {
 }
 
 impl UdpConnection {
-    pub fn new(local_addr: &SocketAddr, remote_addr: SocketAddr, packet_timeout_limit: Duration) -> UdpConnection {
+    pub fn new(local_addr: &SocketAddr, remote_addr: &SocketAddr, packet_timeout_limit: Duration) -> UdpConnection {
         let socket = UdpSocket::bind(local_addr).unwrap();
         socket.connect(remote_addr).unwrap();
 
@@ -194,8 +194,11 @@ impl UdpConnection {
         // update average rtt
         self.averaged_rtt = new_average_rtt;
 
-        // create and return event
-        Some(UdpConnectionEvent::MessageReceived(reader.into_inner().to_vec()))
+        // save until where we've read the buffer
+        let reader_pos = reader.position() as usize;
+
+        // create and return event which contains the rest of the message
+        Some(UdpConnectionEvent::MessageReceived(reader.into_inner()[reader_pos..].to_vec()))
     }
 
     fn recv_with_timeout(&mut self, timeout: Duration) -> Option<UdpConnectionEvent> {

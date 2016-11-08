@@ -4,4 +4,4 @@ mod seqnum;
 mod ackstat;
 mod conn;
 
-pub use self::conn::{MessageId, UdpConnection};
+pub use self::conn::{MessageId, UdpConnectionEvent, UdpConnection};
