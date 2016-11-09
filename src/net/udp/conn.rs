@@ -9,6 +9,11 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 use super::seqnum::SequenceNumber;
 use super::ackstat::AckStatus;
 
+// for mocking
+use super::mock::MockUdpSocket;
+
+type UdpSocketType = MockUdpSocket;
+
 #[derive(Debug)]
 struct Buffer(Vec<u8>);
 
@@ -58,7 +63,7 @@ pub enum UdpConnectionEvent {
 }
 
 pub struct UdpConnection {
-    socket: UdpSocket,
+    socket: UdpSocketType,
     next_local_sequence_number: SequenceNumber,
     ack_control: AckStatus ,
     averaged_rtt: Duration,
@@ -71,8 +76,12 @@ pub struct UdpConnection {
 
 impl UdpConnection {
     pub fn new(local_addr: &SocketAddr, remote_addr: &SocketAddr, packet_timeout_limit: Duration) -> UdpConnection {
-        let socket = UdpSocket::bind(local_addr).unwrap();
+        let mut socket = UdpSocketType::bind(local_addr).unwrap();
         socket.connect(remote_addr).unwrap();
+
+        socket.latency = Duration::from_millis(250);
+        socket.jitter = Duration::from_millis(30);
+        socket.packet_loss_ratio = 0.1;
 
         UdpConnection {
             socket: socket,
@@ -229,21 +238,26 @@ impl UdpConnection {
             let maybe_event = match self.socket.recv(&mut buffer) {
                 // receive successful
                 Ok(bytes_read) => {
+                    // sanity check
+                    assert!(bytes_read <= buffer.capacity());
+
                     // **IMPORTANT** restrict buffer size to how much is actually valid
                     buffer.set_len(bytes_read);
 
                     // this is safe now, since we made sure the buffer size is correct
                     self.receive_packet(&buffer)
                 },
-                Err(e) => match e.kind() {
-                    // **IMPORTANT** on timeout, set buffer length to 0
-                    io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut => {
-                        buffer.set_len(0);
+                Err(e) => {
+                    // **IMPORTANT** on any error, set buffer length to 0
+                    buffer.set_len(0);
 
-                        None
+                    // see what error we got
+                    match e.kind() {
+                        // on timeout, just return no packet
+                        io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut => None,
+                        // else, panic
+                        _ => panic!(e),
                     }
-                    // else, panic
-                    _ => panic!(e),
                 }
             };
 

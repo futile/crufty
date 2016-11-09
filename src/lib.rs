@@ -25,6 +25,7 @@ extern crate toml;
 
 extern crate mio;
 extern crate byteorder;
+extern crate rand;
 
 #[macro_use]
 pub mod util;

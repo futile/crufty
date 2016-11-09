@@ -22,5 +22,6 @@ fn main() {
         conn.update(Instant::now() + send_interval, &mut event_buffer);
 
         println!("{:?}", event_buffer);
+        event_buffer.clear();
     }
 }
