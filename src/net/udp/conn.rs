@@ -1,4 +1,4 @@
-use std::net::{SocketAddr, UdpSocket};
+use std::net::SocketAddr;
 use std::time::{Duration, Instant};
 use std::io::{self, Cursor};
 use std::io::prelude::{Write, Read};
@@ -10,9 +10,7 @@ use super::seqnum::SequenceNumber;
 use super::ackstat::AckStatus;
 
 // for mocking
-use super::mock::MockUdpSocket;
-
-type UdpSocketType = MockUdpSocket;
+use super::UdpSocketImpl;
 
 #[derive(Debug)]
 struct Buffer(Vec<u8>);
@@ -62,8 +60,8 @@ pub enum UdpConnectionEvent {
     MessageTimedOut(MessageId),
 }
 
-pub struct UdpConnection {
-    socket: UdpSocketType,
+pub struct UdpConnection<S: UdpSocketImpl> {
+    socket: S,
     next_local_sequence_number: SequenceNumber,
     ack_control: AckStatus ,
     averaged_rtt: Duration,
@@ -74,14 +72,15 @@ pub struct UdpConnection {
     packet_timeout_limit: Duration,
 }
 
-impl UdpConnection {
-    pub fn new(local_addr: &SocketAddr, remote_addr: &SocketAddr, packet_timeout_limit: Duration) -> UdpConnection {
-        let mut socket = UdpSocketType::bind(local_addr).unwrap();
-        socket.connect(remote_addr).unwrap();
+impl<S: UdpSocketImpl> UdpConnection<S> {
+    pub fn new(local_addr: &SocketAddr, remote_addr: &SocketAddr, packet_timeout_limit: Duration) -> UdpConnection<S> {
+        let socket = S::bind(local_addr).unwrap();
 
-        socket.latency = Duration::from_millis(250);
-        socket.jitter = Duration::from_millis(30);
-        socket.packet_loss_ratio = 0.1;
+        UdpConnection::from_socket(socket, remote_addr, packet_timeout_limit)
+    }
+
+    pub fn from_socket(socket: S, remote_addr: &SocketAddr, packet_timeout_limit: Duration) -> UdpConnection<S> {
+        socket.connect(remote_addr).unwrap();
 
         UdpConnection {
             socket: socket,
@@ -151,6 +150,8 @@ impl UdpConnection {
         let msg_id = self.next_message_id;
         self.next_message_id.0 += 1;
 
+        println!("sending: {:?}", msg_id);
+
         // add packet info (seq num, sent-timestamp, message id) to pending acks
         self.pending_acks.push_back(InFlightInfo {
             seq_num: self.next_local_sequence_number,
@@ -191,6 +192,8 @@ impl UdpConnection {
             if header.acks.is_acked(info.seq_num) {
                 // update average rtt by 10% towards this packet's rtt (see link at module top)
                 new_average_rtt = (new_average_rtt * 9 + info.sent_time.elapsed()) / 10;
+
+                println!("received {:?}", info.msg_id);
 
                 // packet was acked, don't keep it in pending queue
                 return false;

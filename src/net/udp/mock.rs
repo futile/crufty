@@ -69,8 +69,8 @@ pub struct MockUdpSocket {
     received_packets: RefCell<BinaryHeap<PacketInfo>>,
 }
 
-impl MockUdpSocket {
-    pub fn bind(local: &SocketAddr) -> io::Result<MockUdpSocket> {
+impl super::UdpSocketImpl for MockUdpSocket {
+    fn bind(local: &SocketAddr) -> io::Result<MockUdpSocket> {
         let inner = UdpSocket::bind(local)?;
 
         Ok(MockUdpSocket {
@@ -86,22 +86,22 @@ impl MockUdpSocket {
         })
     }
 
-    pub fn connect(&self, remote: &SocketAddr) -> io::Result<()> {
+    fn connect(&self, remote: &SocketAddr) -> io::Result<()> {
         self.socket.connect(remote)
     }
 
-    pub fn send(&self, buf: &[u8]) -> io::Result<usize> {
+    fn send(&self, buf: &[u8]) -> io::Result<usize> {
         self.socket.send(buf)
     }
 
-    pub fn set_read_timeout(&self, dur: Option<Duration>) -> io::Result<()> {
+    fn set_read_timeout(&self, dur: Option<Duration>) -> io::Result<()> {
         *self.timeout.borrow_mut() = dur;
 
         // always succeeds
         Ok(())
     }
 
-    pub fn recv(&self, buf: &mut [u8]) -> io::Result<usize> {
+    fn recv(&self, buf: &mut [u8]) -> io::Result<usize> {
         let mut packets = self.received_packets.borrow_mut();
         let mut now = Instant::now();
         let timeout = self.timeout.borrow().clone();
@@ -164,10 +164,25 @@ impl MockUdpSocket {
                             // shrink, for better mem usage
                             buffer.shrink_to_fit();
 
+                            // rng can't handle empty ranges
+
+                            // generate mock seconds or 0
+                            let mock_secs = if self.jitter.as_secs() > 0 {
+                                rng.gen_range(0, self.jitter.as_secs())
+                            } else {
+                                0
+                            };
+
+                            // generate mock nanos or 0
+                            let mock_nanos = if self.jitter.subsec_nanos() > 0 {
+                                rng.gen_range(0, self.jitter.subsec_nanos())
+                            } else {
+                                0
+                            };
+
                             // calculate a mock receive time based on latency and jitter
-                            let mock_recv_time =
-                                Instant::now() + self.latency +
-                                Duration::new(0, rng.gen_range(0, self.jitter.subsec_nanos()));
+                            let mock_recv_time = Instant::now() + self.latency +
+                                                 Duration::new(mock_secs, mock_nanos);
 
                             // add to heap
                             packets.push(PacketInfo {
