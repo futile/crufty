@@ -1,4 +1,4 @@
-use std::net::SocketAddr;
+use std::net::{SocketAddr, UdpSocket};
 use std::time::{Duration, Instant};
 use std::io::{self, Cursor};
 use std::io::prelude::{Write, Read};
@@ -8,9 +8,6 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use super::seqnum::SequenceNumber;
 use super::ackstat::AckStatus;
-
-// for mocking
-use super::UdpSocketImpl;
 
 #[derive(Debug)]
 struct Buffer(Vec<u8>);
@@ -60,11 +57,8 @@ pub enum ReceiveEvent<'a> {
     NewData(&'a [u8]),
 }
 
-// struct BinaryCongestionControl {
-// }
-
-pub struct UdpConnection<S: UdpSocketImpl> {
-    socket: S,
+pub struct UdpConnection {
+    socket: UdpSocket,
     next_local_sequence_number: SequenceNumber,
     ack_control: AckStatus,
     averaged_rtt: Duration,
@@ -75,20 +69,12 @@ pub struct UdpConnection<S: UdpSocketImpl> {
     packet_timeout_limit: Duration,
 }
 
-impl<S: UdpSocketImpl> UdpConnection<S> {
+impl UdpConnection {
     pub fn new(local_addr: &SocketAddr,
                remote_addr: &SocketAddr,
                packet_timeout_limit: Duration)
-               -> UdpConnection<S> {
-        let socket = S::bind(local_addr).unwrap();
-
-        UdpConnection::from_socket(socket, remote_addr, packet_timeout_limit)
-    }
-
-    pub fn from_socket(socket: S,
-                       remote_addr: &SocketAddr,
-                       packet_timeout_limit: Duration)
-                       -> UdpConnection<S> {
+               -> UdpConnection {
+        let socket = UdpSocket::bind(local_addr).unwrap();
         socket.connect(remote_addr).unwrap();
 
         UdpConnection {
