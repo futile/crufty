@@ -45,7 +45,7 @@ impl Eq for PacketInfo {}
 
 impl PartialOrd for PacketInfo {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(other.cmp(self))
+        Some(self.cmp(other))
     }
 }
 
