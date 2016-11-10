@@ -102,7 +102,7 @@ impl super::UdpSocketImpl for MockUdpSocket {
     }
 
     fn recv(&self, buf: &mut [u8]) -> io::Result<usize> {
-        let mut packets = self.received_packets.borrow_mut();
+        let packets = &mut self.received_packets.borrow_mut();
         let mut now = Instant::now();
         let timeout = self.timeout.borrow().clone();
         let start = now;

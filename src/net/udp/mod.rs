@@ -12,6 +12,15 @@ use std::net::{SocketAddr};
 use std::io;
 use std::time::Duration;
 
+
+fn ns_to_ms(ns: u32) -> u64 {
+    ns as u64 / 1000000
+}
+
+fn dur_to_ms(dur: &Duration) -> u64 {
+    dur.as_secs() * 1000 + ns_to_ms(dur.subsec_nanos())
+}
+
 // trait to unify ::std::net::UdpSocket and our MockUdpSocket
 pub trait UdpSocketImpl: Sized {
     fn bind(local: &SocketAddr) -> io::Result<Self>;

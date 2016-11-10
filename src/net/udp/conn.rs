@@ -51,19 +51,25 @@ type Encoding = BigEndian;
 #[derive(Debug, Copy, Clone)]
 struct PacketHeader {
     seq_num: SequenceNumber,
-    acks: AckStatus ,
+    acks: AckStatus,
 }
 
 #[derive(Debug)]
 pub enum UdpConnectionEvent {
-    MessageReceived { data: Vec<u8>, new_acks: Vec<MessageId> },
+    MessageReceived {
+        data: Vec<u8>,
+        new_acks: Vec<MessageId>,
+    },
     MessageTimedOut(MessageId),
 }
+
+// struct BinaryCongestionControl {
+// }
 
 pub struct UdpConnection<S: UdpSocketImpl> {
     socket: S,
     next_local_sequence_number: SequenceNumber,
-    ack_control: AckStatus ,
+    ack_control: AckStatus,
     averaged_rtt: Duration,
 
     next_message_id: MessageId,
@@ -73,19 +79,25 @@ pub struct UdpConnection<S: UdpSocketImpl> {
 }
 
 impl<S: UdpSocketImpl> UdpConnection<S> {
-    pub fn new(local_addr: &SocketAddr, remote_addr: &SocketAddr, packet_timeout_limit: Duration) -> UdpConnection<S> {
+    pub fn new(local_addr: &SocketAddr,
+               remote_addr: &SocketAddr,
+               packet_timeout_limit: Duration)
+               -> UdpConnection<S> {
         let socket = S::bind(local_addr).unwrap();
 
         UdpConnection::from_socket(socket, remote_addr, packet_timeout_limit)
     }
 
-    pub fn from_socket(socket: S, remote_addr: &SocketAddr, packet_timeout_limit: Duration) -> UdpConnection<S> {
+    pub fn from_socket(socket: S,
+                       remote_addr: &SocketAddr,
+                       packet_timeout_limit: Duration)
+                       -> UdpConnection<S> {
         socket.connect(remote_addr).unwrap();
 
         UdpConnection {
             socket: socket,
             next_local_sequence_number: SequenceNumber::first(),
-            ack_control: AckStatus ::new(),
+            ack_control: AckStatus::new(),
             averaged_rtt: Duration::new(0, 0),
 
             next_message_id: MessageId(0),
@@ -131,20 +143,23 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         })
     }
 
-    pub fn send_bytes(&mut self, msg: &[u8]) -> MessageId {
+    pub fn send_bytes(&mut self, msg: &[u8]) -> io::Result<MessageId> {
         let mut buffer = self.buffer.take();
 
         // write header to buffer
-        self.write_header(&mut buffer).unwrap();
+        self.write_header(&mut buffer)?;
 
         // write msg to buffer
-        buffer.write_all(msg).unwrap();
+        buffer.write_all(msg)?;
 
         // send packet
-        let sent_count = self.socket.send(&buffer).unwrap();
+        let sent_count = self.socket.send(&buffer)?;
 
-        // sanity check, should return an error if we try to send too much (which the unwrap above should catch)
-        assert_eq!(sent_count, buffer.len(), "only a partial send occured, should not happen??");
+        // sanity check, should return an error if we try to send too much
+        // (which the unwrap above should catch)
+        assert_eq!(sent_count,
+                   buffer.len(),
+                   "only a partial send occured, should not happen??");
 
         // create and increase MessageId
         let msg_id = self.next_message_id;
@@ -163,7 +178,7 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         // give buffer back
         self.buffer.done(buffer);
 
-        return msg_id;
+        Ok(msg_id)
     }
 
     // TODO this should probably return a Result, so we know when e.g. a wrong magic number arrived
@@ -174,7 +189,8 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         let header = match Self::read_header(&mut reader) {
             Ok(header) => header,
             Err(e) => {
-                println!("warning: UdpConnection::read_header() returned '{}', dropping packet", e);
+                println!("warning: UdpConnection::read_header() returned '{}', dropping packet",
+                         e);
                 return None;
             }
         };
@@ -188,11 +204,18 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         // collect new acked ids
         let mut new_acks = vec![];
 
-        // remove acked packages from pending acks and update average rtt
+        // only keep un-acked packages in pending acks and update average rtt
         self.pending_acks.retain(|info| {
             if header.acks.is_acked(info.seq_num) {
+                // rtt of this packet
+                let rtt = info.sent_time.elapsed();
+
                 // update average rtt by 10% towards this packet's rtt (see link at module top)
-                new_average_rtt = (new_average_rtt * 9 + info.sent_time.elapsed()) / 10;
+                new_average_rtt = (new_average_rtt * 9 + rtt) / 10;
+
+                println!("rtt: {:?}, new_average: {:?}",
+                         super::dur_to_ms(&rtt),
+                         super::dur_to_ms(&new_average_rtt));
 
                 // save the acked id
                 new_acks.push(info.msg_id);
@@ -211,14 +234,14 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         // save until where we've read the buffer
         let reader_pos = reader.position() as usize;
 
-        // create and return event which contains the rest of the message
-        Some(UdpConnectionEvent::MessageReceived{
+        // create and return event which contains the rest of the message, as well as any new acks
+        Some(UdpConnectionEvent::MessageReceived {
             data: reader.into_inner()[reader_pos..].to_vec(),
             new_acks: new_acks,
         })
     }
 
-    fn recv_with_timeout(&mut self, timeout: Duration) -> Option<UdpConnectionEvent> {
+    pub fn recv_with_timeout(&mut self, timeout: Duration) -> Option<UdpConnectionEvent> {
         // sanity-check warning
         if timeout == Duration::new(0, 0) {
             println!("warning: UdpConnection::update(): 'timeout' is zero -> blocking read");
@@ -232,7 +255,7 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
 
         // resize the buffer without allocating, because we want >64kb
         unsafe {
-            // see e.g. https://stackoverflow.com/questions/1098897/what-is-the-largest-safe-udp-packet-size-on-the-internet
+            // see e.g. https://stackoverflow.com/questions/1098897/
             let max_udp_size: usize = 65507;
 
             // reserve, i.e. allocate, enough memory
@@ -254,7 +277,7 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
 
                     // this is safe now, since we made sure the buffer size is correct
                     self.receive_packet(&buffer)
-                },
+                }
                 Err(e) => {
                     // **IMPORTANT** on any error, set buffer length to 0
                     buffer.set_len(0);
@@ -262,7 +285,8 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
                     // see what error we got
                     match e.kind() {
                         // on timeout, just return no packet
-                        io::ErrorKind::WouldBlock | io::ErrorKind::TimedOut => None,
+                        io::ErrorKind::WouldBlock |
+                        io::ErrorKind::TimedOut => None,
                         // else, panic
                         _ => panic!(e),
                     }
@@ -277,7 +301,7 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         }
     }
 
-    fn check_for_timeouts(&mut self, event_buffer: &mut Vec<UdpConnectionEvent>) {
+    pub fn check_for_timeouts(&mut self, event_buffer: &mut Vec<UdpConnectionEvent>) {
         let now = Instant::now();
 
         // borrow checker forces this copy, or I couldn't do it better
