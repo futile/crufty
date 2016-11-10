@@ -5,7 +5,7 @@ mod ackstat;
 mod conn;
 mod mock;
 
-pub use self::conn::{MessageId, UdpConnectionEvent, UdpConnection};
+pub use self::conn::{MessageId, UdpConnection, ReceiveEvent};
 pub use self::mock::MockUdpSocket;
 
 use std::net::{SocketAddr};
@@ -13,11 +13,11 @@ use std::io;
 use std::time::Duration;
 
 
-fn ns_to_ms(ns: u32) -> u64 {
-    ns as u64 / 1000000
+pub fn ns_to_ms(ns: u32) -> u64 {
+    ns as u64 / 1_000_000
 }
 
-fn dur_to_ms(dur: &Duration) -> u64 {
+pub fn dur_to_ms(dur: &Duration) -> u64 {
     dur.as_secs() * 1000 + ns_to_ms(dur.subsec_nanos())
 }
 

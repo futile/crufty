@@ -55,12 +55,9 @@ struct PacketHeader {
 }
 
 #[derive(Debug)]
-pub enum UdpConnectionEvent {
-    MessageReceived {
-        data: Vec<u8>,
-        new_acks: Vec<MessageId>,
-    },
-    MessageTimedOut(MessageId),
+pub enum ReceiveEvent<'a> {
+    NewAck(MessageId, Duration),
+    NewData(&'a [u8]),
 }
 
 // struct BinaryCongestionControl {
@@ -182,7 +179,9 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
     }
 
     // TODO this should probably return a Result, so we know when e.g. a wrong magic number arrived
-    fn receive_packet(&mut self, buffer: &[u8]) -> Option<UdpConnectionEvent> {
+    fn receive_packet<F>(&mut self, buffer: &[u8], mut handler: F)
+        where F: FnMut(ReceiveEvent)
+    {
         let mut reader = Cursor::new(buffer);
 
         // read header
@@ -191,7 +190,7 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
             Err(e) => {
                 println!("warning: UdpConnection::read_header() returned '{}', dropping packet",
                          e);
-                return None;
+                return;
             }
         };
 
@@ -200,9 +199,6 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
 
         // have to take this out of the closure
         let mut new_average_rtt = self.averaged_rtt;
-
-        // collect new acked ids
-        let mut new_acks = vec![];
 
         // only keep un-acked packages in pending acks and update average rtt
         self.pending_acks.retain(|info| {
@@ -217,8 +213,8 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
                          super::dur_to_ms(&rtt),
                          super::dur_to_ms(&new_average_rtt));
 
-                // save the acked id
-                new_acks.push(info.msg_id);
+                // give new ack to caller
+                handler(ReceiveEvent::NewAck(info.msg_id, rtt));
 
                 // packet was acked, don't keep it in pending queue
                 return false;
@@ -234,21 +230,23 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         // save until where we've read the buffer
         let reader_pos = reader.position() as usize;
 
-        // create and return event which contains the rest of the message, as well as any new acks
-        Some(UdpConnectionEvent::MessageReceived {
-            data: reader.into_inner()[reader_pos..].to_vec(),
-            new_acks: new_acks,
-        })
+        // give rest of the packet to the caller
+        handler(ReceiveEvent::NewData(&reader.into_inner()[reader_pos..]));
+
     }
 
-    pub fn recv_with_timeout(&mut self, timeout: Duration) -> Option<UdpConnectionEvent> {
+    pub fn recv_with_timeout<F>(&mut self, timeout: Option<Duration>, handler: F)
+        where F: FnMut(ReceiveEvent)
+    {
         // sanity-check warning
-        if timeout == Duration::new(0, 0) {
-            println!("warning: UdpConnection::update(): 'timeout' is zero -> blocking read");
-        }
+        timeout.map(|to| {
+            assert_ne!(to,
+                       Duration::new(0, 0),
+                       "zero-duration is invalid, use 'None' for blocking")
+        });
 
         // set timeout for the receive
-        self.socket.set_read_timeout(Some(timeout)).unwrap();
+        self.socket.set_read_timeout(timeout).unwrap();
 
         // get a buffer for receiving
         let mut buffer = self.buffer.take();
@@ -266,7 +264,7 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
             buffer.set_len(max_udp_size);
 
             // try receiving a packet (with the timeout set before)
-            let maybe_event = match self.socket.recv(&mut buffer) {
+            match self.socket.recv(&mut buffer) {
                 // receive successful
                 Ok(bytes_read) => {
                     // sanity check
@@ -276,7 +274,7 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
                     buffer.set_len(bytes_read);
 
                     // this is safe now, since we made sure the buffer size is correct
-                    self.receive_packet(&buffer)
+                    self.receive_packet(&buffer, handler);
                 }
                 Err(e) => {
                     // **IMPORTANT** on any error, set buffer length to 0
@@ -284,9 +282,9 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
 
                     // see what error we got
                     match e.kind() {
-                        // on timeout, just return no packet
+                        // on timeout do nothing
                         io::ErrorKind::WouldBlock |
-                        io::ErrorKind::TimedOut => None,
+                        io::ErrorKind::TimedOut => {}
                         // else, panic
                         _ => panic!(e),
                     }
@@ -295,13 +293,12 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
 
             // return buffer (this will also clear() it)
             self.buffer.done(buffer);
-
-            // return (maybe) an event
-            maybe_event
         }
     }
 
-    pub fn check_for_timeouts(&mut self, event_buffer: &mut Vec<UdpConnectionEvent>) {
+    pub fn check_for_timeouts<F>(&mut self, mut on_timeout: F)
+        where F: FnMut(MessageId)
+    {
         let now = Instant::now();
 
         // borrow checker forces this copy, or I couldn't do it better
@@ -314,39 +311,11 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
 
             // if it timed out, report an event to the caller
             if timed_out {
-                event_buffer.push(UdpConnectionEvent::MessageTimedOut(info.msg_id));
+                on_timeout(info.msg_id);
             }
 
             // this cleans out packets that have timed out
             !timed_out
         });
-    }
-
-    pub fn update(&mut self, deadline: Instant, event_buffer: &mut Vec<UdpConnectionEvent>) {
-        // reserve some time for bookkeeping
-        let deadline = deadline - Duration::new(0, 100000); // 0.1ms
-
-        // try to receive packets until we are at our deadline
-        loop {
-            let now = Instant::now();
-
-            // are we at our deadline already?
-            if now >= deadline {
-                // if so, then don't try receiving again
-                break;
-            }
-
-            // calculate timeout until deadline
-            let timeout = deadline - now;
-
-            // see if there is a new message
-            if let Some(event) = self.recv_with_timeout(timeout) {
-                // save message for caller
-                event_buffer.push(event);
-            }
-        }
-
-        // done with receiving, check for timeouted packages now
-        self.check_for_timeouts(event_buffer);
     }
 }
