@@ -38,7 +38,7 @@ impl AckStatus  {
             // a newer, more recent remote sequence number was received
 
             // add current `remote_sequence_number` to `earlier_acks`, as lowest bit
-            // only do this if this wasn't the first ack. TODO remove this check somehow
+            // only do this if this wasn't the first ack.
             self.earlier_acks <<= 1;
             self.earlier_acks |= 0x1;
 
