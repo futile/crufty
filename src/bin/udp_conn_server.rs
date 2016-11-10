@@ -24,16 +24,16 @@ fn main() {
 
         for event in event_buffer.drain(..) {
             match event {
-                UdpConnectionEvent::MessageReceived(msg) => {
-                    let msg_str = ::std::str::from_utf8(&msg).unwrap();
-                    // println!("Message: {}", msg_str);
+                UdpConnectionEvent::MessageReceived{ data, new_acks } => {
+                    let data_str = ::std::str::from_utf8(&data).unwrap();
 
-                    conn.send_bytes(&format!("Ping: '{}'", msg_str).as_bytes());
+                    let sent_id = conn.send_bytes(&format!("Ping: '{}'", data_str).as_bytes());
+
+                    println!("sent resp., id: {:?}", sent_id);
+                    println!("acked ids: {:?}", new_acks);
                 }
                 mto @ UdpConnectionEvent::MessageTimedOut(_) => println!("{:?}", mto),
             }
         }
-
-        // println!("{:?}", event_buffer);
     }
 }

@@ -56,7 +56,7 @@ struct PacketHeader {
 
 #[derive(Debug)]
 pub enum UdpConnectionEvent {
-    MessageReceived(Vec<u8>),
+    MessageReceived { data: Vec<u8>, new_acks: Vec<MessageId> },
     MessageTimedOut(MessageId),
 }
 
@@ -150,8 +150,6 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         let msg_id = self.next_message_id;
         self.next_message_id.0 += 1;
 
-        println!("sending: {:?}", msg_id);
-
         // add packet info (seq num, sent-timestamp, message id) to pending acks
         self.pending_acks.push_back(InFlightInfo {
             seq_num: self.next_local_sequence_number,
@@ -187,13 +185,17 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         // have to take this out of the closure
         let mut new_average_rtt = self.averaged_rtt;
 
+        // collect new acked ids
+        let mut new_acks = vec![];
+
         // remove acked packages from pending acks and update average rtt
         self.pending_acks.retain(|info| {
             if header.acks.is_acked(info.seq_num) {
                 // update average rtt by 10% towards this packet's rtt (see link at module top)
                 new_average_rtt = (new_average_rtt * 9 + info.sent_time.elapsed()) / 10;
 
-                println!("received {:?}", info.msg_id);
+                // save the acked id
+                new_acks.push(info.msg_id);
 
                 // packet was acked, don't keep it in pending queue
                 return false;
@@ -210,7 +212,10 @@ impl<S: UdpSocketImpl> UdpConnection<S> {
         let reader_pos = reader.position() as usize;
 
         // create and return event which contains the rest of the message
-        Some(UdpConnectionEvent::MessageReceived(reader.into_inner()[reader_pos..].to_vec()))
+        Some(UdpConnectionEvent::MessageReceived{
+            data: reader.into_inner()[reader_pos..].to_vec(),
+            new_acks: new_acks,
+        })
     }
 
     fn recv_with_timeout(&mut self, timeout: Duration) -> Option<UdpConnectionEvent> {

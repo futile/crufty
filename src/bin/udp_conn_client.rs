@@ -24,16 +24,18 @@ fn main() {
 
     loop {
         let msg = "Hello, Udp!".as_bytes();
-        conn.send_bytes(&msg);
-        // println!("msg: {:?}", msg);
+        let sent_id = conn.send_bytes(&msg);
+
+        println!("sent request, id: {:?}", sent_id);
 
         conn.update(Instant::now() + send_interval, &mut event_buffer);
 
-        // println!("{:?}", event_buffer);
         for event in event_buffer.drain(..) {
             match event {
-                mto @ UdpConnectionEvent::MessageTimedOut(_) => println!("{:?}", mto),
-                _ => {}
+                UdpConnectionEvent::MessageTimedOut(msg_id) => println!("timed out: {:?}", msg_id),
+                UdpConnectionEvent::MessageReceived { data: _, new_acks } => {
+                    println!("acked ids: {:?}", new_acks);
+                }
             }
         }
     }
