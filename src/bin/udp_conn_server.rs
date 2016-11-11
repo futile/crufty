@@ -1,6 +1,6 @@
 extern crate crufty;
 
-use std::time::Duration;
+use std::time::{Instant, Duration};
 
 use crufty::net::udp::{self, CongestionControl, UdpConnection, ReceiveEvent};
 
@@ -8,14 +8,17 @@ fn main() {
     let mut conn = CongestionControl::new(UdpConnection::new(&"127.0.0.1:12366".parse().unwrap(),
                                                              &"127.0.0.1:12365".parse().unwrap(),
                                                              Duration::from_secs(3)));
+    let mut last_received = Instant::now();
     let mut to_send = None;
     let to_send = &mut to_send;
     loop {
         conn.recv_with_timeout(None, |e| match e {
-            ReceiveEvent::NewAck(msg_id, rtt) => {
+            ReceiveEvent::NewAck(_msg_id, _rtt) => {
                 // println!("{:?} done, took {}ms", msg_id, udp::dur_to_ms(&rtt));
             }
             ReceiveEvent::NewData(data) => {
+                println!("received something, after {}ms", udp::dur_to_ms(&last_received.elapsed()));
+                last_received = Instant::now();
                 *to_send = Some(data.to_vec());
             }
         });

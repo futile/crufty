@@ -88,6 +88,23 @@ pub struct CongestionControl {
     mode: ConnectionMode,
 }
 
+#[derive(Debug)]
+pub enum CongestionStatus {
+    ReadyToSend,
+    ShouldWait(Duration),
+    MustWait(Duration),
+}
+
+impl CongestionStatus {
+    pub fn wait_time(&self) -> Option<Duration> {
+        match self {
+            &CongestionStatus::ReadyToSend => None,
+            &CongestionStatus::ShouldWait(d) |
+            &CongestionStatus::MustWait(d) => Some(d),
+        }
+    }
+}
+
 impl CongestionControl {
     pub fn new(udp_conn: UdpConnection) -> CongestionControl {
         CongestionControl {
@@ -134,6 +151,17 @@ impl CongestionControl {
 
         // actually send the message
         self.conn.send_bytes(msg)
+    }
+
+    pub fn congestion_status(&self) -> CongestionStatus {
+        let d = self.time_until_next_send
+            .checked_sub(Instant::now().duration_since(self.last_send));
+
+        match d {
+            Some(dur) if dur > Duration::from_secs(1) => CongestionStatus::MustWait(dur),
+            Some(dur) => CongestionStatus::ShouldWait(dur),
+            None => CongestionStatus::ReadyToSend,
+        }
     }
 
     pub fn recv_with_timeout<F>(&mut self, timeout: Option<Duration>, mut handler: F)
