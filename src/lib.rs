@@ -1,5 +1,6 @@
 #![feature(const_fn)]
 #![feature(associated_consts)]
+#![feature(duration_checked_ops)]
 
 #[macro_use]
 extern crate custom_derive;
@@ -26,6 +27,7 @@ extern crate toml;
 extern crate mio;
 extern crate byteorder;
 extern crate rand;
+extern crate smallvec;
 
 #[macro_use]
 pub mod util;

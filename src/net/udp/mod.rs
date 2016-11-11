@@ -3,8 +3,10 @@
 mod seqnum;
 mod ackstat;
 mod conn;
+mod congcontrol;
 
 pub use self::conn::{MessageId, UdpConnection, ReceiveEvent};
+pub use self::congcontrol::CongestionControl;
 
 use std::time::Duration;
 

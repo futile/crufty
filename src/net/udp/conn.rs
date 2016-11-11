@@ -61,7 +61,6 @@ pub struct UdpConnection {
     socket: UdpSocket,
     next_local_sequence_number: SequenceNumber,
     ack_control: AckStatus,
-    averaged_rtt: Duration,
 
     next_message_id: MessageId,
     buffer: Buffer,
@@ -81,7 +80,6 @@ impl UdpConnection {
             socket: socket,
             next_local_sequence_number: SequenceNumber::first(),
             ack_control: AckStatus::new(),
-            averaged_rtt: Duration::new(0, 0),
 
             next_message_id: MessageId(0),
             buffer: Buffer::new(),
@@ -183,21 +181,11 @@ impl UdpConnection {
         // ack the remote packet
         self.ack_control.ack(header.seq_num);
 
-        // have to take this out of the closure
-        let mut new_average_rtt = self.averaged_rtt;
-
         // only keep un-acked packages in pending acks and update average rtt
         self.pending_acks.retain(|info| {
             if header.acks.is_acked(info.seq_num) {
                 // rtt of this packet
                 let rtt = info.sent_time.elapsed();
-
-                // update average rtt by 10% towards this packet's rtt (see link at module top)
-                new_average_rtt = (new_average_rtt * 9 + rtt) / 10;
-
-                println!("rtt: {:?}, new_average: {:?}",
-                         super::dur_to_ms(&rtt),
-                         super::dur_to_ms(&new_average_rtt));
 
                 // give new ack to caller
                 handler(ReceiveEvent::NewAck(info.msg_id, rtt));
@@ -209,9 +197,6 @@ impl UdpConnection {
             // packet not acked yet, keep as pending
             true
         });
-
-        // update average rtt
-        self.averaged_rtt = new_average_rtt;
 
         // save until where we've read the buffer
         let reader_pos = reader.position() as usize;
