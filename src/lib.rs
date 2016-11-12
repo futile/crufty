@@ -29,6 +29,8 @@ extern crate byteorder;
 extern crate rand;
 extern crate smallvec;
 
+extern crate specs;
+
 #[macro_use]
 pub mod util;
 
