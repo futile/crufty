@@ -16,6 +16,9 @@ extern crate fnv;
 extern crate tuple_utils;
 extern crate atom;
 
+// crufty
+extern crate rustc_serialize;
+
 pub use storage::{Storage, UnprotectedStorage, AntiStorage,
                   VecStorage, HashMapStorage, NullStorage, InsertResult,
                   MaskedStorage};
@@ -36,7 +39,7 @@ mod planner;
 /// Index generation. When a new entity is placed at an old index,
 /// it bumps the `Generation` by 1. This allows to avoid using components
 /// from the entities that were deleted.
-#[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd, RustcEncodable, RustcDecodable)]
 pub struct Generation(i32);
 
 impl Generation {
@@ -62,7 +65,7 @@ impl Generation {
 /// Keeping it 32bit allows for a single 64bit word per entity.
 pub type Index = u32;
 /// `Entity` type, as seen by the user.
-#[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Hash, Eq, Ord, PartialEq, PartialOrd, RustcEncodable, RustcDecodable)]
 pub struct Entity(Index, Generation);
 
 impl Entity {

@@ -24,3 +24,5 @@ custom_derive = "0.1.5"
 rand = "0.3.14"
 smallvec = "0.2.1"
 specs = { path = "deps/specs" }
+mincode = { git = "https://github.com/Boscop/mincode" }
+rustc-serialize = "0.3"

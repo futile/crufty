@@ -1,61 +1,57 @@
+extern crate crufty;
 extern crate specs;
 
 use specs::Join;
 
-#[derive(Copy,Clone,Debug)]
-struct Position {
-    x: f32,
-    y: f32,
-}
+use crufty::v2::{self, CContext, Position, Info, WorldSyncer};
 
-impl specs::Component for Position {
-    type Storage = specs::VecStorage<Position>;
-}
+struct PositionSystem;
 
-#[derive(Clone,Copy,Debug)]
-struct Info(i32);
+impl specs::System<CContext> for PositionSystem {
+    fn run(&mut self, arg: specs::RunArg, context: CContext) {
+        let (ents, mut poss) = arg.fetch(|w| {
+           (w.entities(), w.write::<Position>()) 
+        });
+
+        let mut pos_updates = context.positions.lock().unwrap();
+        for (ent, pos) in (&ents, &mut poss).iter() {
+            pos.x = (pos.x + 1.0) % 20.0;
+            pos_updates.insert(ent, *pos);
+        }
+    }
+}
 
 fn main() {
     let mut world = specs::World::new();
-
     world.register::<Position>();
+    // world.add_resource(Info(42));
+    world.create_now().with(Position {x: 3.0, y: 4.0}).build();
 
-    world.add_resource(Info(42));
+    let mut p = specs::Planner::<CContext>::new(world, 1);
+    p.add_system(PositionSystem, "PositionSystem", 0);
 
-    let e = world.create_now().with(Position {x: 3.0, y: 4.0}).build();
+    let context = CContext::default();
 
-    let mut p = specs::Planner::<()>::new(world, 4);
+    p.dispatch(context.clone());
 
-    p.run_custom(|arg| {
-        let (mut poss, mut info) = arg.fetch(|world| {
-            (world.write::<Position>(), world.write_resource::<Info>())
+    let ser = v2::serialize_ccontext(&context);
+    println!("ser.len(): {}", ser.len());
+
+    let mut world2 = specs::World::new();
+    world2.register::<Position>();
+    let mut p2 = specs::Planner::<CContext>::new(world2, 1);
+
+    let mut ws = WorldSyncer::default();
+
+    ws.deserialize_into_world(p2.mut_world(), &ser);
+
+    p2.run_custom(|arg| {
+        let (ents, poss) = arg.fetch(|w| {
+            (w.entities(), w.read::<Position>())
         });
 
-        for pos in (&mut poss).iter() {
-            pos.x += 1.0;
-            pos.y += 2.0;
+        for (e, p) in (&ents, &poss).iter() {
+            println!("e: {:?}, pos: {:?}", e, p);
         }
-
-        info.0 += 7;
     });
-
-    p.wait();
-
-    p.run1w0r(|pos: &mut Position| {
-        pos.y = 0.0;
-    });
-
-    p.run_custom(|arg| {
-        let (ents, poss, info) = arg.fetch(|world| {
-            (world.entities(), world.read::<Position>(), world.read_resource::<Info>())
-        });
-
-        for (eid, pos) in (&ents, &poss).iter() {
-            println!("{:?}: {:?}", eid, pos);
-        }
-
-        println!("info: {:?}", *info);
-    });
-
-    p.wait();
 }

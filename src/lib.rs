@@ -30,6 +30,8 @@ extern crate rand;
 extern crate smallvec;
 
 extern crate specs;
+extern crate mincode;
+extern crate rustc_serialize;
 
 #[macro_use]
 pub mod util;
@@ -39,3 +41,4 @@ pub mod net;
 pub mod systems;
 pub mod components;
 pub mod game;
+pub mod v2;
