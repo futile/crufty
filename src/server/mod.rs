@@ -1,5 +1,9 @@
 use util::{State, Transition};
 
+mod run_state;
+
+use self::run_state::ServerRunState;
+
 pub enum ServerTransition {
     Startup,
     StartGame,
@@ -19,18 +23,11 @@ impl Transition for ServerTransition {
 }
 
 pub struct ServerStartupState;
-pub struct ServerRunState;
 pub struct ServerShutdownState;
 
 impl State<ServerTransition> for ServerStartupState {
     fn run(self: Box<Self>) -> ServerTransition {
         ServerTransition::StartGame
-    }
-}
-
-impl State<ServerTransition> for ServerRunState {
-    fn run(self: Box<Self>) -> ServerTransition {
-        ServerTransition::Shutdown
     }
 }
 

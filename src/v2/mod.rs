@@ -1,9 +1,9 @@
 use std::io::Cursor;
-use std::io::prelude::{Write, Read};
+// use std::io::prelude::{Write, Read};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
-use specs::{self, Join, InsertResult};
+use specs::{self, InsertResult};
 
 use mincode::{SizeLimit, FloatEncoding};
 use mincode::rustc_serialize::{encode_into, decode_from};
