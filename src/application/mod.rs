@@ -2,12 +2,11 @@ use glium::{self, glutin};
 
 use util::{State, Transition};
 
-pub use self::gamestate::GameState;
-
-pub use self::input::{InputManager, InputContext, KeyHandler, InputState, InputIntent};
-
 mod gamestate;
 mod input;
+
+pub use self::gamestate::GameState;
+pub use self::input::{InputManager, InputContext, KeyHandler, InputState, InputIntent};
 
 pub enum AppTransition {
     Startup,
