@@ -61,8 +61,6 @@ impl WorldSyncer {
 
         let pos_count = reader.read_u16::<BigEndian>().unwrap();
 
-        println!("pos_count: {}", pos_count);
-
         for _ in 0..pos_count {
             let server_ent: specs::Entity =
                 decode_from(&mut reader, SizeLimit::Infinite, FloatEncoding::Normal).unwrap();

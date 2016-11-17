@@ -34,6 +34,16 @@ impl ServerRunState {
 
 impl State<ServerTransition> for ServerRunState {
     fn run(self: Box<Self>) -> ServerTransition {
+        let mut world = specs::World::new();
+        world.register::<Position>();
+        // world.add_resource(Info(42));
+        world.create_now().with(Position { x: 3.0, y: 4.0 }).build();
+
+        let mut p = specs::Planner::<CContext>::new(world, 1);
+        p.add_system(PositionSystem, "PositionSystem", 0);
+
+        let context = CContext::default();
+
         let mut conn = CongestionControl::new(self.conn);
 
         let update_interval = Duration::from_secs(1) / 60;
@@ -49,14 +59,21 @@ impl State<ServerTransition> for ServerRunState {
             previous_update = current;
             lag_behind_simulation += elapsed;
 
+            let mut update_counter = 0;
             while lag_behind_simulation >= update_interval {
-                // TODO world update
+                // simulation updated **here**
+                p.dispatch(context.clone());
+
                 lag_behind_simulation -= update_interval;
+                update_counter += 1;
             }
+            println!("updated {} times", update_counter);
 
             // 2. send (if rate allows)
             if let CongestionStatus::ReadyToSend = conn.congestion_status() {
-                // TODO keep what to send, send
+                let ser = v2::serialize_ccontext(&context);
+                conn.send_bytes(&ser).unwrap();
+                println!("update sent");
             }
 
             // 3. FIXME debug render
@@ -71,47 +88,18 @@ impl State<ServerTransition> for ServerRunState {
             };
 
             conn.recv_with_timeout(Some(timeout), |e| match e {
-                ReceiveEvent::NewAck(msg_id, rtt) => {
-                    println!("ack; id: {:?}, rtt: {:?}ms", msg_id, udp::dur_to_ms(&rtt));
+                ReceiveEvent::NewAck(_msg_id, _rtt) => {
+                    // println!("ack; id: {:?}, rtt: {:?}ms", _msg_id, udp::dur_to_ms(&_rtt));
                 }
                 ReceiveEvent::NewData(data) => {
-                    println!("received msg(unexpected?): {:?}", data);
+                    if data.len() > 0 {
+                        println!("received msg(unexpected?): {:?}", data);
+                    }
                 }
             });
 
             conn.check_for_timeouts(|msg_id| println!("msg {:?} timed out", msg_id));
         }
-
-        let mut world = specs::World::new();
-        world.register::<Position>();
-        // world.add_resource(Info(42));
-        world.create_now().with(Position { x: 3.0, y: 4.0 }).build();
-
-        let mut p = specs::Planner::<CContext>::new(world, 1);
-        p.add_system(PositionSystem, "PositionSystem", 0);
-
-        let context = CContext::default();
-
-        p.dispatch(context.clone());
-
-        let ser = v2::serialize_ccontext(&context);
-        println!("ser.len(): {}", ser.len());
-
-        let mut world2 = specs::World::new();
-        world2.register::<Position>();
-        let mut p2 = specs::Planner::<CContext>::new(world2, 1);
-
-        let mut ws = WorldSyncer::default();
-
-        ws.deserialize_into_world(p2.mut_world(), &ser);
-
-        p2.run_custom(|arg| {
-            let (ents, poss) = arg.fetch(|w| (w.entities(), w.read::<Position>()));
-
-            for (e, p) in (&ents, &poss).iter() {
-                println!("e: {:?}, pos: {:?}", e, p);
-            }
-        });
 
         ServerTransition::Shutdown
     }
