@@ -57,6 +57,12 @@ pub enum ReceiveEvent<'a> {
     NewData(&'a [u8]),
 }
 
+#[derive(Debug)]
+pub struct NewAckEvent {
+    pub msg_id: MessageId,
+    pub rtt: Duration,
+}
+
 pub struct UdpConnection {
     socket: UdpSocket,
     next_local_sequence_number: SequenceNumber,
@@ -166,21 +172,16 @@ impl UdpConnection {
         Ok(msg_id)
     }
 
-    // TODO this should probably return a Result, so we know when e.g. a wrong magic number arrived
-    fn receive_packet<F>(&mut self, buffer: &[u8], mut handler: F)
-        where F: FnMut(ReceiveEvent)
+    pub fn unwrap_payload<'a, F>(&mut self,
+                              payload: &'a [u8],
+                              mut new_ack_handler: F)
+                              -> io::Result<&'a [u8]>
+        where F: FnMut(NewAckEvent)
     {
-        let mut reader = Cursor::new(buffer);
+        let mut reader = Cursor::new(payload);
 
         // read header
-        let header = match Self::read_header(&mut reader) {
-            Ok(header) => header,
-            Err(e) => {
-                println!("warning: UdpConnection::read_header() returned '{}', dropping packet",
-                         e);
-                return;
-            }
-        };
+        let header = Self::read_header(&mut reader)?;
 
         // ack the remote packet
         self.ack_control.ack(header.seq_num);
@@ -192,7 +193,7 @@ impl UdpConnection {
                 let rtt = info.sent_time.elapsed();
 
                 // give new ack to caller
-                handler(ReceiveEvent::NewAck(info.msg_id, rtt));
+                new_ack_handler(NewAckEvent{ msg_id: info.msg_id, rtt: rtt });
 
                 // packet was acked, don't keep it in pending queue
                 return false;
@@ -205,8 +206,20 @@ impl UdpConnection {
         // save until where we've read the buffer
         let reader_pos = reader.position() as usize;
 
+        Ok(&reader.into_inner()[reader_pos..])
+
+    }
+
+    // TODO this should probably return a Result, so we know when e.g. a wrong magic number arrived
+    fn receive_packet<F>(&mut self, buffer: &[u8], mut handler: F)
+        where F: FnMut(ReceiveEvent)
+    {
+        let data = self.unwrap_payload(buffer, |new_ack| {
+            handler(ReceiveEvent::NewAck(new_ack.msg_id, new_ack.rtt));
+        }).unwrap();
+
         // give rest of the packet to the caller
-        handler(ReceiveEvent::NewData(&reader.into_inner()[reader_pos..]));
+        handler(ReceiveEvent::NewData(data));
 
     }
 
