@@ -4,7 +4,9 @@ mod seqnum;
 mod ackstat;
 mod conn;
 mod congcontrol;
+mod basic_conn;
 
+pub use self::basic_conn::{BasicUdpConnection};
 pub use self::conn::{MessageId, UdpConnection, ReceiveEvent};
 pub use self::congcontrol::{CongestionControl, CongestionStatus};
 

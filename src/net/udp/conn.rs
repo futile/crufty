@@ -8,28 +8,7 @@ use byteorder::{BigEndian, ReadBytesExt, WriteBytesExt};
 
 use super::seqnum::SequenceNumber;
 use super::ackstat::AckStatus;
-
-#[derive(Debug)]
-struct Buffer(Vec<u8>);
-
-impl Buffer {
-    fn new() -> Buffer {
-        Buffer(Vec::new())
-    }
-
-    fn take(&mut self) -> Vec<u8> {
-        ::std::mem::replace(&mut self.0, Vec::new())
-    }
-
-    fn done(&mut self, buf: Vec<u8>) {
-        if buf.capacity() > self.0.capacity() {
-            self.0 = buf;
-
-            // invariant: buffer has to stay cleared
-            self.0.clear();
-        }
-    }
-}
+use super::basic_conn::BasicUdpConnection;
 
 #[derive(Debug, Clone)]
 struct InFlightInfo {
@@ -64,12 +43,11 @@ pub struct NewAckEvent {
 }
 
 pub struct UdpConnection {
-    socket: UdpSocket,
+    socket: BasicUdpConnection,
     next_local_sequence_number: SequenceNumber,
     ack_control: AckStatus,
 
     next_message_id: MessageId,
-    buffer: Buffer,
     pending_acks: VecDeque<InFlightInfo>,
     packet_timeout_limit: Duration,
 }
@@ -83,12 +61,11 @@ impl UdpConnection {
         socket.connect(remote_addr).unwrap();
 
         UdpConnection {
-            socket: socket,
+            socket: BasicUdpConnection::new(socket),
             next_local_sequence_number: SequenceNumber::first(),
             ack_control: AckStatus::new(),
 
             next_message_id: MessageId(0),
-            buffer: Buffer::new(),
             pending_acks: VecDeque::new(),
             packet_timeout_limit: packet_timeout_limit,
         }
@@ -161,13 +138,7 @@ impl UdpConnection {
         let (msg_id, packet) = self.wrap_payload(msg)?;
 
         // send packet
-        let sent_count = self.socket.send(&packet)?;
-
-        // sanity check, should return an error if we try to send too much
-        // (which the unwrap above should catch)
-        assert_eq!(sent_count,
-                   packet.len(),
-                   "only a partial send occured, should not happen??");
+        self.socket.send(&packet)?;
 
         Ok(msg_id)
     }
@@ -226,62 +197,12 @@ impl UdpConnection {
     pub fn recv_with_timeout<F>(&mut self, timeout: Option<Duration>, handler: F)
         where F: FnMut(ReceiveEvent)
     {
-        // sanity-check warning
-        timeout.map(|to| {
-            assert_ne!(to,
-                       Duration::new(0, 0),
-                       "zero-duration is invalid, use 'None' for blocking")
-        });
+        let data = match self.socket.recv_with_timeout(timeout) {
+            Some(res) => res.unwrap(),
+            None => return,
+        };
 
-        // set timeout for the receive
-        self.socket.set_read_timeout(timeout).unwrap();
-
-        // get a buffer for receiving
-        let mut buffer = self.buffer.take();
-
-        // resize the buffer without allocating, because we want >64kb
-        unsafe {
-            // see e.g. https://stackoverflow.com/questions/1098897/
-            let max_udp_size: usize = 65507;
-
-            // reserve, i.e. allocate, enough memory
-            // this is necessary so socket.recv() won't throw away anything..
-            buffer.reserve(max_udp_size);
-
-            // this is unsafe
-            buffer.set_len(max_udp_size);
-
-            // try receiving a packet (with the timeout set before)
-            match self.socket.recv(&mut buffer) {
-                // receive successful
-                Ok(bytes_read) => {
-                    // sanity check
-                    assert!(bytes_read <= buffer.capacity());
-
-                    // **IMPORTANT** restrict buffer size to how much is actually valid
-                    buffer.set_len(bytes_read);
-
-                    // this is safe now, since we made sure the buffer size is correct
-                    self.receive_packet(&buffer, handler);
-                }
-                Err(e) => {
-                    // **IMPORTANT** on any error, set buffer length to 0
-                    buffer.set_len(0);
-
-                    // see what error we got
-                    match e.kind() {
-                        // on timeout do nothing
-                        io::ErrorKind::WouldBlock |
-                        io::ErrorKind::TimedOut => {}
-                        // else, panic
-                        _ => panic!(e),
-                    }
-                }
-            };
-
-            // return buffer (this will also clear() it)
-            self.buffer.done(buffer);
-        }
+        self.receive_packet(&data, handler);
     }
 
     pub fn check_for_timeouts<F>(&mut self, mut on_timeout: F)
