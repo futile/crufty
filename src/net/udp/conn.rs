@@ -124,23 +124,15 @@ impl UdpConnection {
         })
     }
 
-    pub fn send_bytes(&mut self, msg: &[u8]) -> io::Result<MessageId> {
-        let mut buffer = self.buffer.take();
+    pub fn wrap_payload(&mut self, payload: &[u8]) -> io::Result<(MessageId, Vec<u8>)> {
+        // 10 is an overapproximation for our header size, but good enough
+        let mut buffer = Vec::with_capacity(payload.len() + 10);
 
         // write header to buffer
         self.write_header(&mut buffer)?;
 
         // write msg to buffer
-        buffer.write_all(msg)?;
-
-        // send packet
-        let sent_count = self.socket.send(&buffer)?;
-
-        // sanity check, should return an error if we try to send too much
-        // (which the unwrap above should catch)
-        assert_eq!(sent_count,
-                   buffer.len(),
-                   "only a partial send occured, should not happen??");
+        buffer.write_all(payload)?;
 
         // create and increase MessageId
         let msg_id = self.next_message_id;
@@ -156,8 +148,20 @@ impl UdpConnection {
         // increase next sequence number
         self.next_local_sequence_number += 1.into();
 
-        // give buffer back
-        self.buffer.done(buffer);
+        Ok((msg_id, buffer))
+    }
+
+    pub fn send_bytes(&mut self, msg: &[u8]) -> io::Result<MessageId> {
+        let (msg_id, packet) = self.wrap_payload(msg)?;
+
+        // send packet
+        let sent_count = self.socket.send(&packet)?;
+
+        // sanity check, should return an error if we try to send too much
+        // (which the unwrap above should catch)
+        assert_eq!(sent_count,
+                   packet.len(),
+                   "only a partial send occured, should not happen??");
 
         Ok(msg_id)
     }
