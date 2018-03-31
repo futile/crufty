@@ -1,5 +1,5 @@
 use std::time::Duration;
-use std::net::{UdpSocket};
+use std::net::{UdpSocket, SocketAddr};
 use std::io;
 
 #[derive(Debug)]
@@ -25,7 +25,7 @@ impl Buffer {
 }
 
 pub struct BasicUdpConnection {
-    socket: UdpSocket,
+    pub socket: UdpSocket,
     buffer: Buffer,
 }
 
@@ -37,7 +37,9 @@ impl BasicUdpConnection {
         }
     }
 
-    pub fn recv_with_timeout(&mut self, timeout: Option<Duration>) -> Option<io::Result<Vec<u8>>> {
+    pub fn recv_with_timeout(&mut self,
+                             timeout: Option<Duration>)
+                             -> Option<io::Result<(Vec<u8>, SocketAddr)>> {
         // sanity-check warning
         timeout.map(|to| {
             assert_ne!(to,
@@ -64,9 +66,9 @@ impl BasicUdpConnection {
             buffer.set_len(max_udp_size);
 
             // try receiving a packet (with the timeout set before)
-            match self.socket.recv(&mut buffer) {
+            match self.socket.recv_from(&mut buffer) {
                 // receive successful
-                Ok(bytes_read) => {
+                Ok((bytes_read, addr)) => {
                     // sanity check
                     assert!(bytes_read <= buffer.capacity());
 
@@ -74,7 +76,7 @@ impl BasicUdpConnection {
                     buffer.set_len(bytes_read);
 
                     // this is safe now, since we made sure the buffer size is correct
-                    Some(Ok(buffer))
+                    Some(Ok((buffer, addr)))
                 }
                 Err(e) => {
                     // **IMPORTANT** on any error, set buffer length to 0
@@ -89,8 +91,8 @@ impl BasicUdpConnection {
                     match e.kind() {
                         // on timeout do nothing
                         io::ErrorKind::WouldBlock |
-                        io::ErrorKind::TimedOut => { None }
-                        // else, panic
+                        io::ErrorKind::TimedOut => None,
+                        // else, return the error
                         _ => Some(Err(e)),
                     }
                 }

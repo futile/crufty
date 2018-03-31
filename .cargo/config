@@ -1,0 +1,3 @@
+[build]
+rustflags = ["-Zincremental=/home/felix/gits/crufty/inc", "-Zincremental-info"]
+# rustflags = ["-Zincremental=/home/felix/gits/crufty/inc"]

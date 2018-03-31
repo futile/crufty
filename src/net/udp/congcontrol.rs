@@ -1,9 +1,7 @@
 use std::time::{Instant, Duration};
 use std::io;
 
-use smallvec::SmallVec;
-
-use net::udp::{UdpConnection, MessageId, ReceiveEvent};
+// use smallvec::SmallVec;
 
 #[derive(Debug)]
 enum ConnectionMode {
@@ -81,8 +79,7 @@ impl ConnectionMode {
 }
 
 pub struct CongestionControl {
-    conn: UdpConnection,
-    tracked_rtt: Duration,
+    smoothed_rtt: Duration,
     last_send: Instant,
     time_until_next_send: Duration,
     mode: ConnectionMode,
@@ -106,10 +103,9 @@ impl CongestionStatus {
 }
 
 impl CongestionControl {
-    pub fn new(udp_conn: UdpConnection) -> CongestionControl {
+    pub fn new() -> CongestionControl {
         CongestionControl {
-            conn: udp_conn,
-            tracked_rtt: Duration::new(0, 0),
+            smoothed_rtt: Duration::new(0, 0),
             last_send: Instant::now(),
             time_until_next_send: Duration::new(0, 0),
             mode: ConnectionMode::Good {
@@ -120,11 +116,7 @@ impl CongestionControl {
         }
     }
 
-    pub fn set_packet_timeout_limit(&mut self, new_timeout: Duration) {
-        self.conn.set_packet_timeout_limit(new_timeout);
-    }
-
-    pub fn send_bytes(&mut self, msg: &[u8]) -> io::Result<MessageId> {
+    pub fn wrap_payload<'a>(&mut self, payload: &'a [u8]) -> io::Result<&'a [u8]> {
         let now = Instant::now();
         // TODO this isn't 100% correct, since it doesn't allow for
         // long idle periods followed by a burst > max allowed.
@@ -145,12 +137,12 @@ impl CongestionControl {
                                       "congestion control: connection overloaded"));
         }
 
-        // sending is ok, updated tracket values
+        // sending is ok, updated tracked values
         self.time_until_next_send += self.mode.get_send_interval();
         self.last_send = now;
 
-        // actually send the message
-        self.conn.send_bytes(msg)
+        // return payload for further processing
+        Ok(payload)
     }
 
     pub fn congestion_status(&self) -> CongestionStatus {
@@ -164,32 +156,30 @@ impl CongestionControl {
         }
     }
 
-    pub fn recv_with_timeout<F>(&mut self, timeout: Option<Duration>, mut handler: F)
-        where F: FnMut(ReceiveEvent)
-    {
-        let mut new_rtts: SmallVec<[Duration; 4]> = SmallVec::new();
+    pub fn register_rtt(&mut self, rtt: Duration) {
+        // update average rtt by 10% towards this packet's rtt (see link in udp/mod.rs)
+        self.smoothed_rtt = (self.smoothed_rtt * 9 + rtt) / 10;
 
-        self.conn.recv_with_timeout(timeout, |e| {
-            if let ReceiveEvent::NewAck(_, rtt) = e {
-                new_rtts.push(rtt);
-            }
-
-            handler(e);
-        });
-
-        for rtt in new_rtts {
-            // update average rtt by 10% towards this packet's rtt (see link in udp/mod.rs)
-            self.tracked_rtt = (self.tracked_rtt * 9 + rtt) / 10;
-
-            // tick the current mode(good/bad) by the averaged rtt
-            // (possibly making it switch modes)
-            self.mode.tick_rtt(self.tracked_rtt);
-        }
+        // tick the current mode(good/bad) by the averaged rtt
+        // (possibly making it switch modes)
+        self.mode.tick_rtt(self.smoothed_rtt);
     }
 
-    pub fn check_for_timeouts<F>(&mut self, on_timeout: F)
-        where F: FnMut(MessageId)
-    {
-        self.conn.check_for_timeouts(on_timeout);
-    }
+    // fn recv_with_timeout<F>(&mut self, timeout: Option<Duration>, mut handler: F)
+    //     where F: FnMut(ReceiveEvent)
+    // {
+    //     let mut new_rtts: SmallVec<[Duration; 4]> = SmallVec::new();
+
+    //     // self.conn.recv_with_timeout(timeout, |e| {
+    //     //     if let ReceiveEvent::NewAck(_, rtt) = e {
+    //     //         new_rtts.push(rtt);
+    //     //     }
+
+    //     //     handler(e);
+    //     // });
+
+    //     for rtt in new_rtts {
+    //         self.register_rtt(rtt);
+    //     }
+    // }
 }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="5" height="3" tilewidth="32" tileheight="32" nextobjectid="1">
+ <tileset firstgid="1" name="grass" tilewidth="32" tileheight="32" tilecount="1" columns="0">
+  <tile id="0">
+   <properties>
+    <property name="solid" type="bool" value="true"/>
+   </properties>
+   <image width="32" height="32" source="../textures/tilesets/cave/tile1.png"/>
+  </tile>
+ </tileset>
+ <layer name="Tile Layer 1" width="5" height="3">
+  <data encoding="base64" compression="zlib">
+   eJxjYCAOMGLBAAB4AAY=
+  </data>
+ </layer>
+</map>

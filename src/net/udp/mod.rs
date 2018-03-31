@@ -3,11 +3,13 @@
 mod seqnum;
 mod ackstat;
 mod conn;
+mod reliability;
 mod congcontrol;
 mod basic_conn;
 
 pub use self::basic_conn::{BasicUdpConnection};
-pub use self::conn::{MessageId, UdpConnection, ReceiveEvent};
+pub use self::conn::ConnectionWrapper;
+pub use self::reliability::{MessageId, ReliabilityWrapper, ReceiveEvent, NewAckEvent};
 pub use self::congcontrol::{CongestionControl, CongestionStatus};
 
 use std::time::Duration;

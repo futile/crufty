@@ -1,3 +1,4 @@
+#![feature(never_type)]
 #![feature(const_fn)]
 #![feature(associated_consts)]
 #![feature(duration_checked_ops)]
@@ -32,6 +33,7 @@ extern crate smallvec;
 extern crate specs;
 extern crate mincode;
 extern crate rustc_serialize;
+extern crate fnv;
 
 #[macro_use]
 pub mod util;

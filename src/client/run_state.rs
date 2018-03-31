@@ -1,18 +1,19 @@
 use specs::{self, Join};
 
 use util::State;
-use net::udp::{self, UdpConnection, ReceiveEvent};
+use net::udp::{self, ReliabilityWrapper, ReceiveEvent};
 use v2::{self, CContext, Position, Info, WorldSyncer};
+use client::net::NetworkInterface;
 
 use super::ClientTransition;
 
 pub struct ClientRunState {
-    conn: UdpConnection,
+    niface: NetworkInterface,
 }
 
 impl ClientRunState {
-    pub fn new(conn: UdpConnection) -> ClientRunState {
-        ClientRunState { conn: conn }
+    pub fn new(niface: NetworkInterface) -> ClientRunState {
+        ClientRunState { niface: niface }
     }
 }
 
@@ -43,9 +44,11 @@ impl State<ClientTransition> for ClientRunState {
             planner.run_custom(|arg| {
                 let (ents, poss) = arg.fetch(|w| (w.entities(), w.read::<Position>()));
 
-                for (e, p) in (&ents, &poss).iter() {
-                    println!("e: {:?}, pos: {:?}", e, p);
-                }
+                // for (e, p) in (&ents, &poss).iter() {
+                    // println!("e: {:?}, pos: {:?}", e, p);
+                // }
+
+                println!("client count: {}", (&ents, &poss).iter().count());
             });
 
             self.conn.check_for_timeouts(|msg_id| println!("msg {:?} timed out", msg_id));

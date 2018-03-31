@@ -2,10 +2,10 @@ extern crate crufty;
 
 use std::time::{Instant, Duration};
 
-use crufty::net::udp::{self, CongestionControl, CongestionStatus, UdpConnection, ReceiveEvent};
+use crufty::net::udp::{self, CongestionControl, CongestionStatus, ReliabilityWrapper, ReceiveEvent};
 
 fn main() {
-    let mut conn = CongestionControl::new(UdpConnection::new(&"127.0.0.1:12365".parse().unwrap(),
+    let mut conn = CongestionControl::new(ReliabilityWrapper::new(&"127.0.0.1:12365".parse().unwrap(),
                                                              &"127.0.0.1:12366".parse().unwrap(),
                                                              Duration::from_secs(3)));
 

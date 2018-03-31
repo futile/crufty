@@ -9,6 +9,15 @@ use systems::LevelServices;
 mod animation;
 mod resource_store;
 
+#[derive(Debug, PartialEq, Eq, Hash)]
+pub struct PlayerId(u16);
+
+impl From<u16> for PlayerId {
+    fn from(val: u16) -> PlayerId {
+        PlayerId(val)
+    }
+}
+
 pub trait EntityOps {
     fn play_animation(&mut self, e: Entity, anim_name: &str);
 }

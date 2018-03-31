@@ -1,15 +1,17 @@
 use std::time::Duration;
 
 use util::{State, Transition};
-use net::udp::{UdpConnection, ReceiveEvent};
+use net::udp::{ReliabilityWrapper, ReceiveEvent};
 
 mod run_state;
+mod net;
 
 use self::run_state::ServerRunState;
+use self::net::NetworkInterface;
 
 pub enum ServerTransition {
     Startup,
-    StartGame(UdpConnection),
+    StartGame(NetworkInterface),
     Shutdown,
     TerminateServer,
 }
@@ -18,7 +20,7 @@ impl Transition for ServerTransition {
     fn create_state(self) -> Option<Box<State<ServerTransition>>> {
         match self {
             ServerTransition::Startup => Some(Box::new(ServerStartupState)),
-            ServerTransition::StartGame(conn) => Some(Box::new(ServerRunState::new(conn))),
+            ServerTransition::StartGame(niface) => Some(Box::new(ServerRunState::new(niface))),
             ServerTransition::Shutdown => Some(Box::new(ServerShutdownState)),
             ServerTransition::TerminateServer => None,
         }
@@ -30,21 +32,16 @@ pub struct ServerShutdownState;
 
 impl State<ServerTransition> for ServerStartupState {
     fn run(self: Box<Self>) -> ServerTransition {
-        let mut conn = UdpConnection::new(&"127.0.0.1:12366".parse().unwrap(),
-                                      &"127.0.0.1:12365".parse().unwrap(),
-                                      Duration::from_secs(1));
+        let mut niface = NetworkInterface::new(&"127.0.0.1:12366".parse().unwrap());
 
         println!("server: waiting for connection..");
 
         // wait for a connection before really starting
-        conn.recv_with_timeout(None, |e| match e {
-            ReceiveEvent::NewAck(msg_id, _) => println!("u what m8? {:?}", msg_id),
-            ReceiveEvent::NewData(data) => assert_eq!(data, &[]),
-        });
+        niface.perform_receive_phase(None).unwrap();
 
         println!("got a connection, starting main loop");
 
-        ServerTransition::StartGame(conn)
+        ServerTransition::StartGame(niface)
     }
 }
 
