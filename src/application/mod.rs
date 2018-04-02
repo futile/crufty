@@ -33,10 +33,10 @@ impl State<AppTransition> for StartupState {
         use glium::DisplayBuild;
 
         let display = glutin::WindowBuilder::new()
-                          .with_dimensions(800, 600)
-                          .with_title("Crufty".to_string())
-                          .build_glium()
-                          .unwrap();
+            .with_dimensions(800, 600)
+            .with_title("Crufty".to_string())
+            .build_glium()
+            .unwrap();
 
         AppTransition::StartGame(display)
     }

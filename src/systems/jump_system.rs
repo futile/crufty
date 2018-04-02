@@ -66,12 +66,10 @@ impl EntityProcess for JumpSystem {
             data.jump[e] = jump;
 
             let vel_change: Vector2<f32> = {
-                let get_antigrav_vel = || {
-                    if let Some(gravity) = data.gravity.get(&e) {
-                        Vector2::new(0.0, g * gravity.f)
-                    } else {
-                        Vector2::zero()
-                    }
+                let get_antigrav_vel = || if let Some(gravity) = data.gravity.get(&e) {
+                    Vector2::new(0.0, g * gravity.f)
+                } else {
+                    Vector2::zero()
                 };
 
                 match jump.state {

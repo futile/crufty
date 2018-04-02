@@ -74,10 +74,9 @@ impl RenderSystem {
                 .unwrap()
         };
 
-        let index_buffer = glium::IndexBuffer::new(&display,
-                                                   PrimitiveType::TriangleStrip,
-                                                   &[1 as u16, 2, 0, 3])
-                               .unwrap();
+        let index_buffer =
+            glium::IndexBuffer::new(&display, PrimitiveType::TriangleStrip, &[1 as u16, 2, 0, 3])
+                .unwrap();
 
         let mut vertex_shader_code = String::new();
         File::open("assets/shaders/sprite.vert")
@@ -96,7 +95,7 @@ impl RenderSystem {
                                    vertex: &vertex_shader_code,
                                    fragment: &fragment_shader_code,
                                })
-                          .unwrap();
+            .unwrap();
 
         RenderSystem {
             display: display,
@@ -148,7 +147,7 @@ impl InteractProcess for RenderSystem {
                                                           0.0 + camera.world_viewport.height / 2.0,
                                                           -2.0,
                                                           0.0)
-                                     .to_matrix();
+                    .to_matrix();
                 drop(_g);
 
                 for e in &sprites {
@@ -161,8 +160,8 @@ impl InteractProcess for RenderSystem {
                                                 position.y.round() -
                                                 (cpos.y - camera.world_viewport.height / 2.0));
                     let texture = data.services
-                                      .resource_store
-                                      .get_texture(sprite_info.texture_info);
+                        .resource_store
+                        .get_texture(sprite_info.texture_info);
 
                     let invert_tex_x = match data.facing.get(e) {
                         Some(Facing::Left) => true,
@@ -181,11 +180,11 @@ impl InteractProcess for RenderSystem {
                     };
 
                     target.draw(&self.unit_quad,
-                                &self.index_buffer,
-                                &self.program,
-                                &uniforms,
-                                &Default::default())
-                          .unwrap()
+                              &self.index_buffer,
+                              &self.program,
+                              &uniforms,
+                              &Default::default())
+                        .unwrap()
                 }
             }
         }

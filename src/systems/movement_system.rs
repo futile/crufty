@@ -84,7 +84,7 @@ impl EntityProcess for MovementSystem {
                     movement.vel = *na::partial_clamp(&(movement.vel + acc),
                                                       &-movement.max_vel,
                                                       &movement.max_vel)
-                                        .unwrap_or(&Vector2::zero())
+                        .unwrap_or(&Vector2::zero())
                 }
 
                 movement.vel

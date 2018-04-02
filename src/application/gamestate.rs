@@ -45,20 +45,19 @@ impl State<AppTransition> for GameState {
 
         world.services.resource_store = ResourceStore::new(self.display.clone());
 
-        let ss_handle =
-            world.services
-                 .resource_store
-                 .load_sprite_sheet(Path::new("assets/textures/sprites/player/animations.toml"));
+        let ss_handle = world.services
+            .resource_store
+            .load_sprite_sheet(Path::new("assets/textures/sprites/player/animations.toml"));
 
         world.systems
-             .render_system
-             .init(InteractSystem::new(render_system,
-                                       aspect!(<LevelComponents> all: [camera]),
-                                       aspect!(<LevelComponents> all: [position, sprite_info])));
+            .render_system
+            .init(InteractSystem::new(render_system,
+                                      aspect!(<LevelComponents> all: [camera]),
+                                      aspect!(<LevelComponents> all: [position, sprite_info])));
 
         let tex_info = world.services
-                            .resource_store
-                            .load_texture(Path::new("assets/textures/tilesets/cave/tile1.png"));
+            .resource_store
+            .load_texture(Path::new("assets/textures/tilesets/cave/tile1.png"));
 
         let player_tex_info = world.services
                                    .resource_store
@@ -66,111 +65,138 @@ impl State<AppTransition> for GameState {
                                     .load_texture(Path::new("assets/textures/sprites/player/jump/p_jump.png"));
 
         let player_stand_animation = world.services
-                                          .resource_store
-                                          .get_sprite_sheet(ss_handle)
-                                          .get("stand")
-                                          .unwrap()
-                                          .clone();
+            .resource_store
+            .get_sprite_sheet(ss_handle)
+            .get("stand")
+            .unwrap()
+            .clone();
 
-        let _ = world.create_entity(|entity: BuildData<LevelComponents>,
-                                     data: &mut LevelComponents| {
-            data.position.add(&entity, Position { x: 0.0, y: 0.0 });
-            data.camera.add(&entity,
-                            Camera::new(WorldViewport::new((width / 1) as f32,
-                                                           (height / 1) as f32),
-                                        AABB2::new(Point2::new(-1.0, -1.0),
-                                                   Point2::new(1.0, 1.0)),
-                                        true));
-        });
+        let _ =
+            world.create_entity(|entity: BuildData<LevelComponents>,
+                                 data: &mut LevelComponents| {
+                data.position.add(&entity, Position { x: 0.0, y: 0.0 });
+                data.camera.add(&entity,
+                                Camera::new(WorldViewport::new((width / 1) as f32,
+                                                               (height / 1) as f32),
+                                            AABB2::new(Point2::new(-1.0, -1.0),
+                                                       Point2::new(1.0, 1.0)),
+                                            true));
+            });
 
-        let _player = world.create_entity(|entity: BuildData<LevelComponents>,
-                                           data: &mut LevelComponents| {
-            let pos = Position {
-                x: 0.0 * 32.0 + 0.0 * 10.0,
-                y: 500.0,
-            };
-            data.position.add(&entity, pos);
-            data.velocity.add(&entity,
-                              Velocity {
-                                  vx: 00.0,
-                                  vy: 00.0,
-                                  last_pos: pos,
-                              });
-            data.collision.add(&entity,
-                               Collision::new_dual(Cuboid2::new(Vector2::new(16.0, 5.0)),
-                                                   Vector2::new(16.0, 16.0),
-                                                   Cuboid2::new(Vector2::new(5.0, 16.0)),
-                                                   Vector2::new(16.0, 16.0),
-                                                   CollisionType::Solid));
-            data.movement.add(&entity,
-                              Movement::new(Vector2::new(75.0, 0.0), Vector2::new(150.0, 0.0)));
-            data.facing.add(&entity, Facing::Right);
-            data.jump.add(&entity, Jump::new());
-            data.gravity.add(&entity, Gravity::new());
-            data.sprite_info.add(&entity,
-                                 SpriteInfo {
-                                     width: 32.0,
-                                     height: 32.0,
-                                     texture_info: player_tex_info,
-                                 });
-            data.sprite_sheet_animation.add(&entity,
-                                            SpriteSheetAnimation {
-                                                sheet_handle: ss_handle,
-                                                animation: player_stand_animation.clone(),
-                                                current_frame: 0,
-                                                frame_time_remaining: 0.1,
-                                            });
-            data.intents.add(&entity, Intents::new());
-
-            data.keyboard_input.add(&entity,
-                                    KeyboardInput {
-                                        input_context: {
-                                            let mut inputs = HashMap::new();
-                                            inputs.insert((VirtualKeyCode::O,
-                                                           InputState::PressedThisFrame),
-                                                          InputIntent::PrintDebugMessage);
-                                            inputs.insert((VirtualKeyCode::Left,
-                                                           InputState::Pressed),
-                                                          InputIntent::MoveLeft);
-                                            inputs.insert((VirtualKeyCode::Right,
-                                                           InputState::Pressed),
-                                                          InputIntent::MoveRight);
-                                            inputs.insert((VirtualKeyCode::Space,
-                                                           InputState::Pressed),
-                                                          InputIntent::Jump);
-                                            inputs
-                                        },
-                                    });
-        });
-
-        for x in 0..12 {
-            let _ = world.create_entity(|entity: BuildData<LevelComponents>,
-                                         data: &mut LevelComponents| {
-                data.position.add(&entity,
-                                  Position {
-                                      x: (x as f32) * 32.0,
-                                      y: 0.0,
+        let _player =
+            world.create_entity(|entity: BuildData<LevelComponents>,
+                                 data: &mut LevelComponents| {
+                let pos = Position {
+                    x: 0.0 * 32.0 + 0.0 * 10.0,
+                    y: 500.0,
+                };
+                data.position.add(&entity, pos);
+                data.velocity.add(&entity,
+                                  Velocity {
+                                      vx: 00.0,
+                                      vy: 00.0,
+                                      last_pos: pos,
                                   });
                 data.collision.add(&entity,
-                                   Collision::new_single(Cuboid2::new(Vector2::new(16.0, 16.0)),
-                                                         Vector2::new(16.0, 16.0),
-                                                         CollisionType::Solid));
+                                   Collision::new_dual(Cuboid2::new(Vector2::new(16.0, 5.0)),
+                                                       Vector2::new(16.0, 16.0),
+                                                       Cuboid2::new(Vector2::new(5.0, 16.0)),
+                                                       Vector2::new(16.0, 16.0),
+                                                       CollisionType::Solid));
+                data.movement.add(&entity,
+                                  Movement::new(Vector2::new(75.0, 0.0), Vector2::new(150.0, 0.0)));
+                data.facing.add(&entity, Facing::Right);
+                data.jump.add(&entity, Jump::new());
+                data.gravity.add(&entity, Gravity::new());
                 data.sprite_info.add(&entity,
                                      SpriteInfo {
                                          width: 32.0,
                                          height: 32.0,
-                                         texture_info: tex_info,
+                                         texture_info: player_tex_info,
                                      });
+                data.sprite_sheet_animation.add(&entity,
+                                                SpriteSheetAnimation {
+                                                    sheet_handle: ss_handle,
+                                                    animation: player_stand_animation.clone(),
+                                                    current_frame: 0,
+                                                    frame_time_remaining: 0.1,
+                                                });
+                data.intents.add(&entity, Intents::new());
+
+                data.keyboard_input.add(&entity,
+                                        KeyboardInput {
+                                            input_context: {
+                                                let mut inputs = HashMap::new();
+                                                inputs.insert((VirtualKeyCode::O,
+                                                               InputState::PressedThisFrame),
+                                                              InputIntent::PrintDebugMessage);
+                                                inputs.insert((VirtualKeyCode::Left,
+                                                               InputState::Pressed),
+                                                              InputIntent::MoveLeft);
+                                                inputs.insert((VirtualKeyCode::Right,
+                                                               InputState::Pressed),
+                                                              InputIntent::MoveRight);
+                                                inputs.insert((VirtualKeyCode::Space,
+                                                               InputState::Pressed),
+                                                              InputIntent::Jump);
+                                                inputs
+                                            },
+                                        });
             });
+
+        for x in 0..12 {
+            let _ =
+                world.create_entity(|entity: BuildData<LevelComponents>,
+                                     data: &mut LevelComponents| {
+                    data.position.add(&entity,
+                                      Position {
+                                          x: (x as f32) * 32.0,
+                                          y: 0.0,
+                                      });
+                    data.collision.add(&entity,
+                                       Collision::new_single(Cuboid2::new(Vector2::new(16.0,
+                                                                                       16.0)),
+                                                             Vector2::new(16.0, 16.0),
+                                                             CollisionType::Solid));
+                    data.sprite_info.add(&entity,
+                                         SpriteInfo {
+                                             width: 32.0,
+                                             height: 32.0,
+                                             texture_info: tex_info,
+                                         });
+                });
         }
 
         for x in 1..12 {
-            let _ = world.create_entity(|entity: BuildData<LevelComponents>,
-                                         data: &mut LevelComponents| {
+            let _ =
+                world.create_entity(|entity: BuildData<LevelComponents>,
+                                     data: &mut LevelComponents| {
+                    data.position.add(&entity,
+                                      Position {
+                                          x: (x as f32) * 32.0,
+                                          y: 96.0,
+                                      });
+                    data.collision.add(&entity,
+                                       Collision::new_single(Cuboid2::new(Vector2::new(16.0,
+                                                                                       16.0)),
+                                                             Vector2::new(16.0, 16.0),
+                                                             CollisionType::Solid));
+                    data.sprite_info.add(&entity,
+                                         SpriteInfo {
+                                             width: 32.0,
+                                             height: 32.0,
+                                             texture_info: tex_info,
+                                         });
+                });
+        }
+
+        let _ =
+            world.create_entity(|entity: BuildData<LevelComponents>,
+                                 data: &mut LevelComponents| {
                 data.position.add(&entity,
                                   Position {
-                                      x: (x as f32) * 32.0,
-                                      y: 96.0,
+                                      x: 352.0,
+                                      y: 32.0,
                                   });
                 data.collision.add(&entity,
                                    Collision::new_single(Cuboid2::new(Vector2::new(16.0, 16.0)),
@@ -183,26 +209,6 @@ impl State<AppTransition> for GameState {
                                          texture_info: tex_info,
                                      });
             });
-        }
-
-        let _ = world.create_entity(|entity: BuildData<LevelComponents>,
-                                     data: &mut LevelComponents| {
-            data.position.add(&entity,
-                              Position {
-                                  x: 352.0,
-                                  y: 32.0,
-                              });
-            data.collision.add(&entity,
-                               Collision::new_single(Cuboid2::new(Vector2::new(16.0, 16.0)),
-                                                     Vector2::new(16.0, 16.0),
-                                                     CollisionType::Solid));
-            data.sprite_info.add(&entity,
-                                 SpriteInfo {
-                                     width: 32.0,
-                                     height: 32.0,
-                                     texture_info: tex_info,
-                                 });
-        });
 
         process!(world, camera_system);
 

@@ -1,12 +1,6 @@
 #![feature(never_type)]
 #![feature(const_fn)]
-#![feature(associated_consts)]
 #![feature(duration_checked_ops)]
-
-#[macro_use]
-extern crate custom_derive;
-#[macro_use]
-extern crate newtype_derive;
 
 #[macro_use]
 extern crate glium;
@@ -25,24 +19,16 @@ extern crate clock_ticks;
 extern crate ordered_float;
 extern crate toml;
 
-extern crate mio;
-extern crate byteorder;
 extern crate rand;
-extern crate smallvec;
-
-extern crate specs;
-extern crate mincode;
-extern crate rustc_serialize;
-extern crate fnv;
 
 #[macro_use]
 pub mod util;
 
 pub mod application;
-pub mod net;
 pub mod systems;
 pub mod components;
 pub mod game;
-pub mod v2;
-pub mod server;
-pub mod client;
+
+fn main() {
+    util::run_state_machine(application::AppTransition::Startup);
+}

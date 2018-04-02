@@ -67,29 +67,28 @@ impl TextureStore {
         }
 
         let mut file_paths = fs::read_dir(path)
-                                 .unwrap()
-                                 .map(|res| res.unwrap().path())
-                                 .filter(|fpath| fpath.is_file())
-                                 .filter(|fpath| self.should_load(fpath))
-                                 .collect::<Vec<_>>();
+            .unwrap()
+            .map(|res| res.unwrap().path())
+            .filter(|fpath| fpath.is_file())
+            .filter(|fpath| self.should_load(fpath))
+            .collect::<Vec<_>>();
 
         file_paths.sort();
 
-        let images =
-            file_paths.iter()
-                      .map(|fpath| image::open(fpath).unwrap().to_rgba())
-                      .map(|image| {
-                          let image_dimensions = image.dimensions();
-                          glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(),
-                                                                             image_dimensions)
-                      })
-                      .collect::<Vec<_>>();
+        let images = file_paths.iter()
+            .map(|fpath| image::open(fpath).unwrap().to_rgba())
+            .map(|image| {
+                let image_dimensions = image.dimensions();
+                glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(),
+                                                                   image_dimensions)
+            })
+            .collect::<Vec<_>>();
 
         println!("textures loaded: {:?}", file_paths);
 
         self.tex_store
             .push(CompressedSrgbTexture2dArray::new(self.display.as_ref().unwrap(), images)
-                      .unwrap());
+                .unwrap());
         let tex_id = self.tex_store.len() - 1;
 
         for (idx, fpath) in file_paths.into_iter().enumerate() {

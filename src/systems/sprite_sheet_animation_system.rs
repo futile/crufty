@@ -33,8 +33,8 @@ impl EntityProcess for SpriteSheetAnimationSystem {
 
                 if ssa.frame_time_remaining < 0.0 {
                     ssa.current_frame = (ssa.current_frame + 1) % ssa.animation.num_frames;
-                    ssa.frame_time_remaining +=
-                        ssa.animation.frame_durations[ssa.current_frame as usize];
+                    ssa.frame_time_remaining += ssa.animation.frame_durations[ssa.current_frame as
+                                                usize];
                 }
 
                 ssa.animation.create_sprite_info(ssa.current_frame)

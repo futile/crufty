@@ -46,8 +46,8 @@ impl InteractProcess for CollisionSystem {
             let c1 = data.collision[e1].clone();
 
             data.position[e1] = data.services
-                                    .collision_world
-                                    .move_entity(**e1, &c1, &p1, &v1.last_pos);
+                .collision_world
+                .move_entity(**e1, &c1, &p1, &v1.last_pos);
         }
     }
 }

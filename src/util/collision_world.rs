@@ -60,10 +60,10 @@ fn find_depth(dyn: &AABB2<f32>,
     };
 
     let dist = match axis {
-                   X => dyn.center().x - stat.center().x,
-                   Y => dyn.center().y - stat.center().y,
-               }
-               .abs();
+            X => dyn.center().x - stat.center().x,
+            Y => dyn.center().y - stat.center().y,
+        }
+        .abs();
 
     let depth = min_dist - dist;
 
@@ -72,10 +72,10 @@ fn find_depth(dyn: &AABB2<f32>,
     }
 
     let dir = match axis {
-                  X => dyn_last.x - stat.center().x,
-                  Y => dyn_last.y - stat.center().y,
-              }
-              .signum();
+            X => dyn_last.x - stat.center().x,
+            Y => dyn_last.y - stat.center().y,
+        }
+        .signum();
 
     Some(dir * depth)
 }
@@ -98,9 +98,9 @@ impl CollisionWorld {
         self.mapping.insert(e,
                             CollisionTreeLeafs {
                                 x: self.dbvt_x
-                                       .insert_new(e, coll.aabb_x(Vector2::new(pos.x, pos.y))),
+                                    .insert_new(e, coll.aabb_x(Vector2::new(pos.x, pos.y))),
                                 y: self.dbvt_y
-                                       .insert_new(e, coll.aabb_y(Vector2::new(pos.x, pos.y))),
+                                    .insert_new(e, coll.aabb_y(Vector2::new(pos.x, pos.y))),
                                 coll_type: coll.collision_type(),
                             });
     }
