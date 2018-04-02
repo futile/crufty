@@ -29,7 +29,6 @@ impl System for CollisionSystem {
                    e: &EntityData<Self::Components>,
                    _data: &Self::Components,
                    services: &mut Self::Services) {
-        // TODO remove from tree + drop leaf
         services.collision_world.remove(***e);
     }
 }
