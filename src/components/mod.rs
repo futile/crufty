@@ -7,7 +7,7 @@ use na::{self, Isometry2, Vector2, Point2};
 use systems::WorldViewport;
 use application::{InputContext, InputIntent};
 
-use game::{SpriteSheetHandle, TextureInfo, Animation};
+use game::{self, SpriteSheetHandle, TextureInfo, Animation};
 
 use num::traits::Zero;
 
@@ -152,6 +152,11 @@ impl Collision {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub struct InteractionPossibility {
+    pub interaction: game::Interaction,
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SpriteInfo {
     pub width: f32,
@@ -223,5 +228,6 @@ components! {
         #[cold] camera: Camera,
         #[cold] keyboard_input: KeyboardInput,
         #[cold] intents: Intents,
+        #[cold] interaction_possibility: InteractionPossibility,
     }
 }

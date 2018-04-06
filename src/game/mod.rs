@@ -18,6 +18,11 @@ impl From<u16> for PlayerId {
     }
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Interaction {
+    Warp,
+}
+
 pub trait EntityOps {
     fn play_animation(&mut self, e: Entity, anim_name: &str);
 }

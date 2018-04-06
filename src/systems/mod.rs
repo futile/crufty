@@ -8,6 +8,7 @@ pub use self::collision_system::CollisionSystem;
 pub use self::movement_system::MovementSystem;
 pub use self::jump_system::JumpSystem;
 pub use self::sprite_sheet_animation_system::SpriteSheetAnimationSystem;
+pub use self::interaction_system::InteractionSystem;
 
 use ecs::ServiceManager;
 use ecs::system::{LazySystem, EntitySystem, InteractSystem};
@@ -27,6 +28,7 @@ mod collision_system;
 mod movement_system;
 mod jump_system;
 mod sprite_sheet_animation_system;
+mod interaction_system;
 
 pub struct LevelServices {
     pub resource_store: ResourceStore,
@@ -88,6 +90,10 @@ systems! {
             intent_system: EntitySystem<IntentSystem> = EntitySystem::new(
                 IntentSystem,
                 aspect!(<LevelComponents> all: [intents])),
+            interaction_system: EntitySystem<InteractionSystem> = EntitySystem::new(
+                InteractionSystem,
+                aspect!(<LevelComponents> all: [interaction_possibility]),
+            ),
         }
     }
 }
