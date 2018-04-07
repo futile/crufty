@@ -1,6 +1,8 @@
 #![feature(never_type)]
 #![feature(const_fn)]
 #![feature(duration_checked_ops)]
+#![feature(entry_or_default)]
+#![feature(drain_filter)]
 
 #[macro_use]
 extern crate glium;
@@ -20,6 +22,8 @@ extern crate ordered_float;
 extern crate toml;
 
 extern crate rand;
+
+extern crate typemap;
 
 #[macro_use]
 pub mod util;

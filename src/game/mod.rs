@@ -9,6 +9,8 @@ use systems::LevelServices;
 mod animation;
 mod resource_store;
 
+pub mod events;
+
 #[derive(Debug, PartialEq, Eq, Hash)]
 pub struct PlayerId(u16);
 
