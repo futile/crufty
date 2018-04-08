@@ -1,6 +1,20 @@
 use typemap::{TypeMap, Key};
 use std::rc::{Rc, Weak};
 
+pub trait PipelinedEvent {
+    type NextEvent: PipelinedEvent;
+
+    fn into_next(self) -> Option<Self::NextEvent>;
+}
+
+impl PipelinedEvent for ! {
+    type NextEvent = !;
+
+    fn into_next(self) -> Option<Self::NextEvent> {
+        None
+    }
+}
+
 pub trait EventSubscriber<T> {
     fn handle_event(&self, event: &mut T);
 }
@@ -23,7 +37,7 @@ impl<T: ?Sized> RcOrWeak<T> {
     }
 }
 
-struct EventWrapper<T>(::std::marker::PhantomData<T>);
+struct EventWrapper<T>(::std::marker::PhantomData<*const T>);
 
 impl<T: 'static> Key for EventWrapper<T> {
     type Value = Vec<RcOrWeak<EventSubscriber<T>>>;
@@ -36,19 +50,25 @@ impl EventPipeline {
         }
     }
 
-    pub fn fire_event<T: 'static>(&mut self, mut event: T) {
-        let subscribers = self.event_subscribers.entry::<EventWrapper<T>>().or_insert_with(Vec::new);
+    pub fn fire_event<T: PipelinedEvent + 'static>(&mut self, mut event: T) {
+        {
+            let subscribers = self.event_subscribers.entry::<EventWrapper<T>>().or_insert_with(Vec::new);
 
-        subscribers.drain_filter(|subscriber| {
-            let subscriber = match subscriber.try_rc() {
-                Some(rc) => rc,
-                None => return true,
-            };
+            subscribers.drain_filter(|subscriber| {
+                let subscriber = match subscriber.try_rc() {
+                    Some(rc) => rc,
+                    None => return true,
+                };
 
-            subscriber.handle_event(&mut event);
+                subscriber.handle_event(&mut event);
 
-            return false;
-        });
+                return false;
+            });
+        }
+
+        if let Some(next_event) = event.into_next() {
+            self.fire_event(next_event);
+        }
     }
 
     pub fn add_subscriber<T: 'static>(&mut self, subscriber: Rc<EventSubscriber<T>>) {
@@ -69,8 +89,16 @@ mod test {
 
     struct SimpleEvent;
 
-    impl EventSubscriber<SimpleEvent> for RefCell<i32> {
-        fn handle_event(&self, _: &mut SimpleEvent) {
+    impl PipelinedEvent for SimpleEvent {
+        type NextEvent = !;
+
+        fn into_next(self) -> Option<!> {
+            None
+        }
+    }
+
+    impl<T> EventSubscriber<T> for RefCell<u32> {
+        fn handle_event(&self, _: &mut T) {
             *self.borrow_mut() += 1;
         }
     }
@@ -83,10 +111,10 @@ mod test {
 
     #[test]
     fn single_handler() {
-        let counter = Rc::new(RefCell::new(0i32));
+        let counter = Rc::new(RefCell::new(0u32));
 
         let mut pipeline = EventPipeline::new();
-        pipeline.add_subscriber(counter.clone());
+        pipeline.add_subscriber::<SimpleEvent>(counter.clone());
 
         pipeline.fire_event(SimpleEvent);
         assert_eq!(*counter.borrow(), 1);
@@ -97,11 +125,11 @@ mod test {
 
     #[test]
     fn multiple_handlers() {
-        let counter = Rc::new(RefCell::new(0i32));
+        let counter = Rc::new(RefCell::new(0u32));
 
         let mut pipeline = EventPipeline::new();
-        pipeline.add_subscriber(counter.clone());
-        pipeline.add_subscriber(counter.clone());
+        pipeline.add_subscriber::<SimpleEvent>(counter.clone());
+        pipeline.add_subscriber::<SimpleEvent>(counter.clone());
 
         pipeline.fire_event(SimpleEvent);
         assert_eq!(*counter.borrow(), 2);
@@ -111,12 +139,12 @@ mod test {
     }
 
     #[test]
-    fn weak_handlers() {
-        let counter = Rc::new(RefCell::new(0i32));
+    fn weak_handler() {
+        let counter = Rc::new(RefCell::new(0u32));
 
         let mut pipeline = EventPipeline::new();
         let weak = Rc::downgrade(&counter);
-        pipeline.add_weak_subscriber(weak);
+        pipeline.add_weak_subscriber::<SimpleEvent>(weak);
 
         pipeline.fire_event(SimpleEvent);
         assert_eq!(*counter.borrow(), 1);
@@ -127,5 +155,30 @@ mod test {
         // This should *not* trigger the handler again, since the only strong reference was dropped
         pipeline.fire_event(SimpleEvent);
         assert_eq!(*counter.borrow(), 1);
+    }
+
+    struct CountedEvent(u32);
+
+    impl PipelinedEvent for CountedEvent {
+        type NextEvent = CountedEvent;
+
+        fn into_next(self) -> Option<CountedEvent> {
+            match self.0 {
+                0 => None,
+                x => Some(CountedEvent(x-1)),
+            }
+        }
+    }
+
+    #[test]
+    fn counted_event() {
+        const COUNT: u32 = 5;
+        let counter = Rc::new(RefCell::new(0u32));
+
+        let mut pipeline = EventPipeline::new();
+        pipeline.add_subscriber::<CountedEvent>(counter.clone());
+
+        pipeline.fire_event(CountedEvent(COUNT));
+        assert_eq!(*counter.borrow(), COUNT+1);
     }
 }
