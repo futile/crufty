@@ -80,6 +80,22 @@ fn find_depth(dyn: &AABB2<f32>,
     Some(dir * depth)
 }
 
+pub struct CollisionResult {
+    depth: f32,
+    other: Entity,
+    other_coll_type: CollisionType,
+}
+
+impl CollisionResult {
+    fn new(depth: f32, other: Entity, other_coll_type: CollisionType) -> CollisionResult {
+        CollisionResult {
+            depth: depth,
+            other: other,
+            other_coll_type: other_coll_type
+        }
+    }
+}
+
 impl CollisionWorld {
     pub fn new() -> CollisionWorld {
         CollisionWorld {
@@ -112,7 +128,7 @@ impl CollisionWorld {
                  new_pos: &Position,
                  _last_pos: &Position, // currently unused, see comment below
                  axis: Axis)
-                 -> Option<f32> {
+                 -> Option<CollisionResult> {
         let aabb = match axis {
             Axis::X => coll.aabb_x(new_pos.as_vec()),
             Axis::Y => coll.aabb_y(new_pos.as_vec()),
@@ -159,18 +175,21 @@ impl CollisionWorld {
         if let Some(other) = closest {
             let other_leafs = self.mapping.get(other).unwrap();
 
-            if leafs.coll_type != CollisionType::Solid ||
-               other_leafs.coll_type != CollisionType::Solid {
-                // TODO fire event, return event, etc.?
-                return None;
-            }
-
             let other_leaf = match axis {
                 Axis::X => other_leafs.x.borrow(),
                 Axis::Y => other_leafs.y.borrow(),
             };
 
-            return find_depth(&aabb, &leaf.center, &other_leaf.bounding_volume, axis);
+            let depth = find_depth(&aabb, &leaf.center, &other_leaf.bounding_volume, axis);
+
+            if let Some(depth) = depth {
+                return Some(CollisionResult::new(depth, *other, other_leafs.coll_type));
+            }
+
+            // if leafs.coll_type != CollisionType::Solid ||
+            //     other_leafs.coll_type != CollisionType::Solid {
+            //         // TODO fire event, return event, etc.?
+            //     }
         };
 
         None
@@ -191,13 +210,13 @@ impl CollisionWorld {
         let mut updated_pos = *new_pos;
 
         // 2. call move_axis for both axes, X first
-        if let Some(depth_x) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::X) {
-            updated_pos.x += depth_x;
+        if let Some(col_result) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::X) {
+            updated_pos.x += col_result.depth;
 
         }
 
-        if let Some(depth_y) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::Y) {
-            updated_pos.y += depth_y;
+        if let Some(col_result) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::Y) {
+            updated_pos.y += col_result.depth;
         }
 
         {
