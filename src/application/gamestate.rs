@@ -180,7 +180,7 @@ impl State<AppTransition> for GameState {
                                        Collision::new_single(Cuboid2::new(Vector2::new(16.0,
                                                                                        16.0)),
                                                              Vector2::new(16.0, 16.0),
-                                                             CollisionType::Solid));
+                                                             CollisionType::Trigger));
                     data.sprite_info.add(&entity,
                                          SpriteInfo {
                                              width: 32.0,

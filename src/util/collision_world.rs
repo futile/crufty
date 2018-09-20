@@ -211,12 +211,15 @@ impl CollisionWorld {
 
         // 2. call move_axis for both axes, X first
         if let Some(col_result) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::X) {
-            updated_pos.x += col_result.depth;
-
+            if leafs.coll_type == CollisionType::Solid && col_result.other_coll_type == CollisionType::Solid {
+                updated_pos.x += col_result.depth;
+            }
         }
 
         if let Some(col_result) = self.move_axis(&mut leafs, coll, &updated_pos, last_pos, Axis::Y) {
-            updated_pos.y += col_result.depth;
+            if leafs.coll_type == CollisionType::Solid && col_result.other_coll_type == CollisionType::Solid {
+                updated_pos.y += col_result.depth;
+            }
         }
 
         {
@@ -264,11 +267,15 @@ impl CollisionWorld {
 
         let on_ground = colls.iter()
             .filter(|other| e != **other) // no self-collisions
-            .map(|other| {
-                let other_leaf_y = self.mapping.get(other).unwrap().y.borrow();
+            .filter_map(|other| {
+                let other_leafs = self.mapping.get(other).unwrap();
+                if other_leafs.coll_type != CollisionType::Solid {
+                    return None;
+                }
+                let other_leaf_y = other_leafs.y.borrow();
                 let other_top_y = other_leaf_y.bounding_volume.maxs().y;
                 let dist = (other_top_y - bot_y).abs(); // maybe remove the abs(), but shouldn't matter too much
-                dist
+                Some(dist)
             })
             .any(|dist| dist < ON_GROUND_THRESHOLD);
 

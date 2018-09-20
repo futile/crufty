@@ -34,7 +34,7 @@ impl State<AppTransition> for StartupState {
 
         let display = glutin::WindowBuilder::new()
             .with_dimensions(800, 600)
-            .with_title("Crufty".to_string())
+            .with_title("crufty".to_string())
             .build_glium()
             .unwrap();
 

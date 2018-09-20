@@ -88,7 +88,8 @@ impl Gravity {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum CollisionType {
-    Solid, // Trigger,
+    Solid,
+    Trigger,
 }
 
 #[derive(Clone)]
