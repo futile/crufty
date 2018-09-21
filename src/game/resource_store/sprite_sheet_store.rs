@@ -1,6 +1,6 @@
 use super::texture_store::TextureStore;
 
-use game::SpriteSheet;
+use crate::game::SpriteSheet;
 
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
@@ -51,7 +51,7 @@ impl SpriteSheetStore {
 }
 
 fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteSheet {
-    use game::{SpriteSheet, Animation};
+    use crate::game::{SpriteSheet, Animation};
 
     use std::fs::File;
     use std::io::Read;

@@ -3,12 +3,12 @@ use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::LevelComponents;
-use components::{Jump, JumpState};
-use application::InputIntent;
-use game::EntityOps;
+use crate::components::LevelComponents;
+use crate::components::{Jump, JumpState};
+use crate::application::InputIntent;
+use crate::game::EntityOps;
 
-use na::Vector2;
+use crate::na::Vector2;
 
 use num::traits::Zero;
 

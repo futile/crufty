@@ -3,12 +3,12 @@ use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::LevelComponents;
-use components::Facing;
-use application::InputIntent;
-use game::EntityOps;
+use crate::components::LevelComponents;
+use crate::components::Facing;
+use crate::application::InputIntent;
+use crate::game::EntityOps;
 
-use na::{self, Vector2};
+use crate::na::{self, Vector2};
 
 use num::traits::Zero;
 

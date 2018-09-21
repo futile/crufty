@@ -1,13 +1,13 @@
 use std::collections::HashSet;
 
-use nc::shape::Cuboid2;
-use nc::bounding_volume::{HasBoundingVolume, AABB2};
-use na::{self, Isometry2, Vector2, Point2};
+use crate::nc::shape::Cuboid2;
+use crate::nc::bounding_volume::{HasBoundingVolume, AABB2};
+use crate::na::{self, Isometry2, Vector2, Point2};
 
-use systems::WorldViewport;
-use application::{InputContext, InputIntent};
+use crate::systems::WorldViewport;
+use crate::application::{InputContext, InputIntent};
 
-use game::{self, SpriteSheetHandle, TextureInfo, Animation};
+use crate::game::{self, SpriteSheetHandle, TextureInfo, Animation};
 
 use num::traits::Zero;
 

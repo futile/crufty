@@ -3,9 +3,9 @@ use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::LevelComponents;
+use crate::components::LevelComponents;
 
-use application::InputIntent;
+use crate::application::InputIntent;
 
 pub struct IntentSystem;
 

@@ -7,9 +7,9 @@ use std::collections::HashSet;
 
 use super::LevelServices;
 
-use application::{KeyHandler, InputState};
+use crate::application::{KeyHandler, InputState};
 
-use components::LevelComponents;
+use crate::components::LevelComponents;
 
 pub struct KeyboardSystem {
     keys: HashSet<(VirtualKeyCode, InputState)>,

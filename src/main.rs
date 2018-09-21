@@ -1,3 +1,5 @@
+#![feature(rust_2018_preview)]
+
 #![feature(never_type)]
 #![feature(const_fn)]
 #![feature(drain_filter)]

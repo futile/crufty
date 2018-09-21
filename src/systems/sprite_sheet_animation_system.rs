@@ -3,8 +3,8 @@ use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
-use components::LevelComponents;
-use components::SpriteSheetAnimation;
+use crate::components::LevelComponents;
+use crate::components::SpriteSheetAnimation;
 
 pub struct SpriteSheetAnimationSystem;
 

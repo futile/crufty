@@ -5,20 +5,20 @@ use std::cell::RefCell;
 
 use ecs::Entity;
 
-use nc::partitioning::{DBVT, DBVTLeaf};
-use nc::partitioning::BoundingVolumeInterferencesCollector;
-use nc::bounding_volume::AABB2;
-use nc::bounding_volume::BoundingVolume;
-use nc::ray::Ray2;
-use nc::ray::RayInterferencesCollector;
+use crate::nc::partitioning::{DBVT, DBVTLeaf};
+use crate::nc::partitioning::BoundingVolumeInterferencesCollector;
+use crate::nc::bounding_volume::AABB2;
+use crate::nc::bounding_volume::BoundingVolume;
+use crate::nc::ray::Ray2;
+use crate::nc::ray::RayInterferencesCollector;
 
-use na::Point2;
-use na::Vector2;
-use na::Translation;
+use crate::na::Point2;
+use crate::na::Vector2;
+use crate::na::Translation;
 
-use components::Collision;
-use components::Position;
-use components::CollisionType;
+use crate::components::Collision;
+use crate::components::Position;
+use crate::components::CollisionType;
 
 use ordered_float::NotNaN;
 

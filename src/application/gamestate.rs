@@ -8,12 +8,12 @@ use glium::glutin::{self, ElementState, VirtualKeyCode};
 use ecs::{World, BuildData /* , ModifyData */};
 use ecs::system::InteractSystem;
 
-use util::State;
-use application::{AppTransition, InputIntent, InputState, InputManager};
-use game::ResourceStore;
+use crate::util::State;
+use crate::application::{AppTransition, InputIntent, InputState, InputManager};
+use crate::game::ResourceStore;
 
-use systems::{LevelSystems, RenderSystem, WorldViewport};
-use components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
+use crate::systems::{LevelSystems, RenderSystem, WorldViewport};
+use crate::components::{LevelComponents, Movement, Jump, Position, Collision, CollisionType, SpriteInfo,
                  SpriteSheetAnimation, Gravity, Camera, KeyboardInput, Intents, Velocity, Facing};
 
 use hprof;
@@ -22,9 +22,9 @@ use clock_ticks;
 
 use std::time::Duration;
 
-use nc::shape::Cuboid2;
-use nc::bounding_volume::AABB2;
-use na::{Point2, Vector2};
+use crate::nc::shape::Cuboid2;
+use crate::nc::bounding_volume::AABB2;
+use crate::na::{Point2, Vector2};
 
 pub struct GameState {
     display: glium::Display,

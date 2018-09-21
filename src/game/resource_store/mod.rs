@@ -4,7 +4,7 @@ pub use self::sprite_sheet_store::SpriteSheetHandle;
 use self::texture_store::TextureStore;
 use self::sprite_sheet_store::SpriteSheetStore;
 
-use game::SpriteSheet;
+use crate::game::SpriteSheet;
 
 use glium;
 use glium::texture::CompressedSrgbTexture2dArray;

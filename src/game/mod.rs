@@ -3,8 +3,8 @@ pub use self::resource_store::*;
 
 use ecs::{DataHelper, Entity};
 
-use components::LevelComponents;
-use systems::LevelServices;
+use crate::components::LevelComponents;
+use crate::systems::LevelServices;
 
 mod animation;
 mod resource_store;

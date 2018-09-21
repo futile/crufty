@@ -7,10 +7,10 @@ use glium::index::PrimitiveType;
 use std::fs::File;
 use std::io::Read;
 
-use na::{Vector2, OrthographicMatrix3};
+use crate::na::{Vector2, OrthographicMatrix3};
 
-use components::LevelComponents;
-use components::Facing;
+use crate::components::LevelComponents;
+use crate::components::Facing;
 
 use hprof;
 

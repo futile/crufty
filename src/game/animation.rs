@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use game::TextureInfo;
-use components::SpriteInfo;
+use crate::game::TextureInfo;
+use crate::components::SpriteInfo;
 
 #[derive(Clone, Debug)]
 pub struct Animation {

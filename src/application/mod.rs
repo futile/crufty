@@ -1,6 +1,6 @@
 use glium::{self, glutin};
 
-use util::{State, Transition};
+use crate::util::{State, Transition};
 
 mod gamestate;
 mod input;

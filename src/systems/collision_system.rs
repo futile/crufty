@@ -3,7 +3,7 @@ use ecs::system::InteractProcess;
 
 use super::LevelServices;
 
-use components::LevelComponents;
+use crate::components::LevelComponents;
 
 pub struct CollisionSystem;
 

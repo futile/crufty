@@ -13,10 +13,10 @@ pub use self::interaction_system::InteractionSystem;
 use ecs::ServiceManager;
 use ecs::system::{LazySystem, EntitySystem, InteractSystem};
 
-use components::LevelComponents;
+use crate::components::LevelComponents;
 
-use util::CollisionWorld;
-use game::ResourceStore;
+use crate::util::CollisionWorld;
+use crate::game::ResourceStore;
 
 mod render_system;
 mod camera_system;
