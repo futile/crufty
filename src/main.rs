@@ -1,7 +1,5 @@
 #![feature(never_type)]
 #![feature(const_fn)]
-#![feature(duration_checked_ops)]
-#![feature(entry_or_default)]
 #![feature(drain_filter)]
 
 #[macro_use]
