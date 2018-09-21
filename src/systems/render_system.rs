@@ -113,8 +113,8 @@ impl System for RenderSystem {
 
 impl InteractProcess for RenderSystem {
     fn process(&mut self,
-               camera_entities: EntityIter<LevelComponents>,
-               sprite_entities: EntityIter<LevelComponents>,
+               camera_entities: EntityIter<'_, LevelComponents>,
+               sprite_entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         let _ = hprof::enter("rendering");
 

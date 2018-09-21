@@ -24,7 +24,7 @@ const JUMP_RISE_VEL: Vector2<f32> = Vector2 { x: 0.0, y: 150.0 };
 
 impl EntityProcess for JumpSystem {
     fn process(&mut self,
-               entities: EntityIter<LevelComponents>,
+               entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         let delta = data.services.delta_time_s;
         let g = data.services.gravity;

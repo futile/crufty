@@ -29,7 +29,7 @@ fn add_clamp_to_zero(val: f32, add: f32, minmax: f32) -> f32 {
 
 impl EntityProcess for MovementSystem {
     fn process(&mut self,
-               entities: EntityIter<LevelComponents>,
+               entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             let (move_left, move_right) = {

@@ -3,7 +3,7 @@ pub use self::collision_world::CollisionWorld;
 mod collision_world;
 
 pub trait Transition {
-    fn create_state(self) -> Option<Box<State<Self>>>;
+    fn create_state(self) -> Option<Box<dyn State<Self>>>;
 }
 
 pub trait State<T> {
@@ -29,7 +29,7 @@ mod test {
     }
 
     impl Transition for TestTransition {
-        fn create_state(self) -> Option<Box<State<TestTransition>>> {
+        fn create_state(self) -> Option<Box<dyn State<TestTransition>>> {
             match self {
                 TestTransition::First => Some(Box::new(FirstState)),
                 TestTransition::Last => Some(Box::new(LastState)),

@@ -24,7 +24,7 @@ impl System for CameraSystem {
 
 impl EntityProcess for CameraSystem {
     fn process(&mut self,
-               entities: EntityIter<LevelComponents>,
+               entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         if let Some((win_width, win_height)) = self.resized {
             self.resized = None;

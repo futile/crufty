@@ -72,7 +72,7 @@ impl State<AppTransition> for GameState {
             .clone();
 
         let _ =
-            world.create_entity(|entity: BuildData<LevelComponents>,
+            world.create_entity(|entity: BuildData<'_, LevelComponents>,
                                  data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: 0.0, y: 0.0 });
                 data.camera.add(&entity,
@@ -84,7 +84,7 @@ impl State<AppTransition> for GameState {
             });
 
         let _player =
-            world.create_entity(|entity: BuildData<LevelComponents>,
+            world.create_entity(|entity: BuildData<'_, LevelComponents>,
                                  data: &mut LevelComponents| {
                 let pos = Position {
                     x: 0.0 * 32.0 + 0.0 * 10.0,
@@ -146,7 +146,7 @@ impl State<AppTransition> for GameState {
 
         for x in 0..12 {
             let _ =
-                world.create_entity(|entity: BuildData<LevelComponents>,
+                world.create_entity(|entity: BuildData<'_, LevelComponents>,
                                      data: &mut LevelComponents| {
                     data.position.add(&entity,
                                       Position {
@@ -169,7 +169,7 @@ impl State<AppTransition> for GameState {
 
         for x in 1..12 {
             let _ =
-                world.create_entity(|entity: BuildData<LevelComponents>,
+                world.create_entity(|entity: BuildData<'_, LevelComponents>,
                                      data: &mut LevelComponents| {
                     data.position.add(&entity,
                                       Position {
@@ -191,7 +191,7 @@ impl State<AppTransition> for GameState {
         }
 
         let _ =
-            world.create_entity(|entity: BuildData<LevelComponents>,
+            world.create_entity(|entity: BuildData<'_, LevelComponents>,
                                  data: &mut LevelComponents| {
                 data.position.add(&entity,
                                   Position {

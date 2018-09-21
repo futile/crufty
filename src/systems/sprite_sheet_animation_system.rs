@@ -21,7 +21,7 @@ impl System for SpriteSheetAnimationSystem {
 
 impl EntityProcess for SpriteSheetAnimationSystem {
     fn process(&mut self,
-               entities: EntityIter<LevelComponents>,
+               entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         let delta_s = data.services.delta_time_s;
 

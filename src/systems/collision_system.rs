@@ -18,7 +18,7 @@ impl System for CollisionSystem {
     type Services = LevelServices;
 
     fn activated(&mut self,
-                 e: &EntityData<Self::Components>,
+                 e: &EntityData<'_, Self::Components>,
                  data: &Self::Components,
                  services: &mut Self::Services) {
         // TODO `&data.collision[*e]` causes a clone, find a way which doesn't
@@ -26,7 +26,7 @@ impl System for CollisionSystem {
     }
 
     fn deactivated(&mut self,
-                   e: &EntityData<Self::Components>,
+                   e: &EntityData<'_, Self::Components>,
                    _data: &Self::Components,
                    services: &mut Self::Services) {
         services.collision_world.remove(***e);
@@ -35,8 +35,8 @@ impl System for CollisionSystem {
 
 impl InteractProcess for CollisionSystem {
     fn process(&mut self,
-               dynamic_entities: EntityIter<LevelComponents>,
-               _: EntityIter<LevelComponents>,
+               dynamic_entities: EntityIter<'_, LevelComponents>,
+               _: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
 
         for e1 in dynamic_entities {

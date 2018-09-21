@@ -36,7 +36,7 @@ impl KeyHandler for KeyboardSystem {
 
 impl EntityProcess for KeyboardSystem {
     fn process(&mut self,
-               entities: EntityIter<LevelComponents>,
+               entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             for combination in &self.keys {

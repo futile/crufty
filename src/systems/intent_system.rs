@@ -16,7 +16,7 @@ impl System for IntentSystem {
 
 impl EntityProcess for IntentSystem {
     fn process(&mut self,
-               entities: EntityIter<LevelComponents>,
+               entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             if data.intents[e].contains(&InputIntent::PrintDebugMessage) {

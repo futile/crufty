@@ -14,7 +14,7 @@ impl System for VelocitySystem {
 
 impl EntityProcess for VelocitySystem {
     fn process(&mut self,
-               entities: EntityIter<LevelComponents>,
+               entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         for e in entities {
             let velocity = data.velocity[e];

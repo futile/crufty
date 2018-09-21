@@ -40,7 +40,7 @@ impl<T: ?Sized> RcOrWeak<T> {
 struct EventWrapper<T>(::std::marker::PhantomData<*const T>);
 
 impl<T: 'static> Key for EventWrapper<T> {
-    type Value = Vec<RcOrWeak<EventSubscriber<T>>>;
+    type Value = Vec<RcOrWeak<dyn EventSubscriber<T>>>;
 }
 
 impl EventPipeline {
@@ -71,12 +71,12 @@ impl EventPipeline {
         }
     }
 
-    pub fn add_subscriber<T: 'static>(&mut self, subscriber: Rc<EventSubscriber<T>>) {
+    pub fn add_subscriber<T: 'static>(&mut self, subscriber: Rc<dyn EventSubscriber<T>>) {
         let subscribers = self.event_subscribers.entry::<EventWrapper<T>>().or_insert_with(Vec::new);
         subscribers.push(RcOrWeak::Rc(subscriber));
     }
 
-    pub fn add_weak_subscriber<T: 'static>(&mut self, subscriber: Weak<EventSubscriber<T>>) {
+    pub fn add_weak_subscriber<T: 'static>(&mut self, subscriber: Weak<dyn EventSubscriber<T>>) {
         let subscribers = self.event_subscribers.entry::<EventWrapper<T>>().or_insert_with(Vec::new);
         subscribers.push(RcOrWeak::Weak(subscriber));
     }

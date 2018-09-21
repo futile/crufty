@@ -16,7 +16,7 @@ impl System for InteractionSystem {
 
 impl EntityProcess for InteractionSystem {
     fn process(&mut self,
-               _entities: EntityIter<LevelComponents>,
+               _entities: EntityIter<'_, LevelComponents>,
                _data: &mut DataHelper<LevelComponents, LevelServices>) {
     }
 }

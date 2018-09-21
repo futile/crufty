@@ -2,6 +2,7 @@
 name = "crufty"
 version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
+edition = "2018"
 
 [dependencies.glium]
 version = "0.14.0"

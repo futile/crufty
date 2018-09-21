@@ -14,7 +14,7 @@ impl System for GravitySystem {
 
 impl EntityProcess for GravitySystem {
     fn process(&mut self,
-               entities: EntityIter<LevelComponents>,
+               entities: EntityIter<'_, LevelComponents>,
                data: &mut DataHelper<LevelComponents, LevelServices>) {
         let g = data.services.gravity;
         let delta = data.services.delta_time_s;
