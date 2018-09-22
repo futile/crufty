@@ -3,9 +3,6 @@ name = "crufty"
 version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 edition = "2018"
-
-[dependencies.glium]
-version = "0.14.0"
 # features = ["glutin", "image", "nalgebra"]
 
 [dependencies]
@@ -20,3 +17,7 @@ ordered-float = "0.2.1"
 toml = "0.1.28"
 rand = "0.3.14"
 typemap = "0.3.3"
+petgraph = "0.4.13"
+
+[dependencies.glium]
+version = "0.14.0"
