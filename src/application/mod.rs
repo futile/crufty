@@ -10,7 +10,7 @@ pub use self::input::{InputManager, InputContext, KeyHandler, InputState, InputI
 
 pub enum AppTransition {
     Startup,
-    StartGame(glium::Display),
+    StartGame(glium::Display, glutin::EventsLoop),
     Shutdown,
     TerminateApplication,
 }
@@ -19,7 +19,7 @@ impl Transition for AppTransition {
     fn create_state(self) -> Option<Box<dyn State<AppTransition>>> {
         match self {
             AppTransition::Startup => Some(Box::new(StartupState)),
-            AppTransition::StartGame(d) => Some(Box::new(GameState::new(d))),
+            AppTransition::StartGame(d, el) => Some(Box::new(GameState::new(d, el))),
             AppTransition::Shutdown => Some(Box::new(ShutdownState)),
             AppTransition::TerminateApplication => None,
         }
@@ -30,15 +30,17 @@ pub struct StartupState;
 
 impl State<AppTransition> for StartupState {
     fn run(self: Box<Self>) -> AppTransition {
-        use glium::DisplayBuild;
+        let events_loop = glutin::EventsLoop::new();
 
-        let display = glutin::WindowBuilder::new()
-            .with_dimensions(800, 600)
-            .with_title("crufty".to_string())
-            .build_glium()
-            .unwrap();
+        let window = glutin::WindowBuilder::new()
+            .with_dimensions(glutin::dpi::LogicalSize::new(800.0, 600.0))
+            .with_title("crufty".to_string());
 
-        AppTransition::StartGame(display)
+        let context = glutin::ContextBuilder::new();
+
+        let display = glium::Display::new(window, context, &events_loop).unwrap();
+
+        AppTransition::StartGame(display, events_loop)
     }
 }
 

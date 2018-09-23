@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
-use crate::nc::shape::Cuboid2;
-use crate::nc::bounding_volume::{HasBoundingVolume, AABB2};
+use crate::nc::shape::Cuboid;
+use crate::nc::bounding_volume::{HasBoundingVolume, AABB};
 use crate::na::{self, Isometry2, Vector2, Point2};
 
 use crate::systems::WorldViewport;
@@ -95,23 +95,23 @@ pub enum CollisionType {
 #[derive(Clone)]
 pub struct Collision {
     coll_type: CollisionType,
-    r_x: Cuboid2<f32>,
+    r_x: Cuboid<f32>,
     off_x: Vector2<f32>,
-    r_y: Cuboid2<f32>,
+    r_y: Cuboid<f32>,
     off_y: Vector2<f32>,
 }
 
 impl Collision {
-    pub fn new_single(rect: Cuboid2<f32>,
+    pub fn new_single(rect: Cuboid<f32>,
                       off: Vector2<f32>,
                       collision_type: CollisionType)
                       -> Collision {
         Self::new_dual(rect.clone(), off, rect, off, collision_type)
     }
 
-    pub fn new_dual(rect_x: Cuboid2<f32>,
+    pub fn new_dual(rect_x: Cuboid<f32>,
                     off_x: Vector2<f32>,
-                    rect_y: Cuboid2<f32>,
+                    rect_y: Cuboid<f32>,
                     off_y: Vector2<f32>,
                     collision_type: CollisionType)
                     -> Collision {
@@ -128,11 +128,11 @@ impl Collision {
         self.coll_type
     }
 
-    // pub fn rect_x(&self) -> &Cuboid2<f32> {
+    // pub fn rect_x(&self) -> &Cuboid<f32> {
     //     &self.r_x
     // }
 
-    pub fn aabb_x(&self, pos: Vector2<f32>) -> AABB2<f32> {
+    pub fn aabb_x(&self, pos: Vector2<f32>) -> AABB<f32> {
         self.r_x.bounding_volume(&Isometry2::new(pos + self.off_x, na::zero()))
     }
 
@@ -140,11 +140,11 @@ impl Collision {
         &self.off_x
     }
 
-    // pub fn rect_y(&self) -> &Cuboid2<f32> {
+    // pub fn rect_y(&self) -> &Cuboid<f32> {
     //     &self.r_y
     // }
 
-    pub fn aabb_y(&self, pos: Vector2<f32>) -> AABB2<f32> {
+    pub fn aabb_y(&self, pos: Vector2<f32>) -> AABB<f32> {
         self.r_y.bounding_volume(&Isometry2::new(pos + self.off_y, na::zero()))
     }
 
@@ -182,7 +182,7 @@ pub enum Facing {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Camera {
     pub world_viewport: WorldViewport,
-    pub screen_viewport: AABB2<f32>,
+    pub screen_viewport: AABB<f32>,
     pub resize_world_to_window: bool,
 }
 
@@ -195,7 +195,7 @@ pub type Intents = HashSet<InputIntent>;
 
 impl Camera {
     pub fn new(world_viewport: WorldViewport,
-               screen_viewport: AABB2<f32>,
+               screen_viewport: AABB<f32>,
                resize_world_to_window: bool)
                -> Camera {
         Camera {
@@ -205,14 +205,14 @@ impl Camera {
         }
     }
 
-    #[allow(dead_code)]
-    pub fn new_empty() -> Camera {
-        Camera {
-            world_viewport: WorldViewport::new_empty(),
-            screen_viewport: AABB2::new_invalid(),
-            resize_world_to_window: true,
-        }
-    }
+    // #[allow(dead_code)]
+    // pub fn new_empty() -> Camera {
+    //     Camera {
+    //         world_viewport: WorldViewport::new_empty(),
+    //         screen_viewport: AABB::new(),
+    //         resize_world_to_window: true,
+    //     }
+    // }
 }
 
 components! {

@@ -8,8 +8,11 @@ extern crate glium;
 #[macro_use]
 extern crate ecs;
 
+#[macro_use]
+extern crate lazy_static;
+
 use nalgebra as na;
-use ncollide as nc;
+use ncollide2d as nc;
 
 #[macro_use]
 pub mod util;

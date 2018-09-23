@@ -20,7 +20,9 @@ impl System for JumpSystem {
 }
 
 const JUMP_RISE_TIME_S: f32 = 0.5;
-const JUMP_RISE_VEL: Vector2<f32> = Vector2 { x: 0.0, y: 150.0 };
+lazy_static! {
+    static ref JUMP_RISE_VEL: Vector2<f32> = Vector2::new(0.0, 150.0);
+}
 
 impl EntityProcess for JumpSystem {
     fn process(&mut self,
@@ -73,7 +75,7 @@ impl EntityProcess for JumpSystem {
                 };
 
                 match jump.state {
-                    JumpState::Rising => JUMP_RISE_VEL + get_antigrav_vel(),
+                    JumpState::Rising => *JUMP_RISE_VEL + get_antigrav_vel(),
                     JumpState::MidairIdle if do_jump => get_antigrav_vel() / 2.0,
                     JumpState::MidairIdle | JumpState::Idle => Vector2::zero(),
                 }

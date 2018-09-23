@@ -81,10 +81,16 @@ impl EntityProcess for MovementSystem {
                         movement.acc
                     } * delta;
 
-                    movement.vel = *na::partial_clamp(&(movement.vel + acc),
-                                                      &-movement.max_vel,
-                                                      &movement.max_vel)
-                        .unwrap_or(&Vector2::zero())
+                    let n = &(movement.vel + acc);
+                    let min = &-movement.max_vel;
+                    let max = &movement.max_vel;
+
+                    let inter_x = na::partial_clamp(&n.x, &min.x, &max.x);
+                    let inter_y = na::partial_clamp(&n.y, &min.y, &max.y);
+
+                    // TODO working around this issue: https://github.com/rustsim/nalgebra/issues/401
+                    // movement.vel = *inter.unwrap_or(&Vector2::zero());
+                    movement.vel = Vector2::new(*inter_x.unwrap_or(&0.0), *inter_y.unwrap_or(&0.0));
                 }
 
                 movement.vel

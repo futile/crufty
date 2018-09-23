@@ -79,7 +79,7 @@ impl TextureStore {
             .map(|fpath| image::open(fpath).unwrap().to_rgba())
             .map(|image| {
                 let image_dimensions = image.dimensions();
-                glium::texture::RawImage2d::from_raw_rgba_reversed(image.into_raw(),
+                glium::texture::RawImage2d::from_raw_rgba_reversed(&image.into_raw(),
                                                                    image_dimensions)
             })
             .collect::<Vec<_>>();

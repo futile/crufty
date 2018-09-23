@@ -7,7 +7,7 @@ use glium::index::PrimitiveType;
 use std::fs::File;
 use std::io::Read;
 
-use crate::na::{Vector2, OrthographicMatrix3};
+use crate::na::{Vector2, Orthographic3};
 
 use crate::components::LevelComponents;
 use crate::components::Facing;
@@ -141,13 +141,13 @@ impl InteractProcess for RenderSystem {
                 let screen_size = camera.screen_viewport.half_extents() * 2.0;
 
                 let _g = hprof::enter("ortho");
-                let ortho_proj = OrthographicMatrix3::new(0.0 - camera.world_viewport.width / 2.0,
+                let ortho_proj = Orthographic3::new(0.0 - camera.world_viewport.width / 2.0,
                                                           0.0 + camera.world_viewport.width / 2.0,
                                                           0.0 - camera.world_viewport.height / 2.0,
                                                           0.0 + camera.world_viewport.height / 2.0,
                                                           -2.0,
                                                           0.0)
-                    .to_matrix();
+                    .unwrap();
                 drop(_g);
 
                 for e in &sprites {
@@ -176,7 +176,7 @@ impl InteractProcess for RenderSystem {
                         tex_index: sprite_info.texture_info.idx,
                         invert_tex_x: invert_tex_x,
                         win_scale: *screen_size.as_ref(),
-                        win_trans: *camera.screen_viewport.mins().to_vector().as_ref(),
+                        win_trans: *camera.screen_viewport.mins().coords.as_ref(),
                     };
 
                     target.draw(&self.unit_quad,

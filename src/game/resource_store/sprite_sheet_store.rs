@@ -56,35 +56,38 @@ fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteShe
     use std::fs::File;
     use std::io::Read;
 
-    use toml::{Parser, Value};
+    use toml::{Value};
 
     let mut file_content = String::new();
     File::open(path).and_then(|mut f| f.read_to_string(&mut file_content)).unwrap();
 
-    let mut parser = Parser::new(&file_content);
-    let res = parser.parse();
+    let res = file_content.parse::<Value>();
 
-    for err in &parser.errors {
-        let (loline, locol) = parser.to_linecol(err.lo);
-        let (hiline, hicol) = parser.to_linecol(err.hi);
-        println!("{:?}:{}:{}-{}:{} error: {}",
-                 path,
-                 loline,
-                 locol,
-                 hiline,
-                 hicol,
-                 err.desc);
+    if let Err(ref error) = res {
+        println!("failed to parse TOML: {}", error);
     }
+    // for err in &parser.errors {
+    //     let (loline, locol) = parser.to_linecol(err.lo);
+    //     let (hiline, hicol) = parser.to_linecol(err.hi);
+    //     println!("{:?}:{}:{}-{}:{} error: {}",
+    //              path,
+    //              loline,
+    //              locol,
+    //              hiline,
+    //              hicol,
+    //              err.desc);
+    // }
 
     let anim_toml = res.expect("sprite sheet parsing failed");
+
+    let anim_toml = match anim_toml {
+        Value::Table(tab) => tab,
+        _ => panic!("loaded toml not a table, but: {}", anim_toml),
+    };
 
     let mut animations: HashMap<String, Animation> = HashMap::new();
 
     for (name, value) in anim_toml {
-        // let anim_table = match value {
-        //     Value::Table(ref t) => t,
-        //     _ => panic!("{:?} is not a table!", value),
-        // };
         let anim_table = value.as_table().expect("<value> is not a table");
 
         let width = anim_table.get("width")

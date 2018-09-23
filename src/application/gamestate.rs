@@ -22,22 +22,23 @@ use clock_ticks;
 
 use std::time::Duration;
 
-use crate::nc::shape::Cuboid2;
-use crate::nc::bounding_volume::AABB2;
+use crate::nc::shape::Cuboid;
+use crate::nc::bounding_volume::AABB;
 use crate::na::{Point2, Vector2};
 
 pub struct GameState {
     display: glium::Display,
+    events_loop: glutin::EventsLoop,
 }
 
 impl GameState {
-    pub fn new(display: glium::Display) -> GameState {
-        GameState { display: display }
+    pub fn new(display: glium::Display, events_loop: glutin::EventsLoop) -> GameState {
+        GameState { display, events_loop }
     }
 }
 
 impl State<AppTransition> for GameState {
-    fn run(self: Box<Self>) -> AppTransition {
+    fn run(mut self: Box<Self>) -> AppTransition {
         let mut world = World::<LevelSystems>::new();
 
         let (width, height) = self.display.get_framebuffer_dimensions();
@@ -78,7 +79,7 @@ impl State<AppTransition> for GameState {
                 data.camera.add(&entity,
                                 Camera::new(WorldViewport::new((width / 1) as f32,
                                                                (height / 1) as f32),
-                                            AABB2::new(Point2::new(-1.0, -1.0),
+                                            AABB::new(Point2::new(-1.0, -1.0),
                                                        Point2::new(1.0, 1.0)),
                                             true));
             });
@@ -98,9 +99,9 @@ impl State<AppTransition> for GameState {
                                       last_pos: pos,
                                   });
                 data.collision.add(&entity,
-                                   Collision::new_dual(Cuboid2::new(Vector2::new(16.0, 5.0)),
+                                   Collision::new_dual(Cuboid::new(Vector2::new(16.0, 5.0)),
                                                        Vector2::new(16.0, 16.0),
-                                                       Cuboid2::new(Vector2::new(5.0, 16.0)),
+                                                       Cuboid::new(Vector2::new(5.0, 16.0)),
                                                        Vector2::new(16.0, 16.0),
                                                        CollisionType::Solid));
                 data.movement.add(&entity,
@@ -154,7 +155,7 @@ impl State<AppTransition> for GameState {
                                           y: 0.0,
                                       });
                     data.collision.add(&entity,
-                                       Collision::new_single(Cuboid2::new(Vector2::new(16.0,
+                                       Collision::new_single(Cuboid::new(Vector2::new(16.0,
                                                                                        16.0)),
                                                              Vector2::new(16.0, 16.0),
                                                              CollisionType::Solid));
@@ -177,7 +178,7 @@ impl State<AppTransition> for GameState {
                                           y: 96.0,
                                       });
                     data.collision.add(&entity,
-                                       Collision::new_single(Cuboid2::new(Vector2::new(16.0,
+                                       Collision::new_single(Cuboid::new(Vector2::new(16.0,
                                                                                        16.0)),
                                                              Vector2::new(16.0, 16.0),
                                                              CollisionType::Trigger));
@@ -199,7 +200,7 @@ impl State<AppTransition> for GameState {
                                       y: 32.0,
                                   });
                 data.collision.add(&entity,
-                                   Collision::new_single(Cuboid2::new(Vector2::new(16.0, 16.0)),
+                                   Collision::new_single(Cuboid::new(Vector2::new(16.0, 16.0)),
                                                          Vector2::new(16.0, 16.0),
                                                          CollisionType::Solid));
                 data.sprite_info.add(&entity,
@@ -246,32 +247,39 @@ impl State<AppTransition> for GameState {
             {
                 let _ = hprof::enter("window-events");
 
-                for event in self.display.poll_events() {
+                let mut shutdown = false;
+
+                self.events_loop.poll_events(|event| {
+                    use self::glutin::{Event, WindowEvent, KeyboardInput, dpi::LogicalSize};
+                    let event = match event {
+                        Event::WindowEvent{window_id: _, event} => event,
+                        _ => return,
+                    };
+
                     match event {
-                        glutin::Event::Closed |
-                        glutin::Event::KeyboardInput(ElementState::Released,
-                                                     _,
-                                                     Some(VirtualKeyCode::Escape)) => {
-                            return AppTransition::Shutdown
+                        WindowEvent::CloseRequested => {
+                            shutdown = true;
                         }
-                        glutin::Event::KeyboardInput(ElementState::Released,
-                                                     _,
-                                                     Some(VirtualKeyCode::P)) => {
-                            profiler_ticks += 3
+                        WindowEvent::KeyboardInput{device_id: _, input: KeyboardInput{scancode: _,
+                                                                                      state: key_state,
+                                                                                      modifiers: _,
+                                                                                      virtual_keycode: Some(vkc)}} => {
+                            match (key_state, vkc) {
+                                (ElementState::Released, VirtualKeyCode::P) => profiler_ticks += 3,
+                                (ElementState::Released, VirtualKeyCode::Escape) => shutdown = true,
+                                _ => input_manager.handle_event(key_state, vkc),
+                            }
                         }
-                        glutin::Event::KeyboardInput(ElementState::Pressed, _, Some(vkc)) => {
-                            input_manager.handle_event(ElementState::Pressed, vkc);
-                        }
-                        glutin::Event::KeyboardInput(ElementState::Released, _, Some(vkc)) => {
-                            input_manager.handle_event(ElementState::Released, vkc);
-                        }
-                        // glutin::Event::ReceivedCharacter(c) => println!("char: {:?}", c),
-                        glutin::Event::Resized(width, height) => {
-                            world.systems.camera_system.resized = Some((width, height));
+                        WindowEvent::Resized(LogicalSize {width, height}) => {
+                            world.systems.camera_system.resized = Some((width as u32, height as u32));
                             process!(world, camera_system);
                         }
                         _ => (),
                     }
+                });
+
+                if shutdown {
+                    return AppTransition::Shutdown
                 }
             }
 
