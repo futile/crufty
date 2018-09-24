@@ -124,7 +124,7 @@ impl CollisionWorld {
                  leafs: (&mut CollisionTreeLeaf, &mut CollisionTreeLeaf),
                  coll: &Collision,
                  new_pos: &Position,
-                 _last_pos: &Position, // currently unused, see comment below
+                 _last_pos: Option<&Position>, // currently unused, see comment below
                  axis: Axis)
                  -> Option<CollisionResult> {
         let aabb = match axis {
@@ -199,7 +199,7 @@ impl CollisionWorld {
                        e: Entity,
                        coll: &Collision,
                        new_pos: &Position,
-                       last_pos: &Position)
+                       last_pos: Option<&Position>)
                        -> Position {
         // 1. remove both leafs
         let mut leafs: CollisionTreeLeafs = self.mapping.remove(&e).unwrap();

@@ -53,9 +53,9 @@ impl EntityProcess for MovementSystem {
 
             if data.services.collision_world.on_ground(**e) {
                 if move_left == move_right {
-                    data.play_animation(**e, "stand");
+                    data.play_animation(e.into(), "stand");
                 } else {
-                    data.play_animation(**e, "walk");
+                    data.play_animation(e.into(), "walk");
                 }
             }
 

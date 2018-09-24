@@ -46,7 +46,7 @@ impl InteractProcess for CollisionSystem {
 
             data.position[e1] = data.services
                 .collision_world
-                .move_entity(**e1, &c1, &p1, &v1.last_pos);
+                .move_entity(**e1, &c1, &p1, Some(&v1.last_pos));
         }
     }
 }

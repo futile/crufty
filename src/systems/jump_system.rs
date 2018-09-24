@@ -6,7 +6,7 @@ use super::LevelServices;
 use crate::components::LevelComponents;
 use crate::components::{Jump, JumpState};
 use crate::application::InputIntent;
-use crate::game::EntityOps;
+use crate::game::{EntityOrData, EntityOps};
 
 use crate::na::Vector2;
 
@@ -48,7 +48,7 @@ impl EntityProcess for JumpSystem {
                     jump.state = JumpState::Rising;
                     jump.jump_time_remaining = JUMP_RISE_TIME_S;
 
-                    data.play_animation(**e, "jump");
+                    data.play_animation(e.into(), "jump");
                 }
                 s @ JumpState::Rising |
                 s @ JumpState::MidairIdle => {
@@ -58,7 +58,7 @@ impl EntityProcess for JumpSystem {
                     }
                     if s == JumpState::Rising && !do_jump {
                         jump.state = JumpState::MidairIdle;
-                        data.play_animation(**e, "stand");
+                        data.play_animation(e.into(), "stand");
                     }
                 }
             }
