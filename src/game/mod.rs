@@ -25,6 +25,9 @@ pub enum Interaction {
     Warp,
 }
 
+// *can* use `Either` when this issue is done: https://github.com/bluss/either/issues/33
+// But we might not want to, as this might be simple enough (but it's so much boilerplate :()
+// -> Issue might never be done due to `L != R` not specifiable
 pub enum EntityOrData<'a> {
     Entity(Entity),
     EntityData(EntityData<'a, LevelComponents>),
