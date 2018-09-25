@@ -4,6 +4,7 @@ use ecs::system::EntityProcess;
 use super::LevelServices;
 
 use crate::components::LevelComponents;
+use crate::game::EntityOps;
 
 pub struct VelocitySystem;
 
@@ -25,7 +26,7 @@ impl EntityProcess for VelocitySystem {
                 position.x += velocity.vx;
                 position.y += velocity.vy;
 
-                data.position.set(&e, position);
+                data.move_entity(e.into(), &position, false);
             }
 
             data.velocity[e].vx = 0.0;

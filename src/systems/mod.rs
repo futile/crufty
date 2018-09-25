@@ -72,9 +72,8 @@ systems! {
                 VelocitySystem,
                 aspect!(<LevelComponents> all: [velocity]),
             ),
-            collision_system: InteractSystem<CollisionSystem> = InteractSystem::new(
+            collision_system: EntitySystem<CollisionSystem> = EntitySystem::new(
                 CollisionSystem::new(),
-                aspect!(<LevelComponents> all: [position, velocity, collision]),
                 aspect!(<LevelComponents> all: [position, collision]),
             ),
             sprite_sheet_animation_system: EntitySystem<SpriteSheetAnimationSystem> = EntitySystem::new(

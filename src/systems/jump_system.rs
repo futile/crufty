@@ -6,7 +6,7 @@ use super::LevelServices;
 use crate::components::LevelComponents;
 use crate::components::{Jump, JumpState};
 use crate::application::InputIntent;
-use crate::game::{EntityOrData, EntityOps};
+use crate::game::{EntityOps};
 
 use crate::na::Vector2;
 

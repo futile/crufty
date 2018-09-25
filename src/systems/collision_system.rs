@@ -1,5 +1,5 @@
 use ecs::{EntityData, System, DataHelper, EntityIter};
-use ecs::system::InteractProcess;
+use ecs::system::EntityProcess;
 
 use super::LevelServices;
 
@@ -33,20 +33,9 @@ impl System for CollisionSystem {
     }
 }
 
-impl InteractProcess for CollisionSystem {
+impl EntityProcess for CollisionSystem {
     fn process(&mut self,
-               dynamic_entities: EntityIter<'_, LevelComponents>,
-               _: EntityIter<'_, LevelComponents>,
-               data: &mut DataHelper<LevelComponents, LevelServices>) {
-
-        for e1 in dynamic_entities {
-            let p1 = data.position[e1];
-            let v1 = data.velocity[e1];
-            let c1 = data.collision[e1].clone();
-
-            data.position[e1] = data.services
-                .collision_world
-                .move_entity(**e1, &c1, &p1, Some(&v1.last_pos));
-        }
+               _dynamic_entities: EntityIter<'_, LevelComponents>,
+               _data: &mut DataHelper<LevelComponents, LevelServices>) {
     }
 }
