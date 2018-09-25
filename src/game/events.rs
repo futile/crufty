@@ -74,20 +74,20 @@ impl EventPipeline {
         }
     }
 
-    pub fn add_subscriber<T: 'static>(&mut self, subscriber: Rc<dyn EventSubscriber<T>>) {
+    fn add_subscriber_internal<T: 'static>(&mut self, subscriber: RcOrWeak<dyn EventSubscriber<T>>) {
         let subscribers = self
             .event_subscribers
             .entry::<EventWrapper<T>>()
             .or_insert_with(Vec::new);
-        subscribers.push(RcOrWeak::Rc(subscriber));
+        subscribers.push(subscriber);
+    }
+
+    pub fn add_subscriber<T: 'static>(&mut self, subscriber: Rc<dyn EventSubscriber<T>>) {
+        self.add_subscriber_internal(RcOrWeak::Rc(subscriber));
     }
 
     pub fn add_weak_subscriber<T: 'static>(&mut self, subscriber: Weak<dyn EventSubscriber<T>>) {
-        let subscribers = self
-            .event_subscribers
-            .entry::<EventWrapper<T>>()
-            .or_insert_with(Vec::new);
-        subscribers.push(RcOrWeak::Weak(subscriber));
+        self.add_subscriber_internal(RcOrWeak::Weak(subscriber));
     }
 }
 
