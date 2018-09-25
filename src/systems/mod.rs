@@ -72,16 +72,16 @@ systems! {
                 VelocitySystem,
                 aspect!(<LevelComponents> all: [velocity]),
             ),
-            collision_system: EntitySystem<CollisionSystem> = EntitySystem::new(
-                CollisionSystem::new(),
-                aspect!(<LevelComponents> all: [position, collision]),
-            ),
             sprite_sheet_animation_system: EntitySystem<SpriteSheetAnimationSystem> = EntitySystem::new(
                 SpriteSheetAnimationSystem::new(),
                 aspect!(<LevelComponents> all: [sprite_sheet_animation, sprite_info]),
             ),
         },
         passive: {
+            collision_system: EntitySystem<CollisionSystem> = EntitySystem::new(
+                CollisionSystem::new(),
+                aspect!(<LevelComponents> all: [position, collision]),
+            ),
             camera_system: EntitySystem<CameraSystem> = EntitySystem::new(
                 CameraSystem::new(),
                 aspect!(<LevelComponents> all: [camera])),
