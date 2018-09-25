@@ -1,11 +1,11 @@
-use ecs::{System, DataHelper, EntityIter};
 use ecs::system::EntityProcess;
+use ecs::{DataHelper, EntityIter, System};
 
 use super::LevelServices;
 
-use crate::components::LevelComponents;
-use crate::components::Facing;
 use crate::application::InputIntent;
+use crate::components::Facing;
+use crate::components::LevelComponents;
 use crate::game::EntityOps;
 
 use crate::na::{self, Vector2};
@@ -28,15 +28,19 @@ fn add_clamp_to_zero(val: f32, add: f32, minmax: f32) -> f32 {
 }
 
 impl EntityProcess for MovementSystem {
-    fn process(&mut self,
-               entities: EntityIter<'_, LevelComponents>,
-               data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(
+        &mut self,
+        entities: EntityIter<'_, LevelComponents>,
+        data: &mut DataHelper<LevelComponents, LevelServices>,
+    ) {
         for e in entities {
             let (move_left, move_right) = {
                 let intents = &data.intents[e];
 
-                (intents.contains(&InputIntent::MoveLeft),
-                 intents.contains(&InputIntent::MoveRight))
+                (
+                    intents.contains(&InputIntent::MoveLeft),
+                    intents.contains(&InputIntent::MoveRight),
+                )
             };
 
             let delta = data.services.delta_time_s;
@@ -68,12 +72,16 @@ impl EntityProcess for MovementSystem {
                     }
 
                     // TODO reduce speed instead(e.g. by acc)
-                    movement.vel.x = add_clamp_to_zero(movement.vel.x,
-                                                       movement.acc.x * delta,
-                                                       movement.max_vel.x);
-                    movement.vel.y = add_clamp_to_zero(movement.vel.y,
-                                                       movement.acc.y * delta,
-                                                       movement.max_vel.y);
+                    movement.vel.x = add_clamp_to_zero(
+                        movement.vel.x,
+                        movement.acc.x * delta,
+                        movement.max_vel.x,
+                    );
+                    movement.vel.y = add_clamp_to_zero(
+                        movement.vel.y,
+                        movement.acc.y * delta,
+                        movement.max_vel.y,
+                    );
                 } else {
                     let acc = if move_left {
                         -movement.acc

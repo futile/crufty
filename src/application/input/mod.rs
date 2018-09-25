@@ -1,7 +1,7 @@
 use glium::glutin::{ElementState, VirtualKeyCode};
 
-use std::collections::HashSet;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 mod intents;
 
@@ -13,7 +13,9 @@ struct KeyboardState {
 
 impl KeyboardState {
     pub fn new() -> KeyboardState {
-        KeyboardState { keys: HashSet::new() }
+        KeyboardState {
+            keys: HashSet::new(),
+        }
     }
 
     pub fn handle_event(&mut self, state: ElementState, vkc: VirtualKeyCode) {
@@ -95,8 +97,9 @@ impl InputManager {
                 self.consumed.insert(*vkc);
             }
 
-            if state == InputState::PressedThisFrame &&
-               key_handler.handle_key(InputState::Pressed, *vkc) {
+            if state == InputState::PressedThisFrame
+                && key_handler.handle_key(InputState::Pressed, *vkc)
+            {
                 self.consumed.insert(*vkc);
             }
         }

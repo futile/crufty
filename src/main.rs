@@ -18,9 +18,9 @@ use ncollide2d as nc;
 pub mod util;
 
 pub mod application;
-pub mod systems;
 pub mod components;
 pub mod game;
+pub mod systems;
 
 fn main() {
     util::run_state_machine(application::AppTransition::Startup);

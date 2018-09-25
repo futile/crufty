@@ -46,8 +46,13 @@ impl<'a> From<EntityData<'a, LevelComponents>> for EntityOrData<'a> {
 }
 
 impl EntityOrData<'_> {
-    fn with_entity_data<F, R>(&self, data: &mut DataHelper<LevelComponents, LevelServices>, mut call: F) -> Option<R>
-        where F: FnMut(EntityData<LevelComponents>, &mut LevelComponents) -> R
+    fn with_entity_data<F, R>(
+        &self,
+        data: &mut DataHelper<LevelComponents, LevelServices>,
+        mut call: F,
+    ) -> Option<R>
+    where
+        F: FnMut(EntityData<LevelComponents>, &mut LevelComponents) -> R,
     {
         match *self {
             EntityOrData::Entity(e) => data.with_entity_data(&e, call),
@@ -92,7 +97,12 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             _ => return,
         };
 
-        let anim = match self.services.resource_store.get_sprite_sheet(ss_handle).get(anim_name) {
+        let anim = match self
+            .services
+            .resource_store
+            .get_sprite_sheet(ss_handle)
+            .get(anim_name)
+        {
             Some(anim) => anim.clone(),
             _ => return,
         };
@@ -114,7 +124,7 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             let coll = comps.collision[en].clone();
             let last_pos = match warp {
                 true => None,
-                false => comps.velocity.borrow(&en).map(|vel| { vel.last_pos }),
+                false => comps.velocity.borrow(&en).map(|vel| vel.last_pos),
             };
 
             (coll, last_pos)
@@ -123,7 +133,12 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             None => return,
         };
 
-        let resolved_pos = self.services.collision_world.move_entity(eod.as_entity(), &coll, &new_pos, last_pos.as_ref());
+        let resolved_pos = self.services.collision_world.move_entity(
+            eod.as_entity(),
+            &coll,
+            &new_pos,
+            last_pos.as_ref(),
+        );
 
         eod.with_entity_data(self, move |en, comps| {
             comps.position[en] = resolved_pos;

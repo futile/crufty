@@ -4,17 +4,17 @@ use std::cell::RefCell;
 
 use ecs::Entity;
 
-use crate::nc::partitioning::{DBVT, DBVTLeaf, DBVTLeafId};
-use crate::nc::partitioning::BoundingVolumeInterferencesCollector;
-use crate::nc::bounding_volume::AABB;
 use crate::nc::bounding_volume::BoundingVolume;
+use crate::nc::bounding_volume::AABB;
+use crate::nc::math::{Point, Vector};
+use crate::nc::partitioning::BoundingVolumeInterferencesCollector;
+use crate::nc::partitioning::{DBVTLeaf, DBVTLeafId, DBVT};
 use crate::nc::query::Ray;
 use crate::nc::query::RayInterferencesCollector;
-use crate::nc::math::{Point, Vector};
 
 use crate::components::Collision;
-use crate::components::Position;
 use crate::components::CollisionType;
+use crate::components::Position;
 
 use ordered_float::NotNan;
 
@@ -40,27 +40,22 @@ enum Axis {
     Y,
 }
 
-fn find_depth(dyn: &AABB<f32>,
-              dyn_last: &Point<f32>,
-              stat: &AABB<f32>,
-              axis: Axis)
-              -> Option<f32> {
+fn find_depth(dyn_ent: &AABB<f32>, dyn_last: &Point<f32>, stat: &AABB<f32>, axis: Axis) -> Option<f32> {
     use self::Axis::{X, Y};
 
-    if !dyn.intersects(stat) {
+    if !dyn_ent.intersects(stat) {
         return None;
     }
 
     let min_dist = match axis {
-        X => dyn.half_extents().x + stat.half_extents().x,
-        Y => dyn.half_extents().y + stat.half_extents().y,
+        X => dyn_ent.half_extents().x + stat.half_extents().x,
+        Y => dyn_ent.half_extents().y + stat.half_extents().y,
     };
 
     let dist = match axis {
-            X => dyn.center().x - stat.center().x,
-            Y => dyn.center().y - stat.center().y,
-        }
-        .abs();
+        X => dyn_ent.center().x - stat.center().x,
+        Y => dyn_ent.center().y - stat.center().y,
+    }.abs();
 
     let depth = min_dist - dist;
 
@@ -69,10 +64,9 @@ fn find_depth(dyn: &AABB<f32>,
     }
 
     let dir = match axis {
-            X => dyn_last.x - stat.center().x,
-            Y => dyn_last.y - stat.center().y,
-        }
-        .signum();
+        X => dyn_last.x - stat.center().x,
+        Y => dyn_last.y - stat.center().y,
+    }.signum();
 
     Some(dir * depth)
 }
@@ -88,7 +82,7 @@ impl CollisionResult {
         CollisionResult {
             depth: depth,
             other: other,
-            other_coll_type: other_coll_type
+            other_coll_type: other_coll_type,
         }
     }
 }
@@ -111,26 +105,28 @@ impl CollisionWorld {
         let y_leaf = DBVTLeaf::new(coll.aabb_y(Vector::new(pos.x, pos.y)), e);
 
         // then add leafs for both trees
-        self.mapping.insert(e,
-                            CollisionTreeLeafs {
-                                x: self.dbvt_x.insert(x_leaf),
-                                y: self.dbvt_y.insert(y_leaf),
-                                coll_type: coll.collision_type(),
-                            });
+        self.mapping.insert(
+            e,
+            CollisionTreeLeafs {
+                x: self.dbvt_x.insert(x_leaf),
+                y: self.dbvt_y.insert(y_leaf),
+                coll_type: coll.collision_type(),
+            },
+        );
     }
 
     // move an entity along one exis, return collision depth if a collision occured
-    fn move_axis(&mut self,
-                 leafs: (&mut CollisionTreeLeaf, &mut CollisionTreeLeaf),
-                 coll: &Collision,
-                 new_pos: &Position,
-                 _last_pos: Option<&Position>, // currently unused, see comment below
-                 axis: Axis)
-                 -> Option<CollisionResult> {
+    fn move_axis(
+        &mut self,
+        leafs: (&mut CollisionTreeLeaf, &mut CollisionTreeLeaf),
+        coll: &Collision,
+        new_pos: &Position,
+        _last_pos: Option<&Position>, // currently unused, see comment below
+        axis: Axis,
+    ) -> Option<CollisionResult> {
         let aabb = match axis {
             Axis::X => coll.aabb_x(new_pos.as_vec()),
             Axis::Y => coll.aabb_y(new_pos.as_vec()),
-
             // this caused problems, but was taken from the cavestory tutorial.
             // keeping it to not forget about it!
             // Axis::X => coll.aabb_x(new_pos.as_vec()).merged(&coll.aabb_x(last_pos.as_vec())),
@@ -149,7 +145,9 @@ impl CollisionWorld {
         let closest: Option<&Entity> = match axis {
             Axis::X => {
                 self.dbvt_x
-                    .visit(&mut BoundingVolumeInterferencesCollector::new(&aabb, &mut colls));
+                    .visit(&mut BoundingVolumeInterferencesCollector::new(
+                        &aabb, &mut colls,
+                    ));
 
                 let center_x = leaf.center;
 
@@ -160,7 +158,9 @@ impl CollisionWorld {
             }
             Axis::Y => {
                 self.dbvt_y
-                    .visit(&mut BoundingVolumeInterferencesCollector::new(&aabb, &mut colls));
+                    .visit(&mut BoundingVolumeInterferencesCollector::new(
+                        &aabb, &mut colls,
+                    ));
 
                 let center_y = leaf.center;
 
@@ -195,12 +195,13 @@ impl CollisionWorld {
         None
     }
 
-    pub fn move_entity(&mut self,
-                       e: Entity,
-                       coll: &Collision,
-                       new_pos: &Position,
-                       last_pos: Option<&Position>)
-                       -> Position {
+    pub fn move_entity(
+        &mut self,
+        e: Entity,
+        coll: &Collision,
+        new_pos: &Position,
+        last_pos: Option<&Position>,
+    ) -> Position {
         // 1. remove both leafs
         let mut leafs: CollisionTreeLeafs = self.mapping.remove(&e).unwrap();
 
@@ -210,14 +211,30 @@ impl CollisionWorld {
         let mut updated_pos = *new_pos;
 
         // 2. call move_axis for both axes, X first
-        if let Some(col_result) = self.move_axis((&mut leaf_x, &mut leaf_y), coll, &updated_pos, last_pos, Axis::X) {
-            if leafs.coll_type == CollisionType::Solid && col_result.other_coll_type == CollisionType::Solid {
+        if let Some(col_result) = self.move_axis(
+            (&mut leaf_x, &mut leaf_y),
+            coll,
+            &updated_pos,
+            last_pos,
+            Axis::X,
+        ) {
+            if leafs.coll_type == CollisionType::Solid
+                && col_result.other_coll_type == CollisionType::Solid
+            {
                 updated_pos.x += col_result.depth;
             }
         }
 
-        if let Some(col_result) = self.move_axis((&mut leaf_x, &mut leaf_y), coll, &updated_pos, last_pos, Axis::Y) {
-            if leafs.coll_type == CollisionType::Solid && col_result.other_coll_type == CollisionType::Solid {
+        if let Some(col_result) = self.move_axis(
+            (&mut leaf_x, &mut leaf_y),
+            coll,
+            &updated_pos,
+            last_pos,
+            Axis::Y,
+        ) {
+            if leafs.coll_type == CollisionType::Solid
+                && col_result.other_coll_type == CollisionType::Solid
+            {
                 updated_pos.y += col_result.depth;
             }
         }
@@ -251,15 +268,17 @@ impl CollisionWorld {
         let leaf_y = &self.dbvt_y[leafs.y];
 
         let mut colls = Vec::new();
-        self.dbvt_y.visit(&mut RayInterferencesCollector::new(&Ray::new(leaf_y.center,
-                                                                         Vector::new(0.0, -1.0)),
-                                                              &mut colls));
+        self.dbvt_y.visit(&mut RayInterferencesCollector::new(
+            &Ray::new(leaf_y.center, Vector::new(0.0, -1.0)),
+            &mut colls,
+        ));
 
         let bot_y = leaf_y.bounding_volume.mins().y;
 
         const ON_GROUND_THRESHOLD: f32 = 0.000015; // chosen through experiments
 
-        let on_ground = colls.iter()
+        let on_ground = colls
+            .iter()
             .filter(|other| e != **other) // no self-collisions
             .filter_map(|other| {
                 let other_leafs = self.mapping.get(other).unwrap();
@@ -270,8 +289,7 @@ impl CollisionWorld {
                 let other_top_y = other_leaf_y.bounding_volume.maxs().y;
                 let dist = (other_top_y - bot_y).abs(); // maybe remove the abs(), but shouldn't matter too much
                 Some(dist)
-            })
-            .any(|dist| dist < ON_GROUND_THRESHOLD);
+            }).any(|dist| dist < ON_GROUND_THRESHOLD);
 
         self.on_ground_cache.borrow_mut().insert(e, on_ground);
 

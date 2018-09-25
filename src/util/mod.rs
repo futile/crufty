@@ -20,7 +20,7 @@ pub fn run_state_machine<T: Transition>(initial: T) {
 
 #[cfg(test)]
 mod test {
-    use super::{Transition, State, run_state_machine};
+    use super::{run_state_machine, State, Transition};
 
     enum TestTransition {
         First,

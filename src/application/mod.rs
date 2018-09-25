@@ -6,7 +6,7 @@ mod gamestate;
 mod input;
 
 pub use self::gamestate::GameState;
-pub use self::input::{InputManager, InputContext, KeyHandler, InputState, InputIntent};
+pub use self::input::{InputContext, InputIntent, InputManager, InputState, KeyHandler};
 
 pub enum AppTransition {
     Startup,

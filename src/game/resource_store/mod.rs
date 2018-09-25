@@ -1,8 +1,8 @@
-pub use self::texture_store::TextureInfo;
 pub use self::sprite_sheet_store::SpriteSheetHandle;
+pub use self::texture_store::TextureInfo;
 
-use self::texture_store::TextureStore;
 use self::sprite_sheet_store::SpriteSheetStore;
+use self::texture_store::TextureStore;
 
 use crate::game::SpriteSheet;
 
@@ -11,8 +11,8 @@ use glium::texture::CompressedSrgbTexture2dArray;
 
 use std::path::Path;
 
-mod texture_store;
 mod sprite_sheet_store;
+mod texture_store;
 
 #[derive(Default)]
 pub struct ResourceStore {
@@ -37,7 +37,8 @@ impl ResourceStore {
     }
 
     pub fn load_sprite_sheet(&mut self, path: &Path) -> SpriteSheetHandle {
-        self.sprite_sheet_store.get_sprite_sheet_handle(&mut self.texture_store, path)
+        self.sprite_sheet_store
+            .get_sprite_sheet_handle(&mut self.texture_store, path)
     }
 
     pub fn get_sprite_sheet(&self, handle: SpriteSheetHandle) -> &SpriteSheet {

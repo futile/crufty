@@ -1,5 +1,5 @@
-use ecs::{System, DataHelper, EntityIter};
 use ecs::system::EntityProcess;
+use ecs::{DataHelper, EntityIter, System};
 
 use super::LevelServices;
 
@@ -23,9 +23,11 @@ impl System for CameraSystem {
 }
 
 impl EntityProcess for CameraSystem {
-    fn process(&mut self,
-               entities: EntityIter<'_, LevelComponents>,
-               data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(
+        &mut self,
+        entities: EntityIter<'_, LevelComponents>,
+        data: &mut DataHelper<LevelComponents, LevelServices>,
+    ) {
         if let Some((win_width, win_height)) = self.resized {
             self.resized = None;
 

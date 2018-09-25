@@ -1,13 +1,13 @@
 use std::collections::HashSet;
 
-use crate::nc::shape::Cuboid;
+use crate::na::{self, Isometry2, Point2, Vector2};
 use crate::nc::bounding_volume::{HasBoundingVolume, AABB};
-use crate::na::{self, Isometry2, Vector2, Point2};
+use crate::nc::shape::Cuboid;
 
-use crate::systems::WorldViewport;
 use crate::application::{InputContext, InputIntent};
+use crate::systems::WorldViewport;
 
-use crate::game::{self, SpriteSheetHandle, TextureInfo, Animation};
+use crate::game::{self, Animation, SpriteSheetHandle, TextureInfo};
 
 use num::traits::Zero;
 
@@ -102,19 +102,21 @@ pub struct Collision {
 }
 
 impl Collision {
-    pub fn new_single(rect: Cuboid<f32>,
-                      off: Vector2<f32>,
-                      collision_type: CollisionType)
-                      -> Collision {
+    pub fn new_single(
+        rect: Cuboid<f32>,
+        off: Vector2<f32>,
+        collision_type: CollisionType,
+    ) -> Collision {
         Self::new_dual(rect.clone(), off, rect, off, collision_type)
     }
 
-    pub fn new_dual(rect_x: Cuboid<f32>,
-                    off_x: Vector2<f32>,
-                    rect_y: Cuboid<f32>,
-                    off_y: Vector2<f32>,
-                    collision_type: CollisionType)
-                    -> Collision {
+    pub fn new_dual(
+        rect_x: Cuboid<f32>,
+        off_x: Vector2<f32>,
+        rect_y: Cuboid<f32>,
+        off_y: Vector2<f32>,
+        collision_type: CollisionType,
+    ) -> Collision {
         Collision {
             coll_type: collision_type,
             r_x: rect_x,
@@ -133,7 +135,8 @@ impl Collision {
     // }
 
     pub fn aabb_x(&self, pos: Vector2<f32>) -> AABB<f32> {
-        self.r_x.bounding_volume(&Isometry2::new(pos + self.off_x, na::zero()))
+        self.r_x
+            .bounding_volume(&Isometry2::new(pos + self.off_x, na::zero()))
     }
 
     pub fn off_x(&self) -> &Vector2<f32> {
@@ -145,7 +148,8 @@ impl Collision {
     // }
 
     pub fn aabb_y(&self, pos: Vector2<f32>) -> AABB<f32> {
-        self.r_y.bounding_volume(&Isometry2::new(pos + self.off_y, na::zero()))
+        self.r_y
+            .bounding_volume(&Isometry2::new(pos + self.off_y, na::zero()))
     }
 
     pub fn off_y(&self) -> &Vector2<f32> {
@@ -194,10 +198,11 @@ pub struct KeyboardInput {
 pub type Intents = HashSet<InputIntent>;
 
 impl Camera {
-    pub fn new(world_viewport: WorldViewport,
-               screen_viewport: AABB<f32>,
-               resize_world_to_window: bool)
-               -> Camera {
+    pub fn new(
+        world_viewport: WorldViewport,
+        screen_viewport: AABB<f32>,
+        resize_world_to_window: bool,
+    ) -> Camera {
         Camera {
             world_viewport: world_viewport,
             screen_viewport: screen_viewport,

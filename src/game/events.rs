@@ -1,5 +1,5 @@
-use typemap::{TypeMap, Key};
 use std::rc::{Rc, Weak};
+use typemap::{Key, TypeMap};
 
 pub trait PipelinedEvent {
     type NextEvent: PipelinedEvent;
@@ -52,7 +52,10 @@ impl EventPipeline {
 
     pub fn fire_event<T: PipelinedEvent + 'static>(&mut self, mut event: T) {
         {
-            let subscribers = self.event_subscribers.entry::<EventWrapper<T>>().or_insert_with(Vec::new);
+            let subscribers = self
+                .event_subscribers
+                .entry::<EventWrapper<T>>()
+                .or_insert_with(Vec::new);
 
             subscribers.drain_filter(|subscriber| {
                 let subscriber = match subscriber.try_rc() {
@@ -72,12 +75,18 @@ impl EventPipeline {
     }
 
     pub fn add_subscriber<T: 'static>(&mut self, subscriber: Rc<dyn EventSubscriber<T>>) {
-        let subscribers = self.event_subscribers.entry::<EventWrapper<T>>().or_insert_with(Vec::new);
+        let subscribers = self
+            .event_subscribers
+            .entry::<EventWrapper<T>>()
+            .or_insert_with(Vec::new);
         subscribers.push(RcOrWeak::Rc(subscriber));
     }
 
     pub fn add_weak_subscriber<T: 'static>(&mut self, subscriber: Weak<dyn EventSubscriber<T>>) {
-        let subscribers = self.event_subscribers.entry::<EventWrapper<T>>().or_insert_with(Vec::new);
+        let subscribers = self
+            .event_subscribers
+            .entry::<EventWrapper<T>>()
+            .or_insert_with(Vec::new);
         subscribers.push(RcOrWeak::Weak(subscriber));
     }
 }
@@ -165,7 +174,7 @@ mod test {
         fn into_next(self) -> Option<CountedEvent> {
             match self.0 {
                 0 => None,
-                x => Some(CountedEvent(x-1)),
+                x => Some(CountedEvent(x - 1)),
             }
         }
     }
@@ -179,6 +188,6 @@ mod test {
         pipeline.add_subscriber::<CountedEvent>(counter.clone());
 
         pipeline.fire_event(CountedEvent(COUNT));
-        assert_eq!(*counter.borrow(), COUNT+1);
+        assert_eq!(*counter.borrow(), COUNT + 1);
     }
 }

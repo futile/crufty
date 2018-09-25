@@ -1,12 +1,12 @@
-use ecs::{System, DataHelper, EntityIter};
 use ecs::system::EntityProcess;
+use ecs::{DataHelper, EntityIter, System};
 
 use super::LevelServices;
 
+use crate::application::InputIntent;
 use crate::components::LevelComponents;
 use crate::components::{Jump, JumpState};
-use crate::application::InputIntent;
-use crate::game::{EntityOps};
+use crate::game::EntityOps;
 
 use crate::na::Vector2;
 
@@ -25,9 +25,11 @@ lazy_static! {
 }
 
 impl EntityProcess for JumpSystem {
-    fn process(&mut self,
-               entities: EntityIter<'_, LevelComponents>,
-               data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(
+        &mut self,
+        entities: EntityIter<'_, LevelComponents>,
+        data: &mut DataHelper<LevelComponents, LevelServices>,
+    ) {
         let delta = data.services.delta_time_s;
         let g = data.services.gravity;
 
@@ -50,8 +52,7 @@ impl EntityProcess for JumpSystem {
 
                     data.play_animation(e.into(), "jump");
                 }
-                s @ JumpState::Rising |
-                s @ JumpState::MidairIdle => {
+                s @ JumpState::Rising | s @ JumpState::MidairIdle => {
                     jump.jump_time_remaining -= delta;
                     if jump.jump_time_remaining <= 0.0 {
                         jump.state = JumpState::Idle;
@@ -68,10 +69,12 @@ impl EntityProcess for JumpSystem {
             data.jump[e] = jump;
 
             let vel_change: Vector2<f32> = {
-                let get_antigrav_vel = || if let Some(gravity) = data.gravity.get(&e) {
-                    Vector2::new(0.0, g * gravity.f)
-                } else {
-                    Vector2::zero()
+                let get_antigrav_vel = || {
+                    if let Some(gravity) = data.gravity.get(&e) {
+                        Vector2::new(0.0, g * gravity.f)
+                    } else {
+                        Vector2::zero()
+                    }
                 };
 
                 match jump.state {

@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::game::TextureInfo;
 use crate::components::SpriteInfo;
+use crate::game::TextureInfo;
 
 #[derive(Clone, Debug)]
 pub struct Animation {
@@ -34,7 +34,9 @@ pub struct SpriteSheet {
 
 impl SpriteSheet {
     pub fn new(animations: HashMap<String, Animation>) -> SpriteSheet {
-        SpriteSheet { animations: animations }
+        SpriteSheet {
+            animations: animations,
+        }
     }
 
     pub fn get(&self, animation_name: &str) -> Option<&Animation> {

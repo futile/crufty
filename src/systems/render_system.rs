@@ -1,16 +1,16 @@
-use ecs::{System, DataHelper, EntityIter};
 use ecs::system::InteractProcess;
+use ecs::{DataHelper, EntityIter, System};
 
-use glium::{self, Surface};
 use glium::index::PrimitiveType;
+use glium::{self, Surface};
 
 use std::fs::File;
 use std::io::Read;
 
-use crate::na::{Vector2, Orthographic3};
+use crate::na::{Orthographic3, Vector2};
 
-use crate::components::LevelComponents;
 use crate::components::Facing;
+use crate::components::LevelComponents;
 
 use hprof;
 
@@ -54,24 +54,27 @@ impl RenderSystem {
         let vertex_buffer = {
             implement_vertex!(Vertex, position, tex_coords);
 
-            glium::VertexBuffer::new(&display,
-                                     &[Vertex {
-                                           position: [0.0, 0.0],
-                                           tex_coords: [0.0, 0.0],
-                                       },
-                                       Vertex {
-                                           position: [0.0, 1.0],
-                                           tex_coords: [0.0, 1.0],
-                                       },
-                                       Vertex {
-                                           position: [1.0, 1.0],
-                                           tex_coords: [1.0, 1.0],
-                                       },
-                                       Vertex {
-                                           position: [1.0, 0.0],
-                                           tex_coords: [1.0, 0.0],
-                                       }])
-                .unwrap()
+            glium::VertexBuffer::new(
+                &display,
+                &[
+                    Vertex {
+                        position: [0.0, 0.0],
+                        tex_coords: [0.0, 0.0],
+                    },
+                    Vertex {
+                        position: [0.0, 1.0],
+                        tex_coords: [0.0, 1.0],
+                    },
+                    Vertex {
+                        position: [1.0, 1.0],
+                        tex_coords: [1.0, 1.0],
+                    },
+                    Vertex {
+                        position: [1.0, 0.0],
+                        tex_coords: [1.0, 0.0],
+                    },
+                ],
+            ).unwrap()
         };
 
         let index_buffer =
@@ -94,8 +97,7 @@ impl RenderSystem {
                                140 => {
                                    vertex: &vertex_shader_code,
                                    fragment: &fragment_shader_code,
-                               })
-            .unwrap();
+                               }).unwrap();
 
         RenderSystem {
             display: display,
@@ -112,10 +114,12 @@ impl System for RenderSystem {
 }
 
 impl InteractProcess for RenderSystem {
-    fn process(&mut self,
-               camera_entities: EntityIter<'_, LevelComponents>,
-               sprite_entities: EntityIter<'_, LevelComponents>,
-               data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(
+        &mut self,
+        camera_entities: EntityIter<'_, LevelComponents>,
+        sprite_entities: EntityIter<'_, LevelComponents>,
+        data: &mut DataHelper<LevelComponents, LevelServices>,
+    ) {
         let _ = hprof::enter("rendering");
 
         let _s = hprof::enter("setup");
@@ -141,13 +145,14 @@ impl InteractProcess for RenderSystem {
                 let screen_size = camera.screen_viewport.half_extents() * 2.0;
 
                 let _g = hprof::enter("ortho");
-                let ortho_proj = Orthographic3::new(0.0 - camera.world_viewport.width / 2.0,
-                                                          0.0 + camera.world_viewport.width / 2.0,
-                                                          0.0 - camera.world_viewport.height / 2.0,
-                                                          0.0 + camera.world_viewport.height / 2.0,
-                                                          -2.0,
-                                                          0.0)
-                    .unwrap();
+                let ortho_proj = Orthographic3::new(
+                    0.0 - camera.world_viewport.width / 2.0,
+                    0.0 + camera.world_viewport.width / 2.0,
+                    0.0 - camera.world_viewport.height / 2.0,
+                    0.0 + camera.world_viewport.height / 2.0,
+                    -2.0,
+                    0.0,
+                ).unwrap();
                 drop(_g);
 
                 for e in &sprites {
@@ -155,11 +160,12 @@ impl InteractProcess for RenderSystem {
                     let sprite_info = &data.sprite_info[*e];
 
                     let scale = Vector2::new(sprite_info.width, sprite_info.height);
-                    let view_pos = Vector2::new(position.x.round() -
-                                                (cpos.x - camera.world_viewport.width / 2.0),
-                                                position.y.round() -
-                                                (cpos.y - camera.world_viewport.height / 2.0));
-                    let texture = data.services
+                    let view_pos = Vector2::new(
+                        position.x.round() - (cpos.x - camera.world_viewport.width / 2.0),
+                        position.y.round() - (cpos.y - camera.world_viewport.height / 2.0),
+                    );
+                    let texture = data
+                        .services
                         .resource_store
                         .get_texture(sprite_info.texture_info);
 
@@ -179,12 +185,14 @@ impl InteractProcess for RenderSystem {
                         win_trans: *camera.screen_viewport.mins().coords.as_ref(),
                     };
 
-                    target.draw(&self.unit_quad,
-                              &self.index_buffer,
-                              &self.program,
-                              &uniforms,
-                              &Default::default())
-                        .unwrap()
+                    target
+                        .draw(
+                            &self.unit_quad,
+                            &self.index_buffer,
+                            &self.program,
+                            &uniforms,
+                            &Default::default(),
+                        ).unwrap()
                 }
             }
         }

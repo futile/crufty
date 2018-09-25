@@ -1,5 +1,5 @@
-use ecs::{System, DataHelper, EntityIter};
 use ecs::system::EntityProcess;
+use ecs::{DataHelper, EntityIter, System};
 
 use super::LevelServices;
 
@@ -15,8 +15,10 @@ impl System for InteractionSystem {
 }
 
 impl EntityProcess for InteractionSystem {
-    fn process(&mut self,
-               _entities: EntityIter<'_, LevelComponents>,
-               _data: &mut DataHelper<LevelComponents, LevelServices>) {
+    fn process(
+        &mut self,
+        _entities: EntityIter<'_, LevelComponents>,
+        _data: &mut DataHelper<LevelComponents, LevelServices>,
+    ) {
     }
 }
