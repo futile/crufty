@@ -1,6 +1,6 @@
 pub use self::collision_world::CollisionWorld;
 
-mod collision_world;
+pub mod collision_world;
 
 pub trait Transition {
     fn create_state(self) -> Option<Box<dyn State<Self>>>;

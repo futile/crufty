@@ -9,12 +9,13 @@ use ecs::system::InteractSystem;
 use ecs::{BuildData /* , ModifyData */, World};
 
 use crate::application::{AppTransition, InputIntent, InputManager, InputState};
-use crate::game::ResourceStore;
+use crate::game::{Interaction, ResourceStore};
 use crate::util::State;
 
 use crate::components::{
-    Camera, Collision, CollisionType, Facing, Gravity, Intents, Jump, KeyboardInput,
-    LevelComponents, Movement, Position, SpriteInfo, SpriteSheetAnimation, Velocity,
+    Camera, Collision, CollisionType, Facing, Gravity, Intents, InteractionPossibility, Interactor,
+    Jump, KeyboardInput, LevelComponents, Movement, Position, SpriteInfo, SpriteSheetAnimation,
+    Velocity,
 };
 use crate::systems::{LevelSystems, RenderSystem, WorldViewport};
 
@@ -144,7 +145,7 @@ impl State<AppTransition> for GameState {
                     },
                 );
                 data.intents.add(&entity, Intents::new());
-
+                data.interactor.add(&entity, Interactor);
                 data.keyboard_input.add(
                     &entity,
                     KeyboardInput {
@@ -233,7 +234,7 @@ impl State<AppTransition> for GameState {
             );
         }
 
-        let _ = world.create_entity(
+        let _warp_block = world.create_entity(
             |entity: BuildData<'_, LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: 352.0, y: 32.0 });
                 data.collision.add(
@@ -241,15 +242,21 @@ impl State<AppTransition> for GameState {
                     Collision::new_single(
                         Cuboid::new(Vector2::new(16.0, 16.0)),
                         Vector2::new(16.0, 16.0),
-                        CollisionType::Solid,
+                        CollisionType::Trigger,
                     ),
+                );
+                data.interaction_possibility.add(
+                    &entity,
+                    InteractionPossibility {
+                        interaction: Interaction::Warp,
+                    },
                 );
                 data.sprite_info.add(
                     &entity,
                     SpriteInfo {
                         width: 32.0,
                         height: 32.0,
-                        texture_info: tex_info,
+                        texture_info: player_tex_info,
                     },
                 );
             },

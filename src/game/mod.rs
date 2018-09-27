@@ -6,6 +6,8 @@ use ecs::{DataHelper, Entity, EntityData};
 use crate::components::{LevelComponents, Position};
 use crate::systems::LevelServices;
 
+use smallvec::SmallVec;
+
 mod animation;
 mod resource_store;
 
@@ -133,15 +135,26 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             None => return,
         };
 
+        let mut colls = SmallVec::<[crate::util::collision_world::Collision; 2]>::new();
+
         let resolved_pos = self.services.collision_world.move_entity(
             eod.as_entity(),
             &coll,
             &new_pos,
             last_pos.as_ref(),
+            &mut colls,
         );
 
         eod.with_entity_data(self, move |en, comps| {
             comps.position[en] = resolved_pos;
         });
+
+        for coll in colls {
+            use self::events::{CollisionStarted, EventReceiver};
+            self.receive_event(CollisionStarted {
+                collider: coll.collider,
+                collided: coll.collided,
+            });
+        }
     }
 }

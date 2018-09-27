@@ -12,9 +12,7 @@ use crate::nc::partitioning::{DBVTLeaf, DBVTLeafId, DBVT};
 use crate::nc::query::Ray;
 use crate::nc::query::RayInterferencesCollector;
 
-use crate::components::Collision;
-use crate::components::CollisionType;
-use crate::components::Position;
+use crate::components::{self, CollisionType, Position};
 
 use ordered_float::NotNan;
 
@@ -40,7 +38,12 @@ enum Axis {
     Y,
 }
 
-fn find_depth(dyn_ent: &AABB<f32>, dyn_last: &Point<f32>, stat: &AABB<f32>, axis: Axis) -> Option<f32> {
+fn find_depth(
+    dyn_ent: &AABB<f32>,
+    dyn_last: &Point<f32>,
+    stat: &AABB<f32>,
+    axis: Axis,
+) -> Option<f32> {
     use self::Axis::{X, Y};
 
     if !dyn_ent.intersects(stat) {
@@ -87,6 +90,12 @@ impl CollisionResult {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
+pub struct Collision {
+    pub collider: Entity,
+    pub collided: Entity,
+}
+
 impl CollisionWorld {
     pub fn new() -> CollisionWorld {
         CollisionWorld {
@@ -97,7 +106,7 @@ impl CollisionWorld {
         }
     }
 
-    pub fn add(&mut self, e: Entity, coll: &Collision, pos: &Position) {
+    pub fn add(&mut self, e: Entity, coll: &components::Collision, pos: &Position) {
         // if it already existed, just remove it
         self.remove(e);
 
@@ -119,7 +128,7 @@ impl CollisionWorld {
     fn move_axis(
         &mut self,
         leafs: (&mut CollisionTreeLeaf, &mut CollisionTreeLeaf),
-        coll: &Collision,
+        coll: &components::Collision,
         new_pos: &Position,
         _last_pos: Option<&Position>, // currently unused, see comment below
         axis: Axis,
@@ -185,22 +194,18 @@ impl CollisionWorld {
             if let Some(depth) = depth {
                 return Some(CollisionResult::new(depth, *other, other_leafs.coll_type));
             }
-
-            // if leafs.coll_type != CollisionType::Solid ||
-            //     other_leafs.coll_type != CollisionType::Solid {
-            //         // TODO fire event, return event, etc.?
-            //     }
         };
 
         None
     }
 
-    pub fn move_entity(
+    pub fn move_entity<E: Extend<Collision>>(
         &mut self,
         e: Entity,
-        coll: &Collision,
+        coll: &components::Collision,
         new_pos: &Position,
         last_pos: Option<&Position>,
+        collision_collector: &mut E,
     ) -> Position {
         // 1. remove both leafs
         let mut leafs: CollisionTreeLeafs = self.mapping.remove(&e).unwrap();
@@ -222,6 +227,11 @@ impl CollisionWorld {
                 && col_result.other_coll_type == CollisionType::Solid
             {
                 updated_pos.x += col_result.depth;
+            } else {
+                collision_collector.extend(std::iter::once(Collision {
+                    collider: e,
+                    collided: col_result.other,
+                }));
             }
         }
 
@@ -236,6 +246,11 @@ impl CollisionWorld {
                 && col_result.other_coll_type == CollisionType::Solid
             {
                 updated_pos.y += col_result.depth;
+            } else {
+                collision_collector.extend(std::iter::once(Collision {
+                    collider: e,
+                    collided: col_result.other,
+                }));
             }
         }
 
