@@ -26,7 +26,7 @@ impl System for CollisionSystem {
         // TODO `&data.collision[*e]` causes a clone, find a way which doesn't
         services
             .collision_world
-            .add(***e, &data.collision[*e], &data.position[*e]);
+            .add(***e, &data.collision_shape[*e], &data.position[*e]);
     }
 
     fn deactivated(

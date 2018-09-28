@@ -123,7 +123,7 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
 
     fn move_entity(&mut self, eod: EntityOrData, new_pos: &Position, warp: bool) {
         let (coll, last_pos) = match eod.with_entity_data(self, |en, comps| {
-            let coll = comps.collision[en].clone();
+            let coll = comps.collision_shape[en].clone();
             let last_pos = match warp {
                 true => None,
                 false => comps.velocity.borrow(&en).map(|vel| vel.last_pos),

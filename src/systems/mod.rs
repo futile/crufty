@@ -80,7 +80,7 @@ systems! {
         passive: {
             collision_system: EntitySystem<CollisionSystem> = EntitySystem::new(
                 CollisionSystem::new(),
-                aspect!(<LevelComponents> all: [position, collision]),
+                aspect!(<LevelComponents> all: [position, collision_shape]),
             ),
             camera_system: EntitySystem<CameraSystem> = EntitySystem::new(
                 CameraSystem::new(),

@@ -13,7 +13,7 @@ use crate::game::{Interaction, ResourceStore};
 use crate::util::State;
 
 use crate::components::{
-    Camera, Collision, CollisionType, Facing, Gravity, Intents, InteractionPossibility, Interactor,
+    Camera, CollisionShape, CollisionType, Facing, Gravity, Intents, InteractionPossibility, Interactor,
     Jump, KeyboardInput, LevelComponents, Movement, Position, SpriteInfo, SpriteSheetAnimation,
     Velocity,
 };
@@ -110,9 +110,9 @@ impl State<AppTransition> for GameState {
                         last_pos: pos,
                     },
                 );
-                data.collision.add(
+                data.collision_shape.add(
                     &entity,
-                    Collision::new_dual(
+                    CollisionShape::new_dual(
                         Cuboid::new(Vector2::new(16.0, 5.0)),
                         Vector2::new(16.0, 16.0),
                         Cuboid::new(Vector2::new(5.0, 16.0)),
@@ -184,9 +184,9 @@ impl State<AppTransition> for GameState {
                             y: 0.0,
                         },
                     );
-                    data.collision.add(
+                    data.collision_shape.add(
                         &entity,
-                        Collision::new_single(
+                        CollisionShape::new_single(
                             Cuboid::new(Vector2::new(16.0, 16.0)),
                             Vector2::new(16.0, 16.0),
                             CollisionType::Solid,
@@ -214,9 +214,9 @@ impl State<AppTransition> for GameState {
                             y: 96.0,
                         },
                     );
-                    data.collision.add(
+                    data.collision_shape.add(
                         &entity,
-                        Collision::new_single(
+                        CollisionShape::new_single(
                             Cuboid::new(Vector2::new(16.0, 16.0)),
                             Vector2::new(16.0, 16.0),
                             CollisionType::Trigger,
@@ -237,9 +237,9 @@ impl State<AppTransition> for GameState {
         let _warp_block = world.create_entity(
             |entity: BuildData<'_, LevelComponents>, data: &mut LevelComponents| {
                 data.position.add(&entity, Position { x: 352.0, y: 32.0 });
-                data.collision.add(
+                data.collision_shape.add(
                     &entity,
-                    Collision::new_single(
+                    CollisionShape::new_single(
                         Cuboid::new(Vector2::new(16.0, 16.0)),
                         Vector2::new(16.0, 16.0),
                         CollisionType::Trigger,

@@ -93,7 +93,7 @@ pub enum CollisionType {
 }
 
 #[derive(Clone)]
-pub struct Collision {
+pub struct CollisionShape {
     coll_type: CollisionType,
     r_x: Cuboid<f32>,
     off_x: Vector2<f32>,
@@ -101,12 +101,12 @@ pub struct Collision {
     off_y: Vector2<f32>,
 }
 
-impl Collision {
+impl CollisionShape {
     pub fn new_single(
         rect: Cuboid<f32>,
         off: Vector2<f32>,
         collision_type: CollisionType,
-    ) -> Collision {
+    ) -> CollisionShape {
         Self::new_dual(rect.clone(), off, rect, off, collision_type)
     }
 
@@ -116,8 +116,8 @@ impl Collision {
         rect_y: Cuboid<f32>,
         off_y: Vector2<f32>,
         collision_type: CollisionType,
-    ) -> Collision {
-        Collision {
+    ) -> CollisionShape {
+        CollisionShape {
             coll_type: collision_type,
             r_x: rect_x,
             off_x: off_x,
@@ -232,7 +232,7 @@ impl Camera {
 components! {
     struct LevelComponents {
         #[hot] position: Position,
-        #[hot] collision: Collision,
+        #[hot] collision_shape: CollisionShape,
         #[hot] sprite_info: SpriteInfo,
         #[cold] sprite_sheet_animation: SpriteSheetAnimation,
         #[cold] movement: Movement,

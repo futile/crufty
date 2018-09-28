@@ -106,7 +106,7 @@ impl CollisionWorld {
         }
     }
 
-    pub fn add(&mut self, e: Entity, coll: &components::Collision, pos: &Position) {
+    pub fn add(&mut self, e: Entity, coll: &components::CollisionShape, pos: &Position) {
         // if it already existed, just remove it
         self.remove(e);
 
@@ -128,7 +128,7 @@ impl CollisionWorld {
     fn move_axis(
         &mut self,
         leafs: (&mut CollisionTreeLeaf, &mut CollisionTreeLeaf),
-        coll: &components::Collision,
+        coll: &components::CollisionShape,
         new_pos: &Position,
         _last_pos: Option<&Position>, // currently unused, see comment below
         axis: Axis,
@@ -202,7 +202,7 @@ impl CollisionWorld {
     pub fn move_entity<E: Extend<Collision>>(
         &mut self,
         e: Entity,
-        coll: &components::Collision,
+        coll: &components::CollisionShape,
         new_pos: &Position,
         last_pos: Option<&Position>,
         collision_collector: &mut E,
