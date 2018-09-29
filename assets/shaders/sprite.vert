@@ -6,6 +6,7 @@ uniform mat4 proj;
 uniform vec2 win_scale;
 uniform vec2 win_trans;
 uniform bool invert_tex_x;
+uniform float depth;
 
 in vec2 position;
 in vec2 tex_coords;
@@ -19,7 +20,7 @@ void main() {
   }
 
   // world -> [0.0, 2.0]
-  vec4 pos = proj * vec4(scale * position + view_pos,  1.0, 1.0);
+  vec4 pos = proj * vec4(scale * position + view_pos, depth, 1.0);
 
   // -> window coords
   pos.xy *= win_scale / 2.0;

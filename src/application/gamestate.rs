@@ -60,7 +60,7 @@ impl State<AppTransition> for GameState {
         world.systems.render_system.init(InteractSystem::new(
             render_system,
             aspect!(<LevelComponents> all: [camera]),
-            aspect!(<LevelComponents> all: [position, sprite_info]),
+            aspect!(<LevelComponents> all: [position]),
         ));
 
         let tex_info = world

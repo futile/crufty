@@ -7,7 +7,7 @@ use glium::{self, Surface};
 use std::fs::File;
 use std::io::Read;
 
-use crate::na::{Orthographic3, Vector2};
+use crate::na::{Orthographic3, Vector2, Vector4};
 
 use crate::components::Facing;
 use crate::components::LevelComponents;
@@ -45,8 +45,10 @@ impl WorldViewport {
 pub struct RenderSystem {
     display: glium::Display,
     unit_quad: glium::VertexBuffer<Vertex>,
-    index_buffer: glium::IndexBuffer<u16>,
-    program: glium::Program,
+    sprite_index_buffer: glium::IndexBuffer<u16>,
+    physics_index_buffer: glium::IndexBuffer<u16>,
+    sprite_program: glium::Program,
+    physics_program: glium::Program,
 }
 
 impl RenderSystem {
@@ -77,8 +79,12 @@ impl RenderSystem {
             ).unwrap()
         };
 
-        let index_buffer =
+        let sprite_index_buffer =
             glium::IndexBuffer::new(&display, PrimitiveType::TriangleStrip, &[1 as u16, 2, 0, 3])
+                .unwrap();
+
+        let physics_index_buffer =
+            glium::IndexBuffer::new(&display, PrimitiveType::LineLoop, &[0 as u16, 1, 2, 3])
                 .unwrap();
 
         let mut vertex_shader_code = String::new();
@@ -93,17 +99,31 @@ impl RenderSystem {
             .read_to_string(&mut fragment_shader_code)
             .unwrap();
 
-        let program = program!(&display,
+        let sprite_program = program!(&display,
                                140 => {
                                    vertex: &vertex_shader_code,
                                    fragment: &fragment_shader_code,
                                }).unwrap();
 
+        fragment_shader_code.clear();
+        File::open("assets/shaders/wireframe.frag")
+            .unwrap()
+            .read_to_string(&mut fragment_shader_code)
+            .unwrap();
+
+        let physics_program = program!(&display,
+                                      140 => {
+                                          vertex: &vertex_shader_code,
+                                          fragment: &fragment_shader_code,
+                                      }).unwrap();
+
         RenderSystem {
             display: display,
             unit_quad: vertex_buffer,
-            index_buffer: index_buffer,
-            program: program,
+            sprite_index_buffer: sprite_index_buffer,
+            physics_index_buffer: physics_index_buffer,
+            sprite_program: sprite_program,
+            physics_program: physics_program,
         }
     }
 }
@@ -157,42 +177,82 @@ impl InteractProcess for RenderSystem {
 
                 for e in &sprites {
                     let position = &data.position[*e];
-                    let sprite_info = &data.sprite_info[*e];
+                    if let Some(sprite_info) = &data.sprite_info.get(e) {
+                        let scale = Vector2::new(sprite_info.width, sprite_info.height);
+                        let view_pos = Vector2::new(
+                            position.x.round() - (cpos.x - camera.world_viewport.width / 2.0),
+                            position.y.round() - (cpos.y - camera.world_viewport.height / 2.0),
+                        );
+                        let texture = data
+                            .services
+                            .resource_store
+                            .get_texture(sprite_info.texture_info);
 
-                    let scale = Vector2::new(sprite_info.width, sprite_info.height);
-                    let view_pos = Vector2::new(
-                        position.x.round() - (cpos.x - camera.world_viewport.width / 2.0),
-                        position.y.round() - (cpos.y - camera.world_viewport.height / 2.0),
-                    );
-                    let texture = data
-                        .services
-                        .resource_store
-                        .get_texture(sprite_info.texture_info);
+                        let invert_tex_x = match data.facing.get(e) {
+                            Some(Facing::Left) => true,
+                            _ => false,
+                        };
 
-                    let invert_tex_x = match data.facing.get(e) {
-                        Some(Facing::Left) => true,
-                        _ => false,
-                    };
+                        let uniforms = uniform! {
+                            view_pos: *view_pos.as_ref(),
+                            scale: *scale.as_ref(),
+                            proj: *ortho_proj.as_ref(),
+                            tex: texture,
+                            tex_index: sprite_info.texture_info.idx,
+                            invert_tex_x: invert_tex_x,
+                            win_scale: *screen_size.as_ref(),
+                            win_trans: *camera.screen_viewport.mins().coords.as_ref(),
+                            depth: 1.0f32,
+                        };
 
-                    let uniforms = uniform! {
-                        view_pos: *view_pos.as_ref(),
-                        scale: *scale.as_ref(),
-                        proj: *ortho_proj.as_ref(),
-                        tex: texture,
-                        tex_index: sprite_info.texture_info.idx,
-                        invert_tex_x: invert_tex_x,
-                        win_scale: *screen_size.as_ref(),
-                        win_trans: *camera.screen_viewport.mins().coords.as_ref(),
-                    };
+                        target
+                            .draw(
+                                &self.unit_quad,
+                                &self.sprite_index_buffer,
+                                &self.sprite_program,
+                                &uniforms,
+                                &glium::DrawParameters {
+                                    polygon_mode: glium::PolygonMode::Fill,
+                                    ..Default::default()
+                                },
+                            ).unwrap()
+                    }
 
-                    target
-                        .draw(
-                            &self.unit_quad,
-                            &self.index_buffer,
-                            &self.program,
-                            &uniforms,
-                            &Default::default(),
-                        ).unwrap()
+                    if let Some(cs) = &data.collision_shape.get(e) {
+                        for aabb in &[cs.aabb_x(position.as_vec()), cs.aabb_y(position.as_vec())] {
+                            let scale = Vector2::new(
+                                aabb.maxs().x - aabb.mins().x,
+                                aabb.maxs().y - aabb.mins().y,
+                            );
+                            let view_pos = Vector2::new(
+                                aabb.mins().x.round() - (cpos.x - camera.world_viewport.width / 2.0),
+                                aabb.mins().y.round() - (cpos.y - camera.world_viewport.height / 2.0),
+                            );
+
+                            let uniforms = uniform! {
+                                view_pos: *view_pos.as_ref(),
+                                scale: *scale.as_ref(),
+                                proj: *ortho_proj.as_ref(),
+                                invert_tex_x: false,
+                                win_scale: *screen_size.as_ref(),
+                                win_trans: *camera.screen_viewport.mins().coords.as_ref(),
+                                depth: 2.0f32, // this seems to be unimportant :/
+                                color: *Vector4::new(1.0f32, 0.0, 0.0, 1.0).as_ref(),
+                            };
+
+                            target
+                                .draw(
+                                    &self.unit_quad,
+                                    &self.physics_index_buffer,
+                                    &self.physics_program,
+                                    &uniforms,
+                                    &glium::DrawParameters {
+                                        polygon_mode: glium::PolygonMode::Line,
+                                        ..Default::default()
+                                    },
+                                ).unwrap()
+                        }
+                    }
                 }
             }
         }
