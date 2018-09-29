@@ -22,7 +22,7 @@ mod camera_system;
 mod collision_system;
 mod gravity_system;
 mod intent_system;
-mod interaction_system;
+pub mod interaction_system;
 mod jump_system;
 mod keyboard_system;
 mod movement_system;
