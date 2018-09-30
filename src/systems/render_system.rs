@@ -49,6 +49,7 @@ pub struct RenderSystem {
     physics_index_buffer: glium::IndexBuffer<u16>,
     sprite_program: glium::Program,
     physics_program: glium::Program,
+    render_physics_debug: bool,
 }
 
 impl RenderSystem {
@@ -124,7 +125,13 @@ impl RenderSystem {
             physics_index_buffer: physics_index_buffer,
             sprite_program: sprite_program,
             physics_program: physics_program,
+            render_physics_debug: false,
         }
+    }
+
+    pub fn toggle_physics_debug_render(&mut self) -> bool {
+        self.render_physics_debug = !self.render_physics_debug;
+        self.render_physics_debug
     }
 }
 
@@ -216,6 +223,10 @@ impl InteractProcess for RenderSystem {
                                     ..Default::default()
                                 },
                             ).unwrap()
+                    }
+
+                    if !self.render_physics_debug {
+                        continue;
                     }
 
                     if let Some(cs) = &data.collision_shape.get(e) {

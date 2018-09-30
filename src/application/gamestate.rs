@@ -13,9 +13,9 @@ use crate::game::{Interaction, ResourceStore};
 use crate::util::State;
 
 use crate::components::{
-    Camera, CollisionShape, CollisionType, Facing, Gravity, Intents, InteractionPossibility, Interactor,
-    Jump, KeyboardInput, LevelComponents, Movement, Position, SpriteInfo, SpriteSheetAnimation,
-    Velocity,
+    Camera, CollisionShape, CollisionType, Facing, Gravity, Intents, InteractionPossibility,
+    Interactor, Jump, KeyboardInput, LevelComponents, Movement, Position, SpriteInfo,
+    SpriteSheetAnimation, Velocity,
 };
 use crate::systems::{LevelSystems, RenderSystem, WorldViewport};
 
@@ -325,6 +325,9 @@ impl State<AppTransition> for GameState {
                                 },
                         } => match (key_state, vkc) {
                             (ElementState::Released, VirtualKeyCode::P) => profiler_ticks += 3,
+                            (ElementState::Released, VirtualKeyCode::D) => {
+                                world.systems.render_system.inner.as_mut().unwrap().toggle_physics_debug_render();
+                            }
                             (ElementState::Released, VirtualKeyCode::Escape) => shutdown = true,
                             _ => input_manager.handle_event(key_state, vkc),
                         },
