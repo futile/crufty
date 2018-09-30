@@ -240,6 +240,13 @@ impl InteractProcess for RenderSystem {
                                 aabb.mins().y.round() - (cpos.y - camera.world_viewport.height / 2.0),
                             );
 
+                            use crate::components::CollisionType;
+
+                            let color = match cs.collision_type() {
+                                CollisionType::Solid => Vector4::new(1.0f32, 0.0, 0.0, 1.0),
+                                CollisionType::Trigger => Vector4::new(0.0f32, 1.0, 0.0, 1.0),
+                            };
+
                             let uniforms = uniform! {
                                 view_pos: *view_pos.as_ref(),
                                 scale: *scale.as_ref(),
@@ -248,7 +255,7 @@ impl InteractProcess for RenderSystem {
                                 win_scale: *screen_size.as_ref(),
                                 win_trans: *camera.screen_viewport.mins().coords.as_ref(),
                                 depth: 2.0f32, // this seems to be unimportant :/
-                                color: *Vector4::new(1.0f32, 0.0, 0.0, 1.0).as_ref(),
+                                color: *color.as_ref(),
                             };
 
                             target
