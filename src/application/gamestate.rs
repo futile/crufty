@@ -220,7 +220,7 @@ impl State<AppTransition> for GameState {
                         CollisionShape::new_single(
                             Cuboid::new(Vector2::new(16.0, 16.0)),
                             Vector2::new(16.0, 16.0),
-                            CollisionType::Trigger,
+                            CollisionType::Solid,
                         ),
                     );
                     data.sprite_info.add(
