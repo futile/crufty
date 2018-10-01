@@ -4,6 +4,8 @@ use std::cell::RefCell;
 
 use ecs::Entity;
 
+use smallvec::SmallVec;
+
 use crate::nc::bounding_volume::BoundingVolume;
 use crate::nc::bounding_volume::AABB;
 use crate::nc::math::{Point, Vector};
@@ -132,7 +134,7 @@ impl CollisionWorld {
         new_pos: &Position,
         _last_pos: Option<&Position>, // currently unused, see comment below
         axis: Axis,
-    ) -> Option<CollisionResult> {
+    ) -> SmallVec<[self::CollisionResult; 4]> {
         let aabb = match axis {
             Axis::X => coll.aabb_x(new_pos.as_vec()),
             Axis::Y => coll.aabb_y(new_pos.as_vec()),
@@ -151,19 +153,20 @@ impl CollisionWorld {
 
         // find closest colliding entity
         let mut colls: Vec<Entity> = Vec::new();
-        let closest: Option<&Entity> = match axis {
+        // let closest: Option<&Entity> =
+        match axis {
             Axis::X => {
                 self.dbvt_x
                     .visit(&mut BoundingVolumeInterferencesCollector::new(
                         &aabb, &mut colls,
                     ));
 
-                let center_x = leaf.center;
+                // let center_x = leaf.center;
 
-                colls.iter().min_by_key(|other| {
-                    let other_leafs = self.mapping.get(other).unwrap();
-                    NotNan::new((self.dbvt_x[other_leafs.x].center.x - center_x.x).abs()).unwrap()
-                })
+                // colls.iter().min_by_key(|other| {
+                //     let other_leafs = self.mapping.get(other).unwrap();
+                //     NotNan::new((self.dbvt_x[other_leafs.x].center.x - center_x.x).abs()).unwrap()
+                // })
             }
             Axis::Y => {
                 self.dbvt_y
@@ -171,32 +174,56 @@ impl CollisionWorld {
                         &aabb, &mut colls,
                     ));
 
-                let center_y = leaf.center;
+                // let center_y = leaf.center;
 
-                colls.iter().min_by_key(|other| {
-                    let other_leafs = self.mapping.get(other).unwrap();
-                    NotNan::new((self.dbvt_y[other_leafs.y].center.y - center_y.y).abs()).unwrap()
-                })
+                // colls.iter().min_by_key(|other| {
+                //     let other_leafs = self.mapping.get(other).unwrap();
+                //     NotNan::new((self.dbvt_y[other_leafs.y].center.y - center_y.y).abs()).unwrap()
+                // })
             }
         };
+
+        colls
+            .into_iter()
+            .filter_map(|other| {
+                let other_leafs = self.mapping.get(&other).unwrap();
+
+                let other_leaf = match axis {
+                    Axis::X => &self.dbvt_x[other_leafs.x],
+                    Axis::Y => &self.dbvt_y[other_leafs.y],
+                };
+
+                let depth = find_depth(&aabb, &leaf.center, &other_leaf.bounding_volume, axis);
+
+                depth.map(|depth| {
+                    // println!("other.coll_type({:?}): {:?}", axis, other_leafs.coll_type);
+                    // println!("depth: {:?}", depth);
+                    CollisionResult::new(depth, other, other_leafs.coll_type)
+                })
+            }).collect()
+
+        // if colls.len() > 1 {
+        //     println!("colls.len() ({:?}): {:?}", axis, colls.len());
+        // }
 
         // if one was found, test again, this time only in one direction (dbvt tests in both)
-        if let Some(other) = closest {
-            let other_leafs = self.mapping.get(other).unwrap();
+        // if let Some(other) = closest {
+        //     let other_leafs = self.mapping.get(other).unwrap();
 
-            let other_leaf = match axis {
-                Axis::X => &self.dbvt_x[other_leafs.x],
-                Axis::Y => &self.dbvt_y[other_leafs.y],
-            };
+        //     let other_leaf = match axis {
+        //         Axis::X => &self.dbvt_x[other_leafs.x],
+        //         Axis::Y => &self.dbvt_y[other_leafs.y],
+        //     };
 
-            let depth = find_depth(&aabb, &leaf.center, &other_leaf.bounding_volume, axis);
+        //     let depth = find_depth(&aabb, &leaf.center, &other_leaf.bounding_volume, axis);
 
-            if let Some(depth) = depth {
-                return Some(CollisionResult::new(depth, *other, other_leafs.coll_type));
-            }
-        };
+        //     if let Some(depth) = depth {
+        //         println!("other.coll_type({:?}): {:?}", axis, other_leafs.coll_type);
+        //         return Some(CollisionResult::new(depth, *other, other_leafs.coll_type));
+        //     }
+        // };
 
-        None
+        // None
     }
 
     pub fn move_entity<E: Extend<Collision>>(
@@ -216,42 +243,54 @@ impl CollisionWorld {
         let mut updated_pos = *new_pos;
 
         // 2. call move_axis for both axes, X first
-        if let Some(col_result) = self.move_axis(
-            (&mut leaf_x, &mut leaf_y),
-            coll,
-            &updated_pos,
-            last_pos,
-            Axis::X,
-        ) {
-            if leafs.coll_type == CollisionType::Solid
-                && col_result.other_coll_type == CollisionType::Solid
-            {
-                updated_pos.x += col_result.depth;
-            } else {
-                collision_collector.extend(std::iter::once(Collision {
-                    collider: e,
-                    collided: col_result.other,
-                }));
-            }
-        }
+        for axis in &[Axis::X, Axis::Y] {
+            let coll_ress = self.move_axis(
+                (&mut leaf_x, &mut leaf_y),
+                coll,
+                &updated_pos,
+                last_pos,
+                *axis,
+            );
 
-        if let Some(col_result) = self.move_axis(
-            (&mut leaf_x, &mut leaf_y),
-            coll,
-            &updated_pos,
-            last_pos,
-            Axis::Y,
-        ) {
-            if leafs.coll_type == CollisionType::Solid
-                && col_result.other_coll_type == CollisionType::Solid
-            {
-                updated_pos.y += col_result.depth;
-            } else {
-                collision_collector.extend(std::iter::once(Collision {
-                    collider: e,
-                    collided: col_result.other,
-                }));
+            let mut min_depth = None;
+            if leafs.coll_type == CollisionType::Solid {
+                // find deepest collision with solid entity
+                min_depth = coll_ress
+                    .iter()
+                    .filter_map(|cr| match cr.other_coll_type {
+                        CollisionType::Solid => Some(NotNan::new(cr.depth).unwrap()),
+                        CollisionType::Trigger => None,
+                    }).min();
+
+                // update position
+                if let Some(min_depth) = min_depth {
+                    match axis {
+                        Axis::X => updated_pos.x += min_depth.into_inner(),
+                        Axis::Y => updated_pos.y += min_depth.into_inner(),
+                    }
+                }
             }
+
+            // report all still existing collisions if one of them is not solid
+            collision_collector.extend(coll_ress.into_iter().filter_map(|cr| {
+                if leafs.coll_type != CollisionType::Solid
+                    || cr.other_coll_type != CollisionType::Solid
+                {
+                    // if we resolved a collision, check if that didn't resolve this collision too.
+                    // otherwise, this collision is still going on.
+                    if min_depth
+                        .map(|md| cr.depth <= md.into_inner())
+                        .unwrap_or(true)
+                    {
+                        return Some(Collision {
+                            collider: e,
+                            collided: cr.other,
+                        });
+                    }
+                }
+
+                None
+            }));
         }
 
         let new_center = updated_pos.as_pnt();

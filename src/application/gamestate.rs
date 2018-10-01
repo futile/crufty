@@ -98,8 +98,9 @@ impl State<AppTransition> for GameState {
         let _player = world.create_entity(
             |entity: BuildData<'_, LevelComponents>, data: &mut LevelComponents| {
                 let pos = Position {
-                    x: 0.0 * 32.0 + 0.0 * 10.0,
-                    y: 500.0,
+                    x: 8.0 * 32.0 + 0.0 * 10.0,
+                    // y: 500.0,
+                    y: 0.0,
                 };
                 data.position.add(&entity, pos);
                 data.velocity.add(
@@ -236,7 +237,7 @@ impl State<AppTransition> for GameState {
 
         let _warp_block = world.create_entity(
             |entity: BuildData<'_, LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 352.0, y: 32.0 });
+                data.position.add(&entity, Position { x: 10. * 32.0, y: 32.0 });
                 data.collision_shape.add(
                     &entity,
                     CollisionShape::new_single(
