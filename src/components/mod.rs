@@ -1,5 +1,8 @@
 use std::collections::HashSet;
 
+use ecs::Entity;
+use smallvec::SmallVec;
+
 use crate::na::{self, Isometry2, Point2, Vector2};
 use crate::nc::bounding_volume::{HasBoundingVolume, AABB};
 use crate::nc::shape::Cuboid;
@@ -155,6 +158,11 @@ impl CollisionShape {
     pub fn off_y(&self) -> &Vector2<f32> {
         &self.off_y
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct OngoingCollisions {
+    pub others: SmallVec<[Entity; 2]>,
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
