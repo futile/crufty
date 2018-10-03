@@ -95,13 +95,14 @@ pub enum CollisionType {
     Trigger,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct CollisionShape {
     coll_type: CollisionType,
     r_x: Cuboid<f32>,
     off_x: Vector2<f32>,
     r_y: Cuboid<f32>,
     off_y: Vector2<f32>,
+    pub ongoing_collisions: OngoingCollisions,
 }
 
 impl CollisionShape {
@@ -126,6 +127,7 @@ impl CollisionShape {
             off_x: off_x,
             r_y: rect_y,
             off_y: off_y,
+            ongoing_collisions: Default::default(),
         }
     }
 
@@ -160,9 +162,39 @@ impl CollisionShape {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct OngoingCollisions {
-    pub others: SmallVec<[Entity; 2]>,
+    pub others: SmallVec<[Entity; 4]>,
+}
+
+impl OngoingCollisions {
+    pub fn new() -> OngoingCollisions {
+        Default::default()
+    }
+
+    pub fn contains(&self, other: &Entity) -> bool {
+        self.others.contains(other)
+    }
+
+    /// Adds the given entity to the set of ongoing collisions, and returns true if `other` was not already contained
+    pub fn add(&mut self, other: Entity) -> bool {
+        if !self.contains(&other) {
+            self.others.push(other);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Removes `other` from the set of ongoing collisions, and returns `true` if it was contained
+    pub fn remove(&mut self, other: &Entity) -> bool {
+        if let Some(idx) = self.others.iter().position(|e| e == other) {
+            self.others.swap_remove(idx);
+            true
+        } else {
+            false
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]

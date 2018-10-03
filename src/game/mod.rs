@@ -51,10 +51,10 @@ impl EntityOrData<'_> {
     fn with_entity_data<F, R>(
         &self,
         data: &mut DataHelper<LevelComponents, LevelServices>,
-        mut call: F,
+        call: F,
     ) -> Option<R>
     where
-        F: FnMut(EntityData<LevelComponents>, &mut LevelComponents) -> R,
+        F: FnOnce(EntityData<LevelComponents>, &mut LevelComponents) -> R,
     {
         match *self {
             EntityOrData::Entity(e) => data.with_entity_data(&e, call),
@@ -122,14 +122,14 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
     }
 
     fn move_entity(&mut self, eod: EntityOrData, new_pos: &Position, warp: bool) {
-        let (coll, last_pos) = match eod.with_entity_data(self, |en, comps| {
-            let coll = comps.collision_shape[en].clone();
+        let (mut coll_shape, last_pos) = match eod.with_entity_data(self, |en, comps| {
+            let coll_shape = comps.collision_shape[en].clone();
             let last_pos = match warp {
                 true => None,
                 false => comps.velocity.borrow(&en).map(|vel| vel.last_pos),
             };
 
-            (coll, last_pos)
+            (coll_shape, last_pos)
         }) {
             Some(x) => x,
             None => return,
@@ -137,9 +137,13 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
 
         let mut colls = SmallVec::<[crate::util::collision_world::Collision; 2]>::new();
 
+        for coll in &colls {
+            assert_eq!(coll.collider, eod.as_entity());
+        }
+
         let resolved_pos = self.services.collision_world.move_entity(
             eod.as_entity(),
-            &coll,
+            &coll_shape,
             &new_pos,
             last_pos.as_ref(),
             &mut colls,
@@ -149,12 +153,32 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             comps.position[en] = resolved_pos;
         });
 
-        for coll in colls {
-            use self::events::{CollisionStarted, EventReceiver};
-            self.receive_event(CollisionStarted {
-                collider: coll.collider,
-                collided: coll.collided,
-            });
+        coll_shape.ongoing_collisions.others.retain(|&mut other| {
+            colls.iter().any(|cl| cl.collided == other)
+            // TODO if not, create CollisionEnded
+        });
+
+        use self::events::{CollisionStarted, EventReceiver};
+
+        let started: SmallVec<[CollisionStarted; 2]> = colls
+            .iter()
+            .filter_map(|cl| {
+                if coll_shape.ongoing_collisions.add(cl.collided) {
+                    Some(CollisionStarted {
+                        collider: cl.collider,
+                        collided: cl.collided,
+                    })
+                } else {
+                    None
+                }
+            }).collect();
+
+        eod.with_entity_data(self, move |en, comps| {
+            comps.collision_shape[en] = coll_shape;
+        });
+
+        for event in started {
+            self.receive_event(event);
         }
     }
 }

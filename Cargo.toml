@@ -21,3 +21,6 @@ glium = "0.22.0"
 ncollide2d = "0.17.1"
 lazy_static = "1.1.0"
 smallvec = "0.6.5"
+
+[patch.crates-io]
+ecs = { git = "https://github.com/futile/ecs-rs.git", branch = "no_fn_mut" }

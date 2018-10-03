@@ -181,7 +181,7 @@ name = "crufty"
 version = "0.0.1"
 dependencies = [
  "clock_ticks 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "ecs 0.23.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ecs 0.23.1 (git+https://github.com/futile/ecs-rs.git?branch=no_fn_mut)",
  "glium 0.22.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "hprof 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "image 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -222,7 +222,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "ecs"
 version = "0.23.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/futile/ecs-rs.git?branch=no_fn_mut#3b7631edd8e4e760727b4a4bf7e65cfa3abb94b8"
 dependencies = [
  "vec_map 0.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
@@ -1077,7 +1077,7 @@ dependencies = [
 "checksum deflate 0.7.18 (registry+https://github.com/rust-lang/crates.io-index)" = "32c8120d981901a9970a3a1c97cf8b630e0fa8c3ca31e75b6fd6fd5f9f427b31"
 "checksum dlib 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)" = "77e51249a9d823a4cb79e3eca6dcd756153e8ed0157b6c04775d04bf1b13b76a"
 "checksum downcast-rs 1.0.3 (registry+https://github.com/rust-lang/crates.io-index)" = "18df8ce4470c189d18aa926022da57544f31e154631eb4cfe796aea97051fe6c"
-"checksum ecs 0.23.1 (registry+https://github.com/rust-lang/crates.io-index)" = "5b979204e55400197597993276bca9822a34ddfc95d2329991efbb255bb1cca7"
+"checksum ecs 0.23.1 (git+https://github.com/futile/ecs-rs.git?branch=no_fn_mut)" = "<none>"
 "checksum either 1.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "3be565ca5c557d7f59e7cfcf1844f9e3033650c929c6566f511e8005f205c1d0"
 "checksum fixedbitset 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)" = "86d4de0081402f5e88cdac65c8dcdcc73118c1a7a465e2a05f0da05843a8ea33"
 "checksum fnv 1.0.6 (registry+https://github.com/rust-lang/crates.io-index)" = "2fad85553e09a6f881f739c29f0b00b0f01357c743266d478b68951ce23285f3"
