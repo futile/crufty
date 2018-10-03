@@ -211,11 +211,34 @@ pub struct InteractionPossibility {
     pub interaction: game::Interaction,
 }
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum SpriteLayer {
+    Background,
+    Foreground,
+}
+
+impl SpriteLayer {
+    pub const MAX_DEPTH: f32 = 1.0;
+
+    pub fn to_depth(&self) -> f32 {
+        match *self {
+            SpriteLayer::Background => 0.1,
+            SpriteLayer::Foreground => 1.0,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SpriteInfo {
     pub width: f32,
     pub height: f32,
     pub texture_info: TextureInfo,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Sprite {
+    pub info: SpriteInfo,
+    pub sprite_layer: SpriteLayer,
 }
 
 #[derive(Clone, Debug)]
@@ -273,7 +296,7 @@ components! {
     struct LevelComponents {
         #[hot] position: Position,
         #[hot] collision_shape: CollisionShape,
-        #[hot] sprite_info: SpriteInfo,
+        #[hot] sprite: Sprite,
         #[cold] sprite_sheet_animation: SpriteSheetAnimation,
         #[cold] movement: Movement,
         #[cold] facing: Facing,

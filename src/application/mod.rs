@@ -36,7 +36,7 @@ impl State<AppTransition> for StartupState {
             .with_dimensions(glutin::dpi::LogicalSize::new(800.0, 600.0))
             .with_title("crufty".to_string());
 
-        let context = glutin::ContextBuilder::new();
+        let context = glutin::ContextBuilder::new().with_depth_buffer(24);
 
         let display = glium::Display::new(window, context, &events_loop).unwrap();
 

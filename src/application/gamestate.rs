@@ -15,7 +15,7 @@ use crate::util::State;
 use crate::components::{
     Camera, CollisionShape, CollisionType, Facing, Gravity, Intents, InteractionPossibility,
     Interactor, Jump, KeyboardInput, LevelComponents, Movement, Position, SpriteInfo,
-    SpriteSheetAnimation, Velocity,
+    SpriteSheetAnimation, Velocity, SpriteLayer, Sprite
 };
 use crate::systems::{LevelSystems, RenderSystem, WorldViewport};
 
@@ -128,12 +128,15 @@ impl State<AppTransition> for GameState {
                 data.facing.add(&entity, Facing::Right);
                 data.jump.add(&entity, Jump::new());
                 data.gravity.add(&entity, Gravity::new());
-                data.sprite_info.add(
+                data.sprite.add(
                     &entity,
-                    SpriteInfo {
-                        width: 32.0,
-                        height: 32.0,
-                        texture_info: player_tex_info,
+                    Sprite {
+                        info: SpriteInfo {
+                            width: 32.0,
+                            height: 32.0,
+                            texture_info: player_tex_info,
+                        },
+                        sprite_layer: SpriteLayer::Foreground,
                     },
                 );
                 data.sprite_sheet_animation.add(
@@ -193,12 +196,15 @@ impl State<AppTransition> for GameState {
                             CollisionType::Solid,
                         ),
                     );
-                    data.sprite_info.add(
+                    data.sprite.add(
                         &entity,
-                        SpriteInfo {
+                        Sprite {
+                        info: SpriteInfo {
                             width: 32.0,
                             height: 32.0,
                             texture_info: tex_info,
+                        },
+                            sprite_layer: SpriteLayer::Background,
                         },
                     );
                 },
@@ -223,12 +229,15 @@ impl State<AppTransition> for GameState {
                             CollisionType::Solid,
                         ),
                     );
-                    data.sprite_info.add(
+                    data.sprite.add(
                         &entity,
-                        SpriteInfo {
+                        Sprite {
+                        info: SpriteInfo {
                             width: 32.0,
                             height: 32.0,
                             texture_info: tex_info,
+                        },
+                            sprite_layer: SpriteLayer::Background,
                         },
                     );
                 },
@@ -258,12 +267,15 @@ impl State<AppTransition> for GameState {
                         interaction: Interaction::Warp,
                     },
                 );
-                data.sprite_info.add(
+                data.sprite.add(
                     &entity,
-                    SpriteInfo {
+                    Sprite {
+                    info: SpriteInfo {
                         width: 32.0,
                         height: 32.0,
                         texture_info: player_tex_info,
+                    },
+                        sprite_layer: SpriteLayer::Background,
                     },
                 );
             },

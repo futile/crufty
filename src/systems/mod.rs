@@ -74,7 +74,7 @@ systems! {
             ),
             sprite_sheet_animation_system: EntitySystem<SpriteSheetAnimationSystem> = EntitySystem::new(
                 SpriteSheetAnimationSystem::new(),
-                aspect!(<LevelComponents> all: [sprite_sheet_animation, sprite_info]),
+                aspect!(<LevelComponents> all: [sprite_sheet_animation, sprite]),
             ),
         },
         passive: {

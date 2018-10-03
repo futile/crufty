@@ -42,7 +42,7 @@ impl EntityProcess for SpriteSheetAnimationSystem {
                 ssa.animation.create_sprite_info(ssa.current_frame)
             };
 
-            data.sprite_info[e] = new_si;
+            data.sprite[e].info = new_si;
         }
     }
 }
