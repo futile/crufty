@@ -7,5 +7,11 @@ in vec2 v_tex_coords;
 out vec4 f_color;
 
 void main() {
-  f_color = texture(tex, vec3(v_tex_coords, tex_index));
+  vec4 color = texture(tex, vec3(v_tex_coords, tex_index));
+
+  if(color.a < 0.5) {
+    discard;
+  }
+
+  f_color = color;
 }
