@@ -237,7 +237,13 @@ impl State<AppTransition> for GameState {
 
         let _warp_block = world.create_entity(
             |entity: BuildData<'_, LevelComponents>, data: &mut LevelComponents| {
-                data.position.add(&entity, Position { x: 10. * 32.0, y: 32.0 });
+                data.position.add(
+                    &entity,
+                    Position {
+                        x: 10. * 32.0,
+                        y: 32.0,
+                    },
+                );
                 data.collision_shape.add(
                     &entity,
                     CollisionShape::new_single(
@@ -327,7 +333,13 @@ impl State<AppTransition> for GameState {
                         } => match (key_state, vkc) {
                             (ElementState::Released, VirtualKeyCode::P) => profiler_ticks += 3,
                             (ElementState::Released, VirtualKeyCode::D) => {
-                                world.systems.render_system.inner.as_mut().unwrap().toggle_physics_debug_render();
+                                world
+                                    .systems
+                                    .render_system
+                                    .inner
+                                    .as_mut()
+                                    .unwrap()
+                                    .toggle_physics_debug_render();
                             }
                             (ElementState::Released, VirtualKeyCode::Escape) => shutdown = true,
                             _ => input_manager.handle_event(key_state, vkc),

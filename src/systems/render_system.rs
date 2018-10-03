@@ -236,8 +236,10 @@ impl InteractProcess for RenderSystem {
                                 aabb.maxs().y - aabb.mins().y,
                             );
                             let view_pos = Vector2::new(
-                                aabb.mins().x.round() - (cpos.x - camera.world_viewport.width / 2.0),
-                                aabb.mins().y.round() - (cpos.y - camera.world_viewport.height / 2.0),
+                                aabb.mins().x.round()
+                                    - (cpos.x - camera.world_viewport.width / 2.0),
+                                aabb.mins().y.round()
+                                    - (cpos.y - camera.world_viewport.height / 2.0),
                             );
 
                             use crate::components::CollisionType;

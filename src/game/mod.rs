@@ -1,5 +1,6 @@
 pub use self::animation::{Animation, SpriteSheet};
 pub use self::resource_store::*;
+use self::events::EventReceiver;
 
 use ecs::{DataHelper, Entity, EntityData};
 
@@ -153,13 +154,22 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             comps.position[en] = resolved_pos;
         });
 
+        use self::events::CollisionEnded;
+        let mut ended: SmallVec<[CollisionEnded; 2]> = SmallVec::new();
+
         coll_shape.ongoing_collisions.others.retain(|&mut other| {
-            colls.iter().any(|cl| cl.collided == other)
-            // TODO if not, create CollisionEnded
+            if !colls.iter().any(|cl| cl.collided == other) {
+                ended.push(CollisionEnded {
+                    collider: eod.as_entity(),
+                    collided: other,
+                });
+                false
+            } else {
+                true
+            }
         });
 
-        use self::events::{CollisionStarted, EventReceiver};
-
+        use self::events::CollisionStarted;
         let started: SmallVec<[CollisionStarted; 2]> = colls
             .iter()
             .filter_map(|cl| {
@@ -177,6 +187,9 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             comps.collision_shape[en] = coll_shape;
         });
 
+        for event in ended {
+            self.receive_event(event);
+        }
         for event in started {
             self.receive_event(event);
         }
