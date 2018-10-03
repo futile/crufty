@@ -1,6 +1,7 @@
 #![feature(never_type)]
 #![feature(const_fn)]
 #![feature(drain_filter)]
+#![feature(dbg_macro)]
 
 #[macro_use]
 extern crate glium;
