@@ -201,12 +201,12 @@ impl OngoingCollisions {
 pub struct Interactor;
 
 impl Interactor {
-    pub fn can_interact(&self, _interaction: game::Interaction) -> bool {
+    pub fn can_interact(&self, _interaction: &game::Interaction) -> bool {
         true
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct InteractionPossibility {
     pub interaction: game::Interaction,
 }

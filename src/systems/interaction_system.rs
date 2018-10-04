@@ -1,10 +1,10 @@
 use ecs::system::EntityProcess;
 use ecs::{DataHelper, EntityIter, System};
 
-use crate::game::events::{CollisionStarted, CollisionEnded};
-use crate::{components::LevelComponents, systems::LevelServices};
-
-//use game::Interaction;
+use crate::application::InputIntent;
+use crate::game::events::{CollisionEnded, CollisionStarted};
+use crate::game::{Interaction, EntityOps};
+use crate::{components::LevelComponents, systems::LevelServices, components::Position};
 
 pub struct InteractionSystem;
 
@@ -16,9 +16,61 @@ impl System for InteractionSystem {
 impl EntityProcess for InteractionSystem {
     fn process(
         &mut self,
-        _entities: EntityIter<'_, LevelComponents>,
-        _data: &mut DataHelper<LevelComponents, LevelServices>,
+        entities: EntityIter<'_, LevelComponents>,
+        data: &mut DataHelper<LevelComponents, LevelServices>,
     ) {
+        for e in entities {
+            let wants_interaction = data.intents[e].remove(&InputIntent::Interact);
+
+            if !wants_interaction {
+                continue;
+            }
+
+            let interactor = data.interactor[e];
+            let pos = data.position[e];
+            let mut interaction_target = None;
+            for other in data.collision_shape[e].ongoing_collisions.others.clone() {
+                match data.with_entity_data(&other, |en, comps| {
+                    comps
+                        .interaction_possibility
+                        .get(&en)
+                        .map(|poss| interactor.can_interact(&poss.interaction))
+                }) {
+                    Some(Some(true)) => (),
+                    _ => continue,
+                };
+
+                let other_pos = match data.with_entity_data(&other, |en, comps| comps.position[en])
+                {
+                    Some(p) => p,
+                    _ => continue,
+                };
+
+                let distance =
+                    ((other_pos.x - pos.x).powf(2.0) + (other_pos.y - pos.y).powf(2.0)).sqrt();
+
+                if let Some((_, curr_dist)) = interaction_target {
+                    if distance < curr_dist {
+                        interaction_target = Some((other, distance));
+                    }
+                } else {
+                    interaction_target = Some((other, distance));
+                }
+            }
+
+            let interaction_target = match interaction_target {
+                Some((e, _)) => e,
+                _ => continue,
+            };
+
+            let interaction_possibility = data.with_entity_data(&interaction_target, |en, comps| {
+                comps.interaction_possibility[en]
+            }).unwrap();
+
+            match interaction_possibility.interaction {
+                Interaction::WarpInRoom{x, y} => data.move_entity(e.into(), &Position{x, y}, true),
+            };
+        }
     }
 }
 
@@ -40,7 +92,7 @@ pub fn on_collision_started(
         comps
             .interactor
             .borrow(&en)
-            .map(|i| i.can_interact(interaction))
+            .map(|i| i.can_interact(&interaction))
     }) {
         Some(Some(i)) => i,
         _ => return,
@@ -69,7 +121,7 @@ pub fn on_collision_ended(
         comps
             .interactor
             .borrow(&en)
-            .map(|i| i.can_interact(interaction))
+            .map(|i| i.can_interact(&interaction))
     }) {
         Some(Some(i)) => i,
         _ => return,

@@ -72,6 +72,10 @@ systems! {
                 VelocitySystem,
                 aspect!(<LevelComponents> all: [velocity]),
             ),
+            interaction_system: EntitySystem<InteractionSystem> = EntitySystem::new(
+                InteractionSystem,
+                aspect!(<LevelComponents> all: [interactor, intents, collision_shape, position]),
+            ),
             sprite_sheet_animation_system: EntitySystem<SpriteSheetAnimationSystem> = EntitySystem::new(
                 SpriteSheetAnimationSystem::new(),
                 aspect!(<LevelComponents> all: [sprite_sheet_animation, sprite]),
@@ -89,10 +93,6 @@ systems! {
             intent_system: EntitySystem<IntentSystem> = EntitySystem::new(
                 IntentSystem,
                 aspect!(<LevelComponents> all: [intents])),
-            interaction_system: EntitySystem<InteractionSystem> = EntitySystem::new(
-                InteractionSystem,
-                aspect!(<LevelComponents> all: [interaction_possibility]),
-            ),
         }
     }
 }

@@ -4,4 +4,5 @@ pub enum InputIntent {
     MoveLeft,
     MoveRight,
     Jump,
+    Interact,
 }

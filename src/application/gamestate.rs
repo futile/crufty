@@ -171,6 +171,10 @@ impl State<AppTransition> for GameState {
                                 (VirtualKeyCode::Space, InputState::Pressed),
                                 InputIntent::Jump,
                             );
+                            inputs.insert(
+                                (VirtualKeyCode::E, InputState::PressedThisFrame),
+                                InputIntent::Interact,
+                            );
                             inputs
                         },
                     },
@@ -264,7 +268,7 @@ impl State<AppTransition> for GameState {
                 data.interaction_possibility.add(
                     &entity,
                     InteractionPossibility {
-                        interaction: Interaction::Warp,
+                        interaction: Interaction::WarpInRoom{x: 0.0, y: 500.0},
                     },
                 );
                 data.sprite.add(

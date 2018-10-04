@@ -23,9 +23,9 @@ impl From<u16> for PlayerId {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Interaction {
-    Warp,
+    WarpInRoom{x: f32, y: f32},
 }
 
 // *can* use `Either` when this issue is done: https://github.com/bluss/either/issues/33
