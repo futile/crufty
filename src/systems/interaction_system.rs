@@ -2,9 +2,9 @@ use ecs::system::EntityProcess;
 use ecs::{DataHelper, EntityIter, System};
 
 use crate::application::InputIntent;
-use crate::game::events::{CollisionEnded, CollisionStarted};
-use crate::game::{Interaction, EntityOps};
-use crate::{components::LevelComponents, systems::LevelServices, components::Position};
+use crate::game::events::{CollisionEnded, CollisionStarted, EventReceiver, InteractionDone};
+use crate::game::{EntityOps, Interaction};
+use crate::{components::LevelComponents, components::Position, systems::LevelServices};
 
 pub struct InteractionSystem;
 
@@ -63,12 +63,21 @@ impl EntityProcess for InteractionSystem {
                 _ => continue,
             };
 
-            let interaction_possibility = data.with_entity_data(&interaction_target, |en, comps| {
-                comps.interaction_possibility[en]
-            }).unwrap();
+            let interaction_possibility = data
+                .with_entity_data(&interaction_target, |en, comps| {
+                    comps.interaction_possibility[en]
+                })
+                .unwrap();
 
             match interaction_possibility.interaction {
-                Interaction::WarpInRoom{x, y} => data.move_entity(e.into(), &Position{x, y}, true),
+                Interaction::WarpInRoom { x, y } => {
+                    data.move_entity(e.into(), &Position { x, y }, true);
+                    data.receive_event(InteractionDone {
+                        interactor: **e,
+                        interacted: interaction_target,
+                        interaction: interaction_possibility.interaction,
+                    })
+                }
             };
         }
     }

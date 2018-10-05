@@ -1,6 +1,7 @@
 use ecs::{DataHelper, Entity};
 
 use crate::systems::interaction_system;
+use crate::game;
 use crate::{components::LevelComponents, systems::LevelServices};
 
 pub trait EventReceiver<T> {
@@ -19,6 +20,13 @@ pub struct CollisionEnded {
     pub collided: Entity,
 }
 
+#[derive(Copy, Clone, Debug)]
+pub struct InteractionDone {
+    pub interactor: Entity,
+    pub interacted: Entity,
+    pub interaction: game::Interaction,
+}
+
 impl EventReceiver<CollisionStarted> for DataHelper<LevelComponents, LevelServices> {
     fn receive_event(&mut self, event: CollisionStarted) {
         interaction_system::on_collision_started(self, &event);
@@ -28,5 +36,11 @@ impl EventReceiver<CollisionStarted> for DataHelper<LevelComponents, LevelServic
 impl EventReceiver<CollisionEnded> for DataHelper<LevelComponents, LevelServices> {
     fn receive_event(&mut self, event: CollisionEnded) {
         interaction_system::on_collision_ended(self, &event);
+    }
+}
+
+impl EventReceiver<InteractionDone> for DataHelper<LevelComponents, LevelServices> {
+    fn receive_event(&mut self, _event: InteractionDone) {
+        dbg!(_event);
     }
 }
