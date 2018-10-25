@@ -23,7 +23,3 @@ pub mod components;
 pub mod game;
 pub mod systems;
 pub mod net;
-
-fn main() {
-    util::run_state_machine(application::AppTransition::Startup);
-}
