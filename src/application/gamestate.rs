@@ -8,7 +8,7 @@ use glium::glutin::{self, ElementState, VirtualKeyCode};
 use ecs::system::InteractSystem;
 use ecs::{BuildData /* , ModifyData */, World};
 
-use crate::application::{AppTransition, InputIntent, InputManager, InputState};
+use crate::application::{server::ServerTransition, client::ClientTransition, InputIntent, InputManager, InputState};
 use crate::game::{Interaction, ResourceStore};
 use crate::util::State;
 
@@ -43,8 +43,8 @@ impl GameState {
     }
 }
 
-impl State<AppTransition> for GameState {
-    fn run(mut self: Box<Self>) -> AppTransition {
+impl State<ServerTransition> for GameState {
+    fn run(mut self: Box<Self>) -> ServerTransition {
         let mut world = World::<LevelSystems>::new();
 
         let (width, height) = self.display.get_framebuffer_dimensions();
@@ -370,7 +370,7 @@ impl State<AppTransition> for GameState {
                 });
 
                 if shutdown {
-                    return AppTransition::Shutdown;
+                    return ServerTransition::Shutdown;
                 }
             }
 
@@ -398,5 +398,11 @@ impl State<AppTransition> for GameState {
                 profiler_ticks -= 1;
             }
         }
+    }
+}
+
+impl State<ClientTransition> for GameState {
+    fn run(self: Box<Self>) -> ClientTransition {
+        ClientTransition::Shutdown
     }
 }
