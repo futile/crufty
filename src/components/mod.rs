@@ -310,3 +310,21 @@ components! {
         #[cold] interaction_possibility: InteractionPossibility,
     }
 }
+
+#[derive(Debug)]
+pub struct LevelChangedFlags {
+    position: Vec<(Entity, Position)>,
+    collision_shape: Vec<(Entity, CollisionShape)>,
+    sprite: Vec<(Entity, Sprite)>,
+    sprite_sheet_animation: Vec<(Entity, SpriteSheetAnimation)>,
+    movement: Vec<(Entity, Movement)>,
+    facing: Vec<(Entity, Facing)>,
+    jump: Vec<(Entity, Jump)>,
+    velocity: Vec<(Entity, Velocity)>,
+    gravity: Vec<(Entity, Gravity)>,
+    camera: Vec<(Entity, Camera)>,
+    keyboard_input: Vec<(Entity, KeyboardInput)>,
+    intents: Vec<(Entity, Intents)>,
+    interactor: Vec<(Entity, Interactor)>,
+    interaction_possibility: Vec<(Entity, InteractionPossibility)>,
+}
