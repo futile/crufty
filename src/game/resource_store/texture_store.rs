@@ -84,7 +84,8 @@ impl TextureStore {
                     &image.into_raw(),
                     image_dimensions,
                 )
-            }).collect::<Vec<_>>();
+            })
+            .collect::<Vec<_>>();
 
         println!("textures loaded: {:?}", file_paths);
 

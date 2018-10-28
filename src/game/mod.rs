@@ -1,6 +1,6 @@
 pub use self::animation::{Animation, SpriteSheet};
-pub use self::resource_store::*;
 use self::events::EventReceiver;
+pub use self::resource_store::*;
 
 use ecs::{DataHelper, Entity, EntityData};
 
@@ -25,7 +25,7 @@ impl From<u16> for PlayerId {
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum Interaction {
-    WarpInRoom{x: f32, y: f32},
+    WarpInRoom { x: f32, y: f32 },
 }
 
 // *can* use `Either` when this issue is done: https://github.com/bluss/either/issues/33
@@ -181,7 +181,8 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
                 } else {
                     None
                 }
-            }).collect();
+            })
+            .collect();
 
         eod.with_entity_data(self, move |en, comps| {
             comps.collision_shape[en] = coll_shape;

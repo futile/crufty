@@ -21,5 +21,5 @@ pub mod util;
 pub mod application;
 pub mod components;
 pub mod game;
-pub mod systems;
 pub mod net;
+pub mod systems;

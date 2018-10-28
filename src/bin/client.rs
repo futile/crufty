@@ -1,6 +1,6 @@
 extern crate crufty;
 
-use crufty::{util, application};
+use crufty::{application, util};
 
 fn main() {
     util::run_state_machine(application::ClientTransition::Startup);

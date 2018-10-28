@@ -1,7 +1,7 @@
 use ecs::{DataHelper, Entity};
 
-use crate::systems::interaction_system;
 use crate::game;
+use crate::systems::interaction_system;
 use crate::{components::LevelComponents, systems::LevelServices};
 
 pub trait EventReceiver<T> {

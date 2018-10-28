@@ -262,7 +262,7 @@ pub struct Camera {
     pub resize_world_to_window: bool,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct KeyboardInput {
     pub input_context: InputContext,
 }
@@ -311,20 +311,20 @@ components! {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct LevelChangedFlags {
-    position: Vec<(Entity, Position)>,
-    collision_shape: Vec<(Entity, CollisionShape)>,
-    sprite: Vec<(Entity, Sprite)>,
-    sprite_sheet_animation: Vec<(Entity, SpriteSheetAnimation)>,
-    movement: Vec<(Entity, Movement)>,
-    facing: Vec<(Entity, Facing)>,
-    jump: Vec<(Entity, Jump)>,
-    velocity: Vec<(Entity, Velocity)>,
-    gravity: Vec<(Entity, Gravity)>,
-    camera: Vec<(Entity, Camera)>,
-    keyboard_input: Vec<(Entity, KeyboardInput)>,
-    intents: Vec<(Entity, Intents)>,
-    interactor: Vec<(Entity, Interactor)>,
-    interaction_possibility: Vec<(Entity, InteractionPossibility)>,
+    pub position: Vec<(Entity, Position)>,
+    pub collision_shape: Vec<(Entity, CollisionShape)>,
+    pub sprite: Vec<(Entity, Sprite)>,
+    pub sprite_sheet_animation: Vec<(Entity, SpriteSheetAnimation)>,
+    pub movement: Vec<(Entity, Movement)>,
+    pub facing: Vec<(Entity, Facing)>,
+    pub jump: Vec<(Entity, Jump)>,
+    pub velocity: Vec<(Entity, Velocity)>,
+    pub gravity: Vec<(Entity, Gravity)>,
+    pub camera: Vec<(Entity, Camera)>,
+    pub keyboard_input: Vec<(Entity, KeyboardInput)>,
+    pub intents: Vec<(Entity, Intents)>,
+    pub interactor: Vec<(Entity, Interactor)>,
+    pub interaction_possibility: Vec<(Entity, InteractionPossibility)>,
 }

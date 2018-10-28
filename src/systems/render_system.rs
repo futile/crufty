@@ -77,7 +77,8 @@ impl RenderSystem {
                         tex_coords: [1.0, 0.0],
                     },
                 ],
-            ).unwrap()
+            )
+            .unwrap()
         };
 
         let sprite_index_buffer =
@@ -104,7 +105,8 @@ impl RenderSystem {
                                140 => {
                                    vertex: &vertex_shader_code,
                                    fragment: &fragment_shader_code,
-                               }).unwrap();
+                               })
+        .unwrap();
 
         fragment_shader_code.clear();
         File::open("assets/shaders/wireframe.frag")
@@ -116,7 +118,8 @@ impl RenderSystem {
                                       140 => {
                                           vertex: &vertex_shader_code,
                                           fragment: &fragment_shader_code,
-                                      }).unwrap();
+                                      })
+        .unwrap();
 
         RenderSystem {
             display: display,
@@ -179,7 +182,8 @@ impl InteractProcess for RenderSystem {
                     0.0 + camera.world_viewport.height / 2.0,
                     -(SpriteLayer::MAX_DEPTH + 1.0), // +1.0 for debug rendering
                     0.0,
-                ).unwrap();
+                )
+                .unwrap();
                 drop(_g);
 
                 for e in &sprites {
@@ -229,7 +233,8 @@ impl InteractProcess for RenderSystem {
                                     },
                                     ..Default::default()
                                 },
-                            ).unwrap()
+                            )
+                            .unwrap()
                     }
 
                     if self.render_physics_debug {
@@ -281,7 +286,8 @@ impl InteractProcess for RenderSystem {
                                             polygon_mode: glium::PolygonMode::Line,
                                             ..Default::default()
                                         },
-                                    ).unwrap()
+                                    )
+                                    .unwrap()
                             }
                         }
                     }

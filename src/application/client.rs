@@ -1,7 +1,7 @@
 use glium::{self, glutin};
 
-use crate::util::{State, Transition};
 use super::GameState;
+use crate::util::{State, Transition};
 
 pub enum ClientTransition {
     Startup,

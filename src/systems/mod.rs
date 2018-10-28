@@ -13,7 +13,7 @@ pub use self::velocity_system::VelocitySystem;
 use ecs::system::{EntitySystem, InteractSystem, LazySystem};
 use ecs::ServiceManager;
 
-use crate::components::LevelComponents;
+use crate::components::{LevelChangedFlags, LevelComponents};
 
 use crate::game::ResourceStore;
 use crate::util::CollisionWorld;
@@ -35,6 +35,7 @@ pub struct LevelServices {
     pub delta_time_s: f32,
     pub gravity: f32,
     pub collision_world: CollisionWorld,
+    pub changed_flags: LevelChangedFlags,
 }
 
 impl Default for LevelServices {
@@ -44,6 +45,7 @@ impl Default for LevelServices {
             delta_time_s: 0.0,
             gravity: 150.0,
             collision_world: CollisionWorld::new(),
+            changed_flags: Default::default(),
         }
     }
 }

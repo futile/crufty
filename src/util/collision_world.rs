@@ -60,7 +60,8 @@ fn find_depth(
     let dist = match axis {
         X => dyn_ent.center().x - stat.center().x,
         Y => dyn_ent.center().y - stat.center().y,
-    }.abs();
+    }
+    .abs();
 
     let depth = min_dist - dist;
 
@@ -71,7 +72,8 @@ fn find_depth(
     let dir = match axis {
         X => dyn_last.x - stat.center().x,
         Y => dyn_last.y - stat.center().y,
-    }.signum();
+    }
+    .signum();
 
     Some(dir * depth)
 }
@@ -200,7 +202,8 @@ impl CollisionWorld {
                     // println!("depth: {:?}", depth);
                     CollisionResult::new(depth, other, other_leafs.coll_type)
                 })
-            }).collect()
+            })
+            .collect()
 
         // if colls.len() > 1 {
         //     println!("colls.len() ({:?}): {:?}", axis, colls.len());
@@ -260,7 +263,8 @@ impl CollisionWorld {
                     .filter_map(|cr| match cr.other_coll_type {
                         CollisionType::Solid => Some(NotNan::new(cr.depth).unwrap()),
                         CollisionType::Trigger => None,
-                    }).min();
+                    })
+                    .min();
 
                 // update position
                 if let Some(min_depth) = min_depth {
@@ -343,7 +347,8 @@ impl CollisionWorld {
                 let other_top_y = other_leaf_y.bounding_volume.maxs().y;
                 let dist = (other_top_y - bot_y).abs(); // maybe remove the abs(), but shouldn't matter too much
                 Some(dist)
-            }).any(|dist| dist < ON_GROUND_THRESHOLD);
+            })
+            .any(|dist| dist < ON_GROUND_THRESHOLD);
 
         self.on_ground_cache.borrow_mut().insert(e, on_ground);
 
