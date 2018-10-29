@@ -68,6 +68,8 @@ impl EntityProcess for JumpSystem {
             let jump = jump;
             data.jump[e] = jump;
 
+            data.services.changed_flags.jump.insert(**e, jump);
+
             let vel_change: Vector2<f32> = {
                 let get_antigrav_vel = || {
                     if let Some(gravity) = data.gravity.get(&e) {
@@ -84,9 +86,14 @@ impl EntityProcess for JumpSystem {
                 }
             };
 
-            let velocity = &mut data.velocity[e];
-            velocity.vx += delta * vel_change.x;
-            velocity.vy += delta * vel_change.y;
+            let vel = {
+                let velocity = &mut data.velocity[e];
+                velocity.vx += delta * vel_change.x;
+                velocity.vy += delta * vel_change.y;
+                velocity.clone()
+            };
+
+            data.services.changed_flags.velocity.insert(**e, vel);
         }
     }
 }

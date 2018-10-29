@@ -43,6 +43,8 @@ impl EntityProcess for KeyboardSystem {
         data: &mut DataHelper<LevelComponents, LevelServices>,
     ) {
         for e in entities {
+            let mut some_changed = false;
+
             for combination in &self.keys {
                 if let Some(&intent) = data.keyboard_input[e].input_context.get(combination) {
                     // add intent to IntentComponent
@@ -53,7 +55,16 @@ impl EntityProcess for KeyboardSystem {
                     }
 
                     data.intents[e].insert(intent);
+
+                    some_changed = true;
                 }
+            }
+
+            if some_changed {
+                data.services
+                    .changed_flags
+                    .intents
+                    .insert(**e, data.intents[e].clone());
             }
         }
 

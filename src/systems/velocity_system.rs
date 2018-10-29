@@ -33,6 +33,11 @@ impl EntityProcess for VelocitySystem {
 
             data.velocity[e].vx = 0.0;
             data.velocity[e].vy = 0.0;
+
+            data.services
+                .changed_flags
+                .velocity
+                .insert(**e, data.velocity[e].clone());
         }
     }
 }

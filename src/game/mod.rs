@@ -110,16 +110,23 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             _ => return,
         };
 
-        eod.with_entity_data(self, move |en, comps| {
+        if let Some(Some(changed_ssa)) = eod.with_entity_data(self, move |en, comps| {
             let ssa = match comps.sprite_sheet_animation.borrow(&en) {
                 Some(ssa) => ssa,
-                _ => return,
+                _ => return None,
             };
 
             ssa.current_frame = 0;
             ssa.frame_time_remaining = anim.frame_durations[0];
             ssa.animation = anim.clone();
-        });
+
+            Some(ssa.clone())
+        }) {
+            self.services
+                .changed_flags
+                .sprite_sheet_animation
+                .insert(eod.as_entity(), changed_ssa);
+        }
     }
 
     fn move_entity(&mut self, eod: EntityOrData, new_pos: &Position, warp: bool) {
@@ -154,6 +161,11 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             comps.position[en] = resolved_pos;
         });
 
+        self.services
+            .changed_flags
+            .position
+            .insert(eod.as_entity(), resolved_pos);
+
         use self::events::CollisionEnded;
         let mut ended: SmallVec<[CollisionEnded; 2]> = SmallVec::new();
 
@@ -184,9 +196,14 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             })
             .collect();
 
-        eod.with_entity_data(self, move |en, comps| {
-            comps.collision_shape[en] = coll_shape;
+        eod.with_entity_data(self, |en, comps| {
+            comps.collision_shape[en] = coll_shape.clone();
         });
+
+        self.services
+            .changed_flags
+            .collision_shape
+            .insert(eod.as_entity(), coll_shape);
 
         for event in ended {
             self.receive_event(event);

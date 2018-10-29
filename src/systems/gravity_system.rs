@@ -23,9 +23,24 @@ impl EntityProcess for GravitySystem {
 
         for e in entities {
             let gravity = data.gravity[e];
-            let velocity = &mut data.velocity[e];
 
-            velocity.vy -= g * gravity.f * delta;
+            if let Some(changed_vel) = {
+                let velocity = &mut data.velocity[e];
+
+                let d = g * gravity.f * delta;
+
+                if d > 0.0 {
+                    velocity.vy -= d;
+                    Some(velocity.clone())
+                } else {
+                    None
+                }
+            } {
+                data.services
+                    .changed_flags
+                    .velocity
+                    .insert(**e, changed_vel);
+            }
         }
     }
 }

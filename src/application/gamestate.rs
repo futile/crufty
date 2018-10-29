@@ -183,50 +183,50 @@ impl State<ServerTransition> for GameState {
                 .services
                 .changed_flags
                 .position
-                .push((_player, position));
+                .insert(_player, position);
             world
                 .services
                 .changed_flags
                 .velocity
-                .push((_player, velocity));
+                .insert(_player, velocity);
             world
                 .services
                 .changed_flags
                 .collision_shape
-                .push((_player, collision_shape));
+                .insert(_player, collision_shape);
             world
                 .services
                 .changed_flags
                 .movement
-                .push((_player, movement));
-            world.services.changed_flags.facing.push((_player, facing));
-            world.services.changed_flags.jump.push((_player, jump));
+                .insert(_player, movement);
+            world.services.changed_flags.facing.insert(_player, facing);
+            world.services.changed_flags.jump.insert(_player, jump);
             world
                 .services
                 .changed_flags
                 .gravity
-                .push((_player, gravity));
-            world.services.changed_flags.sprite.push((_player, sprite));
+                .insert(_player, gravity);
+            world.services.changed_flags.sprite.insert(_player, sprite);
             world
                 .services
                 .changed_flags
                 .sprite_sheet_animation
-                .push((_player, ss_anim));
+                .insert(_player, ss_anim);
             world
                 .services
                 .changed_flags
                 .intents
-                .push((_player, intents));
+                .insert(_player, intents);
             world
                 .services
                 .changed_flags
                 .interactor
-                .push((_player, interactor));
+                .insert(_player, interactor);
             world
                 .services
                 .changed_flags
                 .keyboard_input
-                .push((_player, kb_input));
+                .insert(_player, kb_input);
 
             _player
         };
@@ -259,14 +259,14 @@ impl State<ServerTransition> for GameState {
                     },
                 );
 
-                world.services.changed_flags.position.push((_e, position));
+                world.services.changed_flags.position.insert(_e, position);
 
                 world
                     .services
                     .changed_flags
                     .collision_shape
-                    .push((_e, collision_shape));
-                world.services.changed_flags.sprite.push((_e, sprite));
+                    .insert(_e, collision_shape);
+                world.services.changed_flags.sprite.insert(_e, sprite);
 
                 _e
             };
@@ -300,14 +300,14 @@ impl State<ServerTransition> for GameState {
                     },
                 );
 
-                world.services.changed_flags.position.push((_e, position));
+                world.services.changed_flags.position.insert(_e, position);
 
                 world
                     .services
                     .changed_flags
                     .collision_shape
-                    .push((_e, collision_shape));
-                world.services.changed_flags.sprite.push((_e, sprite));
+                    .insert(_e, collision_shape);
+                world.services.changed_flags.sprite.insert(_e, sprite);
 
                 _e
             };
@@ -345,18 +345,18 @@ impl State<ServerTransition> for GameState {
                 },
             );
 
-            world.services.changed_flags.position.push((_e, position));
+            world.services.changed_flags.position.insert(_e, position);
             world
                 .services
                 .changed_flags
                 .collision_shape
-                .push((_e, collision_shape));
+                .insert(_e, collision_shape);
             world
                 .services
                 .changed_flags
                 .interaction_possibility
-                .push((_e, interaction_possibility));
-            world.services.changed_flags.sprite.push((_e, sprite));
+                .insert(_e, interaction_possibility);
+            world.services.changed_flags.sprite.insert(_e, sprite);
 
             _e
         };
@@ -461,6 +461,8 @@ impl State<ServerTransition> for GameState {
 
             process!(world, intent_system);
             process!(world, render_system);
+
+            world.services.changed_flags.clear();
 
             hprof::end_frame();
 

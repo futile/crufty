@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use ecs::Entity;
 use smallvec::SmallVec;
@@ -313,18 +313,37 @@ components! {
 
 #[derive(Debug, Default)]
 pub struct LevelChangedFlags {
-    pub position: Vec<(Entity, Position)>,
-    pub collision_shape: Vec<(Entity, CollisionShape)>,
-    pub sprite: Vec<(Entity, Sprite)>,
-    pub sprite_sheet_animation: Vec<(Entity, SpriteSheetAnimation)>,
-    pub movement: Vec<(Entity, Movement)>,
-    pub facing: Vec<(Entity, Facing)>,
-    pub jump: Vec<(Entity, Jump)>,
-    pub velocity: Vec<(Entity, Velocity)>,
-    pub gravity: Vec<(Entity, Gravity)>,
-    pub camera: Vec<(Entity, Camera)>,
-    pub keyboard_input: Vec<(Entity, KeyboardInput)>,
-    pub intents: Vec<(Entity, Intents)>,
-    pub interactor: Vec<(Entity, Interactor)>,
-    pub interaction_possibility: Vec<(Entity, InteractionPossibility)>,
+    pub position: HashMap<Entity, Position>,
+    pub collision_shape: HashMap<Entity, CollisionShape>,
+    pub sprite: HashMap<Entity, Sprite>,
+    pub sprite_sheet_animation: HashMap<Entity, SpriteSheetAnimation>,
+    pub movement: HashMap<Entity, Movement>,
+    pub facing: HashMap<Entity, Facing>,
+    pub jump: HashMap<Entity, Jump>,
+    pub velocity: HashMap<Entity, Velocity>,
+    pub gravity: HashMap<Entity, Gravity>,
+    pub camera: HashMap<Entity, Camera>,
+    pub keyboard_input: HashMap<Entity, KeyboardInput>,
+    pub intents: HashMap<Entity, Intents>,
+    pub interactor: HashMap<Entity, Interactor>,
+    pub interaction_possibility: HashMap<Entity, InteractionPossibility>,
+}
+
+impl LevelChangedFlags {
+    pub fn clear(&mut self) {
+        self.position.clear();
+        self.collision_shape.clear();
+        self.sprite.clear();
+        self.sprite_sheet_animation.clear();
+        self.movement.clear();
+        self.facing.clear();
+        self.jump.clear();
+        self.velocity.clear();
+        self.gravity.clear();
+        self.camera.clear();
+        self.keyboard_input.clear();
+        self.intents.clear();
+        self.interactor.clear();
+        self.interaction_possibility.clear();
+    }
 }

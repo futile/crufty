@@ -63,7 +63,7 @@ impl EntityProcess for MovementSystem {
                 }
             }
 
-            let vel = {
+            let movement = {
                 let movement = &mut data.movement[e];
 
                 if move_left == move_right {
@@ -101,12 +101,24 @@ impl EntityProcess for MovementSystem {
                     movement.vel = Vector2::new(*inter_x.unwrap_or(&0.0), *inter_y.unwrap_or(&0.0));
                 }
 
-                movement.vel
+                movement.clone()
             };
 
-            let velocity = &mut data.velocity[e];
-            velocity.vx += delta * vel.x;
-            velocity.vy += delta * vel.y;
+            let vel = movement.vel;
+
+            let changed_vel = {
+                let velocity = &mut data.velocity[e];
+                velocity.vx += delta * vel.x;
+                velocity.vy += delta * vel.y;
+
+                velocity.clone()
+            };
+
+            data.services
+                .changed_flags
+                .velocity
+                .insert(**e, changed_vel);
+            data.services.changed_flags.movement.insert(**e, movement);
         }
     }
 }

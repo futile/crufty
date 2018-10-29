@@ -2,6 +2,7 @@
 #![feature(const_fn)]
 #![feature(drain_filter)]
 #![feature(dbg_macro)]
+#![feature(nll)]
 
 #[macro_use]
 extern crate glium;

@@ -25,7 +25,13 @@ impl EntityProcess for IntentSystem {
                 println!("debug message!");
             }
 
-            data.intents[e].clear();
+            if data.intents[e].len() > 0 {
+                data.intents[e].clear();
+                data.services
+                    .changed_flags
+                    .intents
+                    .insert(**e, data.intents[e].clone());
+            }
         }
     }
 }
