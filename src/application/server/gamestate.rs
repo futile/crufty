@@ -13,6 +13,7 @@ use crate::application::{
 };
 use crate::game::{Interaction, ResourceStore};
 use crate::util::State;
+use crate::net;
 
 use crate::components::{
     Camera, CollisionShape, CollisionType, Facing, Gravity, Intents, InteractionPossibility,
@@ -34,13 +35,15 @@ use crate::nc::shape::Cuboid;
 pub struct GameState {
     display: glium::Display,
     events_loop: glutin::EventsLoop,
+    host: net::Host,
 }
 
 impl GameState {
-    pub fn new(display: glium::Display, events_loop: glutin::EventsLoop) -> GameState {
+    pub fn new(display: glium::Display, events_loop: glutin::EventsLoop, host: net::Host) -> GameState {
         GameState {
             display,
             events_loop,
+            host
         }
     }
 }
