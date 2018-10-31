@@ -7,13 +7,15 @@ use crate::util::State;
 pub struct GameState {
     display: glium::Display,
     events_loop: glutin::EventsLoop,
+    client: net::Client,
 }
 
 impl GameState {
-    pub fn new(display: glium::Display, events_loop: glutin::EventsLoop) -> GameState {
+    pub fn new(display: glium::Display, events_loop: glutin::EventsLoop, client: net::Client) -> GameState {
         GameState {
             display,
             events_loop,
+            client,
         }
     }
 }

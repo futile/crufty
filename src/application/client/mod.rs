@@ -3,12 +3,13 @@ mod gamestate;
 use glium::{self, glutin};
 
 use crate::util::{State, Transition};
+use crate::net;
 
 use self::gamestate::GameState;
 
 pub enum ClientTransition {
     Startup,
-    StartGame(glium::Display, glutin::EventsLoop),
+    StartGame(glium::Display, glutin::EventsLoop, net::Client),
     Shutdown,
     TerminateApplication,
 }
@@ -17,7 +18,7 @@ impl Transition for ClientTransition {
     fn create_state(self) -> Option<Box<dyn State<ClientTransition>>> {
         match self {
             ClientTransition::Startup => Some(Box::new(StartupState)),
-            ClientTransition::StartGame(d, el) => Some(Box::new(GameState::new(d, el))),
+            ClientTransition::StartGame(d, el, c) => Some(Box::new(GameState::new(d, el, c))),
             ClientTransition::Shutdown => Some(Box::new(ShutdownState)),
             ClientTransition::TerminateApplication => None,
         }
@@ -38,7 +39,9 @@ impl State<ClientTransition> for StartupState {
 
         let display = glium::Display::new(window, context, &events_loop).unwrap();
 
-        ClientTransition::StartGame(display, events_loop)
+        let client = net::Client::new();
+
+        ClientTransition::StartGame(display, events_loop, client)
     }
 }
 
