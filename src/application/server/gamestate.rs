@@ -12,8 +12,8 @@ use crate::application::{
     client::ClientTransition, server::ServerTransition, InputIntent, InputManager, InputState,
 };
 use crate::game::{Interaction, ResourceStore};
-use crate::util::State;
 use crate::net;
+use crate::util::State;
 
 use crate::components::{
     Camera, CollisionShape, CollisionType, Facing, Gravity, Intents, InteractionPossibility,
@@ -39,11 +39,15 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn new(display: glium::Display, events_loop: glutin::EventsLoop, host: net::Host) -> GameState {
+    pub fn new(
+        display: glium::Display,
+        events_loop: glutin::EventsLoop,
+        host: net::Host,
+    ) -> GameState {
         GameState {
             display,
             events_loop,
-            host
+            host,
         }
     }
 }
@@ -464,6 +468,8 @@ impl State<ServerTransition> for GameState {
 
             process!(world, intent_system);
             process!(world, render_system);
+
+            self.host.maintain();
 
             world.services.changed_flags.clear();
 

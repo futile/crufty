@@ -1,9 +1,11 @@
 mod gamestate;
 
+use std::net::Ipv4Addr;
+
 use glium::{self, glutin};
 
-use crate::util::{State, Transition};
 use crate::net;
+use crate::util::{State, Transition};
 
 use self::gamestate::GameState;
 
@@ -39,7 +41,8 @@ impl State<ClientTransition> for StartupState {
 
         let display = glium::Display::new(window, context, &events_loop).unwrap();
 
-        let client = net::Client::new();
+        let mut client = net::Client::new();
+        client.start_connect(Ipv4Addr::LOCALHOST);
 
         ClientTransition::StartGame(display, events_loop, client)
     }

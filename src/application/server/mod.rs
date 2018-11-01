@@ -2,8 +2,8 @@ mod gamestate;
 
 use glium::{self, glutin};
 
-use crate::util::{State, Transition};
 use crate::net;
+use crate::util::{State, Transition};
 
 use self::gamestate::GameState;
 
