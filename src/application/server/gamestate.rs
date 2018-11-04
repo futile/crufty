@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::time::Duration;
 use std::path::Path;
 use std::thread;
 
@@ -26,7 +27,6 @@ use hprof;
 
 use clock_ticks;
 
-use std::time::Duration;
 
 use crate::na::{Point2, Vector2};
 use crate::nc::bounding_volume::AABB;
