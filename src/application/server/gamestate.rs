@@ -469,7 +469,7 @@ impl State<ServerTransition> for GameState {
             process!(world, intent_system);
             process!(world, render_system);
 
-            self.host.maintain();
+            self.host.maintain(&mut world);
 
             world.services.changed_flags.clear();
 

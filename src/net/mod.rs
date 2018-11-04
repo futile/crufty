@@ -1,6 +1,10 @@
 use std::net::Ipv4Addr;
 
+use ecs::World;
+
 use enet::{self, Enet};
+
+use crate::systems::LevelSystems;
 
 lazy_static! {
     static ref ENET: Enet = Enet::new().unwrap();
@@ -27,7 +31,7 @@ impl Host {
         Host { enet_host }
     }
 
-    pub fn maintain(&mut self) {
+    pub fn maintain(&mut self, world: &mut World<LevelSystems>) {
         if let Some(event) = self.enet_host.service(0).unwrap() {
             dbg!(event);
         }
@@ -53,7 +57,7 @@ impl Client {
         Client { enet_host }
     }
 
-    pub fn maintain(&mut self) {
+    pub fn maintain(&mut self, world: &mut World<LevelSystems>) {
         if let Some(event) = self.enet_host.service(0).unwrap() {
             dbg!(event);
         }

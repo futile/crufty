@@ -154,7 +154,7 @@ impl State<ClientTransition> for GameState {
             process!(world, intent_system);
             process!(world, render_system);
 
-            self.client.maintain();
+            self.client.maintain(&mut world);
 
             world.services.changed_flags.clear();
 
