@@ -1,7 +1,7 @@
 use std::collections::HashMap;
-use std::time::Duration;
 use std::path::Path;
 use std::thread;
+use std::time::Duration;
 
 use glium;
 use glium::glutin::{self, ElementState, VirtualKeyCode};
@@ -26,7 +26,6 @@ use crate::systems::{LevelSystems, RenderSystem, WorldViewport};
 use hprof;
 
 use clock_ticks;
-
 
 use crate::na::{Point2, Vector2};
 use crate::nc::bounding_volume::AABB;

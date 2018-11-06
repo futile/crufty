@@ -14,7 +14,7 @@ use crate::game::{self, Animation, SpriteSheetHandle, TextureInfo};
 
 use num::traits::Zero;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Position {
     pub x: f32,
     pub y: f32,

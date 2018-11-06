@@ -3,6 +3,7 @@
 #![feature(drain_filter)]
 #![feature(dbg_macro)]
 #![feature(nll)]
+#![feature(core_intrinsics)]
 
 #[macro_use]
 extern crate glium;
@@ -12,6 +13,9 @@ extern crate ecs;
 
 #[macro_use]
 extern crate lazy_static;
+
+#[macro_use]
+extern crate serde_derive;
 
 use nalgebra as na;
 use ncollide2d as nc;

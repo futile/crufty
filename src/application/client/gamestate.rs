@@ -1,17 +1,17 @@
 use std::path::Path;
-use std::time::Duration;
 use std::thread;
+use std::time::Duration;
 
-use glium::{self};
+use ecs::{system::InteractSystem, World};
+use glium;
 use glium::glutin::{self, ElementState, VirtualKeyCode};
-use ecs::{World, system::InteractSystem};
 
 use crate::application::{client::ClientTransition, InputManager};
-use crate::net;
-use crate::util::State;
-use crate::systems::{LevelSystems, RenderSystem};
-use crate::game::ResourceStore;
 use crate::components::LevelComponents;
+use crate::game::ResourceStore;
+use crate::net;
+use crate::systems::{LevelSystems, RenderSystem};
+use crate::util::State;
 
 pub struct GameState {
     display: glium::Display,

@@ -1,12 +1,14 @@
-use std::net::Ipv4Addr;
-use std::time::{Instant, Duration};
 use std::collections::HashMap;
+use std::intrinsics::type_id;
+use std::net::Ipv4Addr;
+use std::time::{Duration, Instant};
 
-use ecs::{World, Entity};
+use bincode::serialize_into;
+use ecs::{Entity, World};
 
-use enet::{self, Enet, Event};
+use enet::{self, Enet, Event, Packet, PacketMode, PeerState};
 
-use crate::components::{Position};
+use crate::components::Position;
 use crate::systems::LevelSystems;
 
 lazy_static! {
@@ -14,7 +16,8 @@ lazy_static! {
 }
 
 const PORT: u16 = 9001;
-const RESEND_DURATION: Duration = Duration::from_millis(100);
+const RESEND_DURATION: Duration = Duration::from_secs(10);
+const UPDATE_CHANNEL_ID: u8 = 1;
 
 type UpdateMap<C> = HashMap<Entity, (C, u64, Instant)>;
 
@@ -29,16 +32,19 @@ impl PeerData {
 
         for en in world.entities() {
             if let Some(pos) = world.position.get(&en) {
-                res.positions.insert(**en, (pos, world.services.simulation_time, Instant::now()));
+                res.positions
+                    .insert(**en, (pos, world.services.simulation_time, Instant::now()));
             }
-        };
+        }
 
         return res;
     }
 
-    fn serialize_updates(&mut self) -> Vec<u8> {
+    fn serialize_updates(&mut self) -> Option<Vec<u8>> {
         let now = Instant::now();
-        // let mut data = vec![];
+        let mut data = vec![];
+
+        let mut tag_written = false;
 
         for (e, pos_update) in &mut self.positions {
             if pos_update.2 > now {
@@ -46,9 +52,28 @@ impl PeerData {
             }
 
             pos_update.2 = now + RESEND_DURATION;
-        };
 
-        unimplemented!()
+            if !tag_written {
+                tag_written = true;
+                serialize_into(&mut data, unsafe { &type_id::<Position>() }).unwrap();
+            } else {
+                serialize_into(&mut data, &true).unwrap();
+            }
+
+            serialize_into(&mut data, &e.id()).unwrap();
+            serialize_into(&mut data, &pos_update.1).unwrap();
+            serialize_into(&mut data, &pos_update.0).unwrap();
+        }
+
+        if tag_written {
+            serialize_into(&mut data, &false).unwrap();
+        }
+
+        if data.is_empty() {
+            None
+        } else {
+            Some(data)
+        }
     }
 }
 
@@ -80,7 +105,9 @@ impl Host {
             dbg!(&event);
 
             match event {
-                Event::Connect(ref mut peer) => peer.set_data(Some(PeerData::new_from_world(world))),
+                Event::Connect(ref mut peer) => {
+                    peer.set_data(Some(PeerData::new_from_world(world)))
+                }
                 _ => (),
             }
         };
@@ -93,7 +120,21 @@ impl Host {
 
         while let Some(event) = self.enet_host.check_events().unwrap() {
             loop_body(event, world);
-        };
+        }
+
+        for mut peer in self.enet_host.peers() {
+            if peer.state() != PeerState::Connected {
+                continue;
+            }
+
+            if let Some(update_data) = peer.data_mut().unwrap().serialize_updates() {
+                peer.send_packet(
+                    Packet::new(&update_data, PacketMode::UnreliableUnsequenced).unwrap(),
+                    UPDATE_CHANNEL_ID,
+                )
+                .unwrap();
+            }
+        }
     }
 }
 
