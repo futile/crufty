@@ -36,6 +36,7 @@ pub struct LevelServices {
     pub gravity: f32,
     pub collision_world: CollisionWorld,
     pub changed_flags: LevelChangedFlags,
+    pub simulation_time: u64,
 }
 
 impl Default for LevelServices {
@@ -46,6 +47,7 @@ impl Default for LevelServices {
             gravity: 150.0,
             collision_world: CollisionWorld::new(),
             changed_flags: Default::default(),
+            simulation_time: 0,
         }
     }
 }

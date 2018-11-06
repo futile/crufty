@@ -142,16 +142,16 @@ impl State<ClientTransition> for GameState {
                 }
             }
 
-            input_manager.dispatch(&mut world.systems.keyboard_system.inner);
-            input_manager.end_frame();
+            // input_manager.dispatch(&mut world.systems.keyboard_system.inner);
+            // input_manager.end_frame();
 
-            while lag_behind_simulation >= NS_PER_UPDATE {
-                let _ = hprof::enter("world-update");
-                world.update();
-                lag_behind_simulation -= NS_PER_UPDATE;
-            }
+            // while lag_behind_simulation >= NS_PER_UPDATE {
+            //     let _ = hprof::enter("world-update");
+            //     world.update();
+            //     lag_behind_simulation -= NS_PER_UPDATE;
+            // }
 
-            process!(world, intent_system);
+            // process!(world, intent_system);
             process!(world, render_system);
 
             self.client.maintain(&mut world);

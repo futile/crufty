@@ -463,6 +463,7 @@ impl State<ServerTransition> for GameState {
             while lag_behind_simulation >= NS_PER_UPDATE {
                 let _ = hprof::enter("world-update");
                 world.update();
+                world.services.simulation_time += 1;
                 lag_behind_simulation -= NS_PER_UPDATE;
             }
 

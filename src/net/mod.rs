@@ -1,11 +1,12 @@
 use std::net::Ipv4Addr;
-use std::time::Instant;
+use std::time::{Instant, Duration};
+use std::collections::HashMap;
 
-use ecs::World;
+use ecs::{World, Entity};
 
 use enet::{self, Enet, Event};
 
-use crate::components::LevelChangedFlags;
+use crate::components::{Position};
 use crate::systems::LevelSystems;
 
 lazy_static! {
@@ -13,10 +14,42 @@ lazy_static! {
 }
 
 const PORT: u16 = 9001;
+const RESEND_DURATION: Duration = Duration::from_millis(100);
+
+type UpdateMap<C> = HashMap<Entity, (C, u64, Instant)>;
 
 #[derive(Debug, Default)]
 struct PeerData {
-    changes: LevelChangedFlags,
+    positions: UpdateMap<Position>,
+}
+
+impl PeerData {
+    fn new_from_world(world: &mut World<LevelSystems>) -> PeerData {
+        let mut res = PeerData::default();
+
+        for en in world.entities() {
+            if let Some(pos) = world.position.get(&en) {
+                res.positions.insert(**en, (pos, world.services.simulation_time, Instant::now()));
+            }
+        };
+
+        return res;
+    }
+
+    fn serialize_updates(&mut self) -> Vec<u8> {
+        let now = Instant::now();
+        // let mut data = vec![];
+
+        for (e, pos_update) in &mut self.positions {
+            if pos_update.2 > now {
+                continue;
+            }
+
+            pos_update.2 = now + RESEND_DURATION;
+        };
+
+        unimplemented!()
+    }
 }
 
 pub struct Host {
@@ -43,24 +76,24 @@ impl Host {
     }
 
     pub fn maintain(&mut self, world: &mut World<LevelSystems>) {
-        fn loop_body(mut event: Event<'_, PeerData>) {
+        fn loop_body(mut event: Event<'_, PeerData>, world: &mut World<LevelSystems>) {
             dbg!(&event);
 
             match event {
-                Event::Connect(ref mut peer) => peer.set_data(Some(PeerData::default())),
+                Event::Connect(ref mut peer) => peer.set_data(Some(PeerData::new_from_world(world))),
                 _ => (),
             }
         };
 
-        if let Some(mut event) = self.enet_host.service(0).unwrap() {
-            loop_body(event);
+        if let Some(event) = self.enet_host.service(0).unwrap() {
+            self.last_maintain = Instant::now();
+
+            loop_body(event, world);
         };
 
-        while let Some(mut event) = self.enet_host.check_events().unwrap() {
-            loop_body(event);
+        while let Some(event) = self.enet_host.check_events().unwrap() {
+            loop_body(event, world);
         };
-
-        self.last_maintain = Instant::now();
     }
 }
 
