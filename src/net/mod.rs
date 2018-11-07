@@ -3,7 +3,7 @@ use std::intrinsics::type_id;
 use std::net::Ipv4Addr;
 use std::time::{Duration, Instant};
 
-use bincode::serialize_into;
+use bincode::{serialize_into, deserialize_from};
 use ecs::{Entity, World};
 
 use enet::{self, Enet, Event, Packet, PacketMode, PeerState};
@@ -16,7 +16,7 @@ lazy_static! {
 }
 
 const PORT: u16 = 9001;
-const RESEND_DURATION: Duration = Duration::from_secs(10);
+const RESEND_DURATION: Duration = Duration::from_millis(100);
 const UPDATE_CHANNEL_ID: u8 = 1;
 
 type UpdateMap<C> = HashMap<Entity, (C, u64, Instant)>;
@@ -46,7 +46,7 @@ impl PeerData {
 
         let mut tag_written = false;
 
-        for (e, pos_update) in &mut self.positions {
+        for (e, mut pos_update) in self.positions.drain() {
             if pos_update.2 > now {
                 continue;
             }
@@ -128,6 +128,7 @@ impl Host {
             }
 
             if let Some(update_data) = peer.data_mut().unwrap().serialize_updates() {
+                println!("sending {} bytes", update_data.len());
                 peer.send_packet(
                     Packet::new(&update_data, PacketMode::UnreliableUnsequenced).unwrap(),
                     UPDATE_CHANNEL_ID,
@@ -157,9 +158,44 @@ impl Client {
         Client { enet_host }
     }
 
+    fn deserialize_updates(data: &[u8], world: &mut World<LevelSystems>) {
+        let mut reader = std::io::Cursor::new(data);
+
+        while reader.get_ref().len() - (reader.position() as usize) > 0 {
+            let tag: u64 = deserialize_from(&mut reader).unwrap();
+
+            loop {
+                let e_id: u64 = deserialize_from(&mut reader).unwrap();
+                let sim_ts: u64 = deserialize_from(&mut reader).unwrap();
+
+                let pos_type_id = unsafe { type_id::<Position>() };
+                match tag {
+                    id if id == pos_type_id => {
+                        let pos: Position = deserialize_from(&mut reader).unwrap();
+                        println!("received 'Position' update for entity {} (at {}): {:#?}", e_id, sim_ts, pos);
+                    }
+                    _ => panic!("unexpected type_id: {}", tag),
+                }
+
+                let more: bool = deserialize_from(&mut reader).unwrap();
+                if !more {
+                    break;
+                }
+            }
+        }
+    }
+
     pub fn maintain(&mut self, world: &mut World<LevelSystems>) {
-        if let Some(event) = self.enet_host.service(0).unwrap() {
-            dbg!(event);
+        let maybe_event = self.enet_host.service(0).unwrap() ;
+        if let Some(event) = maybe_event {
+            if let Event::Receive { channel_id: UPDATE_CHANNEL_ID, ref packet, .. } = event {
+                let data = packet.data();
+                println!("received {} bytes updates", data.len());
+                assert!(data.len() > 0);
+                Client::deserialize_updates(data, world);
+            } else {
+                dbg!(event);
+            }
         }
     }
 
