@@ -22,6 +22,10 @@ impl EntityProcess for VelocitySystem {
         for e in entities {
             let velocity = data.velocity[e];
 
+            if velocity.vx == 0.0 && velocity.vy == 0.0 {
+                continue;
+            }
+
             if let Some(mut position) = data.position.get(&e) {
                 data.velocity[e].last_pos = position;
 

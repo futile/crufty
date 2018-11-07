@@ -132,10 +132,7 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
     fn move_entity(&mut self, eod: EntityOrData, new_pos: &Position, warp: bool) {
         let (mut coll_shape, last_pos) = match eod.with_entity_data(self, |en, comps| {
             let coll_shape = comps.collision_shape[en].clone();
-            let last_pos = match warp {
-                true => None,
-                false => comps.velocity.borrow(&en).map(|vel| vel.last_pos),
-            };
+            let last_pos = comps.velocity.borrow(&en).map(|vel| vel.last_pos);
 
             (coll_shape, last_pos)
         }) {
@@ -153,18 +150,27 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
             eod.as_entity(),
             &coll_shape,
             &new_pos,
-            last_pos.as_ref(),
+            if warp { None } else { last_pos.as_ref() },
             &mut colls,
         );
 
-        eod.with_entity_data(self, move |en, comps| {
-            comps.position[en] = resolved_pos;
-        });
+        let mut pos_changed = true;
+        if let Some(last_pos) = last_pos {
+            if resolved_pos == last_pos {
+                pos_changed = false;
+            }
+        }
 
-        self.services
-            .changed_flags
-            .position
-            .insert(eod.as_entity(), resolved_pos);
+        if pos_changed {
+            eod.with_entity_data(self, move |en, comps| {
+                comps.position[en] = resolved_pos;
+            });
+
+            self.services
+                .changed_flags
+                .position
+                .insert(eod.as_entity(), resolved_pos);
+        }
 
         use self::events::CollisionEnded;
         let mut ended: SmallVec<[CollisionEnded; 2]> = SmallVec::new();

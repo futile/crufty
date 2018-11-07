@@ -53,6 +53,7 @@ impl PeerData {
 
         let mut tag_written = false;
 
+        // TODO remove drain() and instead send responses from client
         for (e, mut pos_update) in self.positions.drain() {
             if pos_update.2 > now {
                 continue;
