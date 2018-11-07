@@ -8,7 +8,7 @@ use ecs::{Entity, World};
 
 use enet::{self, Enet, Event, Packet, PacketMode, PeerState};
 
-use crate::components::Position;
+use crate::components::{Position, LevelChangedFlags};
 use crate::systems::LevelSystems;
 
 lazy_static! {
@@ -38,6 +38,13 @@ impl PeerData {
         }
 
         return res;
+    }
+
+    fn update_from_changes(&mut self, world: &mut World<LevelSystems>) {
+        let sim_time = world.services.simulation_time;
+        for (e, pos) in world.services.changed_flags.position.drain() {
+            self.positions.insert(e, (pos, sim_time, Instant::now()));
+        }
     }
 
     fn serialize_updates(&mut self) -> Option<Vec<u8>> {
@@ -127,7 +134,10 @@ impl Host {
                 continue;
             }
 
-            if let Some(update_data) = peer.data_mut().unwrap().serialize_updates() {
+            let data = peer.data_mut().unwrap();
+            data.update_from_changes(world);
+
+            if let Some(update_data) = data.serialize_updates() {
                 println!("sending {} bytes", update_data.len());
                 peer.send_packet(
                     Packet::new(&update_data, PacketMode::UnreliableUnsequenced).unwrap(),
