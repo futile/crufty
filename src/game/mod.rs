@@ -23,7 +23,7 @@ impl From<u16> for PlayerId {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum Interaction {
     WarpInRoom { x: f32, y: f32 },
 }

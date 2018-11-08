@@ -1,17 +1,17 @@
 use std::collections::HashMap;
 use std::intrinsics::type_id;
-use std::net::Ipv4Addr;
-use std::time::{Instant};
 use std::io::Write;
+use std::net::Ipv4Addr;
+use std::time::Instant;
 
-use bincode::{serialize_into};
+use bincode::serialize_into;
 use ecs::{Entity, World};
 
 use enet::{self, Event, Packet, PacketMode, PeerState};
 
-use crate::components::{Position};
+use super::{ENET, PORT, RESEND_DURATION, UPDATE_CHANNEL_ID};
+use crate::components::*;
 use crate::systems::LevelSystems;
-use super::{PORT, RESEND_DURATION, UPDATE_CHANNEL_ID, ENET};
 
 trait UpdateMapFuncs {
     fn serialize_into(&mut self, out: &mut impl Write);
@@ -19,7 +19,10 @@ trait UpdateMapFuncs {
 
 type UpdateMap<C> = HashMap<Entity, (C, u64, Instant)>;
 
-impl<C> UpdateMapFuncs for UpdateMap<C> where C: 'static + serde::Serialize {
+impl<C> UpdateMapFuncs for UpdateMap<C>
+where
+    C: 'static + serde::Serialize,
+{
     fn serialize_into(&mut self, mut out: &mut impl Write) {
         let now = Instant::now();
 
@@ -53,18 +56,44 @@ impl<C> UpdateMapFuncs for UpdateMap<C> where C: 'static + serde::Serialize {
 
 #[derive(Debug, Default)]
 struct PeerData {
-    positions: UpdateMap<Position>,
+    position: UpdateMap<Position>,
+    velocity: UpdateMap<Velocity>,
+    jump: UpdateMap<Jump>,
+    gravity: UpdateMap<Gravity>,
+    facing: UpdateMap<Facing>,
+    intents: UpdateMap<Intents>,
+    interactor: UpdateMap<Interactor>,
+}
+
+macro_rules! new_from_world_inner {
+    ($name:ident, $res:ident, $world:ident, $en:ident, $sim_time:ident, $now: ident) => {
+        if let Some(c) = $world.$name.get(&$en) {
+            $res.$name.insert(**$en, (c, $sim_time, $now));
+        }
+    };
+}
+
+macro_rules! update_from_changes_inner {
+    ($name:ident, $self:ident, $world:ident, $sim_time:ident, $now: ident) => {
+        for (e, c) in $world.services.changed_flags.$name.drain() {
+            $self.$name.insert(e, (c, $sim_time, $now));
+        }
+    };
 }
 
 impl PeerData {
     fn new_from_world(world: &mut World<LevelSystems>) -> PeerData {
         let mut res = PeerData::default();
 
+        let sim_time = world.services.simulation_time;
+        let now = Instant::now();
         for en in world.entities() {
-            if let Some(pos) = world.position.get(&en) {
-                res.positions
-                    .insert(**en, (pos, world.services.simulation_time, Instant::now()));
-            }
+            new_from_world_inner!(position  , res, world, en, sim_time, now);
+            new_from_world_inner!(jump      , res, world, en, sim_time, now);
+            new_from_world_inner!(gravity   , res, world, en, sim_time, now);
+            new_from_world_inner!(facing    , res, world, en, sim_time, now);
+            new_from_world_inner!(intents   , res, world, en, sim_time, now);
+            new_from_world_inner!(interactor, res, world, en, sim_time, now);
         }
 
         return res;
@@ -72,15 +101,26 @@ impl PeerData {
 
     fn update_from_changes(&mut self, world: &mut World<LevelSystems>) {
         let sim_time = world.services.simulation_time;
-        for (e, pos) in world.services.changed_flags.position.drain() {
-            self.positions.insert(e, (pos, sim_time, Instant::now()));
-        }
+        let now = Instant::now();
+        update_from_changes_inner!(position  , self, world, sim_time, now);
+        update_from_changes_inner!(velocity  , self, world, sim_time, now);
+        update_from_changes_inner!(jump      , self, world, sim_time, now);
+        update_from_changes_inner!(gravity   , self, world, sim_time, now);
+        update_from_changes_inner!(facing    , self, world, sim_time, now);
+        update_from_changes_inner!(intents   , self, world, sim_time, now);
+        update_from_changes_inner!(interactor, self, world, sim_time, now);
     }
 
     fn serialize_updates(&mut self) -> Option<Vec<u8>> {
         let mut data = vec![];
 
-        self.positions.serialize_into(&mut data);
+        self.position.serialize_into(&mut data);
+        self.velocity.serialize_into(&mut data);
+        self.jump.serialize_into(&mut data);
+        self.gravity.serialize_into(&mut data);
+        self.facing.serialize_into(&mut data);
+        self.intents.serialize_into(&mut data);
+        self.interactor.serialize_into(&mut data);
 
         if data.is_empty() {
             None
@@ -144,7 +184,6 @@ impl Server {
             data.update_from_changes(world);
 
             if let Some(update_data) = data.serialize_updates() {
-                println!("sending {} bytes", update_data.len());
                 peer.send_packet(
                     Packet::new(&update_data, PacketMode::UnreliableUnsequenced).unwrap(),
                     UPDATE_CHANNEL_ID,

@@ -31,7 +31,11 @@ impl Position {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+// Although vx and vy are always 0.0 at the end of an update,
+// last_pos changes, and therefore we simply transmit the whole thing.
+// XXX this is probably broken right now, because we don't always transmit it when last_pos changes...
+// TODO impl Serialize manually, only transmit last_pos.
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Velocity {
     pub vx: f32,
     pub vy: f32,
@@ -56,14 +60,14 @@ impl Movement {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum JumpState {
     Idle,
     Rising,
     MidairIdle,
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, Serialize, Deserialize)]
 pub struct Jump {
     pub state: JumpState,
     pub jump_time_remaining: f32,
@@ -78,7 +82,7 @@ impl Jump {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Gravity {
     pub f: f32,
 }
@@ -89,7 +93,7 @@ impl Gravity {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CollisionType {
     Solid,
     Trigger,
@@ -197,7 +201,7 @@ impl OngoingCollisions {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Interactor;
 
 impl Interactor {
@@ -206,12 +210,12 @@ impl Interactor {
     }
 }
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct InteractionPossibility {
     pub interaction: game::Interaction,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SpriteLayer {
     Background,
     Foreground,
@@ -249,7 +253,7 @@ pub struct SpriteSheetAnimation {
     pub frame_time_remaining: f32,
 }
 
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Facing {
     Left,
     Right,

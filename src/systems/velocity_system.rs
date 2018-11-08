@@ -26,7 +26,7 @@ impl EntityProcess for VelocitySystem {
                 continue;
             }
 
-            if let Some(mut position) = data.position.get(&e) {
+            if let Some(mut position) = data.position.get(&e).clone() {
                 data.velocity[e].last_pos = position;
 
                 position.x += velocity.vx;
@@ -37,11 +37,6 @@ impl EntityProcess for VelocitySystem {
 
             data.velocity[e].vx = 0.0;
             data.velocity[e].vy = 0.0;
-
-            data.services
-                .changed_flags
-                .velocity
-                .insert(**e, data.velocity[e].clone());
         }
     }
 }
