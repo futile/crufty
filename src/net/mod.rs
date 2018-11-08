@@ -85,13 +85,13 @@ impl PeerData {
     }
 }
 
-pub struct Host {
+pub struct Server {
     enet_host: enet::Host<PeerData>,
     last_maintain: Instant,
 }
 
-impl Host {
-    pub fn new() -> Host {
+impl Server {
+    pub fn new() -> Server {
         let enet_host = ENET
             .create_host(
                 Some(&enet::Address::new(Ipv4Addr::LOCALHOST, PORT)),
@@ -102,7 +102,7 @@ impl Host {
             )
             .unwrap();
 
-        Host {
+        Server {
             enet_host,
             last_maintain: Instant::now(),
         }

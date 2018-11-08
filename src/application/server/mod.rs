@@ -9,7 +9,7 @@ use self::gamestate::GameState;
 
 pub enum ServerTransition {
     Startup,
-    StartGame(glium::Display, glutin::EventsLoop, net::Host),
+    StartGame(glium::Display, glutin::EventsLoop, net::Server),
     Shutdown,
     TerminateApplication,
 }
@@ -39,7 +39,7 @@ impl State<ServerTransition> for StartupState {
 
         let display = glium::Display::new(window, context, &events_loop).unwrap();
 
-        let host = net::Host::new();
+        let host = net::Server::new();
 
         ServerTransition::StartGame(display, events_loop, host)
     }

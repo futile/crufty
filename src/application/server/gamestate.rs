@@ -34,14 +34,14 @@ use crate::nc::shape::Cuboid;
 pub struct GameState {
     display: glium::Display,
     events_loop: glutin::EventsLoop,
-    host: net::Host,
+    host: net::Server,
 }
 
 impl GameState {
     pub fn new(
         display: glium::Display,
         events_loop: glutin::EventsLoop,
-        host: net::Host,
+        host: net::Server,
     ) -> GameState {
         GameState {
             display,
