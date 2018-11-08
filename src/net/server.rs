@@ -19,30 +19,30 @@ trait UpdateMapFuncs {
 
 type UpdateMap<C> = HashMap<Entity, (C, u64, Instant)>;
 
-impl UpdateMapFuncs for UpdateMap<Position> {
+impl<C> UpdateMapFuncs for UpdateMap<C> where C: 'static + serde::Serialize {
     fn serialize_into(&mut self, mut out: &mut impl Write) {
         let now = Instant::now();
 
         let mut tag_written = false;
 
         // TODO remove drain() and instead send responses from client
-        for (e, mut pos_update) in self.drain() {
-            if pos_update.2 > now {
+        for (e, mut update) in self.drain() {
+            if update.2 > now {
                 continue;
             }
 
-            pos_update.2 = now + RESEND_DURATION;
+            update.2 = now + RESEND_DURATION;
 
             if !tag_written {
                 tag_written = true;
-                serialize_into(&mut out, unsafe { &type_id::<Position>() }).unwrap();
+                serialize_into(&mut out, unsafe { &type_id::<C>() }).unwrap();
             } else {
                 serialize_into(&mut out, &true).unwrap();
             }
 
             serialize_into(&mut out, &e.id()).unwrap();
-            serialize_into(&mut out, &pos_update.1).unwrap();
-            serialize_into(&mut out, &pos_update.0).unwrap();
+            serialize_into(&mut out, &update.1).unwrap();
+            serialize_into(&mut out, &update.0).unwrap();
         }
 
         if tag_written {
