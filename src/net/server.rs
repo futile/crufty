@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::intrinsics::type_id;
 use std::net::Ipv4Addr;
 use std::time::{Instant};
+use std::io::Write;
 
 use bincode::{serialize_into};
 use ecs::{Entity, World};
@@ -12,7 +13,43 @@ use crate::components::{Position};
 use crate::systems::LevelSystems;
 use super::{PORT, RESEND_DURATION, UPDATE_CHANNEL_ID, ENET};
 
+trait UpdateMapFuncs {
+    fn serialize_into(&mut self, out: &mut impl Write);
+}
+
 type UpdateMap<C> = HashMap<Entity, (C, u64, Instant)>;
+
+impl UpdateMapFuncs for UpdateMap<Position> {
+    fn serialize_into(&mut self, mut out: &mut impl Write) {
+        let now = Instant::now();
+
+        let mut tag_written = false;
+
+        // TODO remove drain() and instead send responses from client
+        for (e, mut pos_update) in self.drain() {
+            if pos_update.2 > now {
+                continue;
+            }
+
+            pos_update.2 = now + RESEND_DURATION;
+
+            if !tag_written {
+                tag_written = true;
+                serialize_into(&mut out, unsafe { &type_id::<Position>() }).unwrap();
+            } else {
+                serialize_into(&mut out, &true).unwrap();
+            }
+
+            serialize_into(&mut out, &e.id()).unwrap();
+            serialize_into(&mut out, &pos_update.1).unwrap();
+            serialize_into(&mut out, &pos_update.0).unwrap();
+        }
+
+        if tag_written {
+            serialize_into(&mut out, &false).unwrap();
+        }
+    }
+}
 
 #[derive(Debug, Default)]
 struct PeerData {
@@ -41,34 +78,9 @@ impl PeerData {
     }
 
     fn serialize_updates(&mut self) -> Option<Vec<u8>> {
-        let now = Instant::now();
         let mut data = vec![];
 
-        let mut tag_written = false;
-
-        // TODO remove drain() and instead send responses from client
-        for (e, mut pos_update) in self.positions.drain() {
-            if pos_update.2 > now {
-                continue;
-            }
-
-            pos_update.2 = now + RESEND_DURATION;
-
-            if !tag_written {
-                tag_written = true;
-                serialize_into(&mut data, unsafe { &type_id::<Position>() }).unwrap();
-            } else {
-                serialize_into(&mut data, &true).unwrap();
-            }
-
-            serialize_into(&mut data, &e.id()).unwrap();
-            serialize_into(&mut data, &pos_update.1).unwrap();
-            serialize_into(&mut data, &pos_update.0).unwrap();
-        }
-
-        if tag_written {
-            serialize_into(&mut data, &false).unwrap();
-        }
+        self.positions.serialize_into(&mut data);
 
         if data.is_empty() {
             None
