@@ -22,7 +22,7 @@ struct Vertex {
     tex_coords: [f32; 2],
 }
 
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug, Serialize, Deserialize)]
 pub struct WorldViewport {
     pub width: f32,
     pub height: f32,

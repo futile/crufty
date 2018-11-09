@@ -4,6 +4,7 @@ use enet::{Enet};
 
 mod server;
 mod client;
+pub mod impls;
 
 pub use self::server::Server;
 pub use self::client::Client;

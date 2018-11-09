@@ -259,9 +259,10 @@ pub enum Facing {
     Right,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Camera {
     pub world_viewport: WorldViewport,
+    #[serde(with = "crate::net::impls::aabb")]
     pub screen_viewport: AABB<f32>,
     pub resize_world_to_window: bool,
 }
