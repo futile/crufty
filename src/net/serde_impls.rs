@@ -1,6 +1,7 @@
 pub mod aabb {
     use crate::nc::bounding_volume::AABB;
     use serde::{Deserializer, Serializer};
+    use serde::ser::SerializeStruct;
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<AABB<f32>, D::Error>
     where
@@ -13,6 +14,9 @@ pub mod aabb {
     where
         S: Serializer,
     {
-        panic!()
+        let mut state = serializer.serialize_struct("AABB", 2)?;
+        state.serialize_field("mins", aabb.mins());
+        state.serialize_field("maxs", aabb.maxs());
+        state.end()
     }
 }
