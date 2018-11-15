@@ -57,6 +57,7 @@ where
 #[derive(Debug, Default)]
 struct PeerData {
     position: UpdateMap<Position>,
+    camera: UpdateMap<Camera>,
     velocity: UpdateMap<Velocity>,
     jump: UpdateMap<Jump>,
     gravity: UpdateMap<Gravity>,
@@ -89,6 +90,7 @@ impl PeerData {
         let now = Instant::now();
         for en in world.entities() {
             new_from_world_inner!(position  , res, world, en, sim_time, now);
+            new_from_world_inner!(camera    , res, world, en, sim_time, now);
             new_from_world_inner!(jump      , res, world, en, sim_time, now);
             new_from_world_inner!(gravity   , res, world, en, sim_time, now);
             new_from_world_inner!(facing    , res, world, en, sim_time, now);
@@ -103,6 +105,7 @@ impl PeerData {
         let sim_time = world.services.simulation_time;
         let now = Instant::now();
         update_from_changes_inner!(position  , self, world, sim_time, now);
+        update_from_changes_inner!(camera    , self, world, sim_time, now);
         update_from_changes_inner!(velocity  , self, world, sim_time, now);
         update_from_changes_inner!(jump      , self, world, sim_time, now);
         update_from_changes_inner!(gravity   , self, world, sim_time, now);
@@ -115,6 +118,7 @@ impl PeerData {
         let mut data = vec![];
 
         self.position.serialize_into(&mut data);
+        self.camera.serialize_into(&mut data);
         self.velocity.serialize_into(&mut data);
         self.jump.serialize_into(&mut data);
         self.gravity.serialize_into(&mut data);
