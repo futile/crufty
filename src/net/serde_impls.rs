@@ -1,22 +1,33 @@
 pub mod aabb {
+    use crate::na::Point2;
     use crate::nc::bounding_volume::AABB;
-    use serde::{Deserializer, Serializer};
+    use serde::{Deserializer, Serializer, Serialize, Deserialize};
     use serde::ser::SerializeStruct;
+
+    #[derive(Serialize, Deserialize)]
+    struct Bounds {
+        mins: Point2<f32>,
+        maxs: Point2<f32>,
+    }
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<AABB<f32>, D::Error>
     where
         D: Deserializer<'de>,
     {
-        panic!()
+        let Bounds {mins, maxs} = Bounds::deserialize(deserializer)?;
+
+        Ok(AABB::new(mins, maxs))
     }
 
     pub fn serialize<S>(aabb: &AABB<f32>, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
-        let mut state = serializer.serialize_struct("AABB", 2)?;
-        state.serialize_field("mins", aabb.mins());
-        state.serialize_field("maxs", aabb.maxs());
-        state.end()
+        let bounds = Bounds {
+            mins: *aabb.mins(),
+            maxs: *aabb.maxs(),
+        };
+
+        bounds.serialize(serializer)
     }
 }

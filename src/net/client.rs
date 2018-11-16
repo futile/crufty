@@ -22,6 +22,7 @@ const GRAVITY_ID: u64 = unsafe { type_id::<Gravity>() };
 const FACING_ID: u64 = unsafe { type_id::<Facing>() };
 const INTENTS_ID: u64 = unsafe { type_id::<Intents>() };
 const INTERACTOR_ID: u64 = unsafe { type_id::<Interactor>() };
+const CAMERA_ID: u64 = unsafe { type_id::<Camera>() };
 
 impl Client {
     pub fn new() -> Client {
@@ -96,6 +97,13 @@ impl Client {
                         println!(
                             "received 'Interactor' update for entity {} (at {}): {:#?}",
                             e_id, sim_ts, interactor
+                        );
+                    }
+                    CAMERA_ID => {
+                        let camera: Camera = deserialize_from(&mut reader).unwrap();
+                        println!(
+                            "received 'Camera' update for entity {} (at {}): {:#?}",
+                            e_id, sim_ts, camera
                         );
                     }
                     _ => panic!("unexpected type_id: {}", tag),
