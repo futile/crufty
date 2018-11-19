@@ -99,11 +99,13 @@ pub enum CollisionType {
     Trigger,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CollisionShape {
     coll_type: CollisionType,
+    #[serde(with = "crate::net::serde_impls::cuboid")]
     r_x: Cuboid<f32>,
     off_x: Vector2<f32>,
+    #[serde(with = "crate::net::serde_impls::cuboid")]
     r_y: Cuboid<f32>,
     off_y: Vector2<f32>,
     pub ongoing_collisions: OngoingCollisions,
@@ -166,7 +168,7 @@ impl CollisionShape {
     }
 }
 
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OngoingCollisions {
     pub others: SmallVec<[Entity; 4]>,
 }
