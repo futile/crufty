@@ -170,6 +170,7 @@ impl CollisionShape {
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct OngoingCollisions {
+    #[serde(with = "crate::net::serde_impls::smallvec")]
     pub others: SmallVec<[Entity; 4]>,
 }
 
