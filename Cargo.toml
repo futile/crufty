@@ -16,7 +16,7 @@ toml = "0.4.8"
 rand = "0.6.0"
 typemap = "0.3.3"
 glium = "0.22.0"
-ncollide2d = "0.17.1"
+ncollide2d = "0.19.2"
 lazy_static = "1.2.0"
 enet = "0.2.0"
 serde = "1.0.80"
@@ -24,7 +24,7 @@ serde_derive = "1.0.80"
 bincode = "1.0.1"
 
 [dependencies.nalgebra]
-version = "0.16.10"
+version = "0.18.0"
 features = ["serde-serialize"]
 
 [dependencies.smallvec]
@@ -32,5 +32,5 @@ version = "0.6.6"
 features = ["serde"]
 
 [patch.crates-io]
-# ecs = { git = "https://github.com/HeroesGrave/ecs-rs.git" }
-ecs = { path = "/home/felix/gits/ecs-rs" }
+ecs = { git = "https://github.com/futile/ecs-rs.git" }
+# ecs = { path = "/home/felix/gits/ecs-rs" }

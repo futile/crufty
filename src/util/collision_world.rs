@@ -9,10 +9,11 @@ use smallvec::SmallVec;
 use crate::nc::bounding_volume::BoundingVolume;
 use crate::nc::bounding_volume::AABB;
 use crate::nc::math::{Point, Vector};
-use crate::nc::partitioning::BoundingVolumeInterferencesCollector;
+use crate::nc::query::visitors::BoundingVolumeInterferencesCollector;
+use crate::nc::partitioning::BVH;
 use crate::nc::partitioning::{DBVTLeaf, DBVTLeafId, DBVT};
 use crate::nc::query::Ray;
-use crate::nc::query::RayInterferencesCollector;
+use crate::nc::query::visitors::RayInterferencesCollector;
 
 use crate::components::{self, CollisionType, Position};
 
