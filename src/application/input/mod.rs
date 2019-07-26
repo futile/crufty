@@ -34,7 +34,7 @@ impl KeyboardState {
     }
 }
 
-#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub enum InputState {
     PressedThisFrame,
     Pressed,
@@ -65,7 +65,14 @@ pub struct InputManager {
     consumed: HashSet<VirtualKeyCode>,
 }
 
-pub type InputContext = HashMap<(VirtualKeyCode, InputState), InputIntent>;
+#[derive(Copy, Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
+pub struct InputContextKey(
+    #[serde(with = "crate::net::serde_impls::virtual_key_code::VirtualKeyCodeDef")]
+    pub VirtualKeyCode,
+    pub InputState,
+);
+
+pub type InputContext = HashMap<InputContextKey, InputIntent>;
 
 impl InputManager {
     pub fn new() -> InputManager {

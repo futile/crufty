@@ -7,12 +7,12 @@ use std::collections::HashSet;
 
 use super::LevelServices;
 
-use crate::application::{InputState, KeyHandler};
+use crate::application::{InputContextKey, InputState, KeyHandler};
 
 use crate::components::LevelComponents;
 
 pub struct KeyboardSystem {
-    keys: HashSet<(VirtualKeyCode, InputState)>,
+    keys: HashSet<InputContextKey>,
 }
 
 impl KeyboardSystem {
@@ -30,7 +30,7 @@ impl System for KeyboardSystem {
 
 impl KeyHandler for KeyboardSystem {
     fn handle_key(&mut self, state: InputState, key: VirtualKeyCode) -> bool {
-        self.keys.insert((key, state));
+        self.keys.insert(InputContextKey(key, state));
 
         true
     }

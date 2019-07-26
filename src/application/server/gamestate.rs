@@ -10,7 +10,7 @@ use ecs::system::InteractSystem;
 use ecs::{BuildData /* , ModifyData */, World};
 
 use crate::application::{
-    client::ClientTransition, server::ServerTransition, InputIntent, InputManager, InputState,
+    client::ClientTransition, server::ServerTransition, InputIntent, InputManager, InputState, InputContextKey,
 };
 use crate::game::{Interaction, ResourceStore};
 use crate::net;
@@ -145,23 +145,23 @@ impl State<ServerTransition> for GameState {
                 input_context: {
                     let mut inputs = HashMap::new();
                     inputs.insert(
-                        (VirtualKeyCode::O, InputState::PressedThisFrame),
+                        InputContextKey(VirtualKeyCode::O, InputState::PressedThisFrame),
                         InputIntent::PrintDebugMessage,
                     );
                     inputs.insert(
-                        (VirtualKeyCode::Left, InputState::Pressed),
+                        InputContextKey(VirtualKeyCode::Left, InputState::Pressed),
                         InputIntent::MoveLeft,
                     );
                     inputs.insert(
-                        (VirtualKeyCode::Right, InputState::Pressed),
+                        InputContextKey(VirtualKeyCode::Right, InputState::Pressed),
                         InputIntent::MoveRight,
                     );
                     inputs.insert(
-                        (VirtualKeyCode::Space, InputState::Pressed),
+                        InputContextKey(VirtualKeyCode::Space, InputState::Pressed),
                         InputIntent::Jump,
                     );
                     inputs.insert(
-                        (VirtualKeyCode::E, InputState::PressedThisFrame),
+                        InputContextKey(VirtualKeyCode::E, InputState::PressedThisFrame),
                         InputIntent::Interact,
                     );
                     inputs

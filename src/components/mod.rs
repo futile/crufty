@@ -269,7 +269,7 @@ pub struct Camera {
     pub resize_world_to_window: bool,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct KeyboardInput {
     pub input_context: InputContext,
 }
@@ -330,6 +330,7 @@ pub struct LevelChangedFlags {
     pub velocity: HashMap<Entity, Velocity>,
     pub gravity: HashMap<Entity, Gravity>,
     pub camera: HashMap<Entity, Camera>,
+    // we don't want to transmit keyboard_input for now
     pub keyboard_input: HashMap<Entity, KeyboardInput>,
     pub intents: HashMap<Entity, Intents>,
     pub interactor: HashMap<Entity, Interactor>,
