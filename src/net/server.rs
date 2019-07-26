@@ -64,6 +64,7 @@ struct PeerData {
     facing: UpdateMap<Facing>,
     intents: UpdateMap<Intents>,
     interactor: UpdateMap<Interactor>,
+    movement: UpdateMap<Movement>,
 }
 
 macro_rules! new_from_world_inner {
@@ -96,6 +97,7 @@ impl PeerData {
             new_from_world_inner!(facing    , res, world, en, sim_time, now);
             new_from_world_inner!(intents   , res, world, en, sim_time, now);
             new_from_world_inner!(interactor, res, world, en, sim_time, now);
+            new_from_world_inner!(movement  , res, world, en, sim_time, now);
         }
 
         return res;
@@ -112,6 +114,7 @@ impl PeerData {
         update_from_changes_inner!(facing    , self, world, sim_time, now);
         update_from_changes_inner!(intents   , self, world, sim_time, now);
         update_from_changes_inner!(interactor, self, world, sim_time, now);
+        update_from_changes_inner!(movement  , self, world, sim_time, now);
     }
 
     fn serialize_updates(&mut self) -> Option<Vec<u8>> {
@@ -125,6 +128,7 @@ impl PeerData {
         self.facing.serialize_into(&mut data);
         self.intents.serialize_into(&mut data);
         self.interactor.serialize_into(&mut data);
+        self.movement.serialize_into(&mut data);
 
         if data.is_empty() {
             None

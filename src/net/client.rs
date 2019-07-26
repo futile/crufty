@@ -23,6 +23,7 @@ const FACING_ID: u64 = unsafe { type_id::<Facing>() };
 const INTENTS_ID: u64 = unsafe { type_id::<Intents>() };
 const INTERACTOR_ID: u64 = unsafe { type_id::<Interactor>() };
 const CAMERA_ID: u64 = unsafe { type_id::<Camera>() };
+const MOVEMENT_ID: u64 = unsafe { type_id::<Movement>() };
 
 impl Client {
     pub fn new() -> Client {
@@ -104,6 +105,13 @@ impl Client {
                         println!(
                             "received 'Camera' update for entity {} (at {}): {:#?}",
                             e_id, sim_ts, camera
+                        );
+                    }
+                    MOVEMENT_ID => {
+                        let movement: Movement = deserialize_from(&mut reader).unwrap();
+                        println!(
+                            "received 'Movement' update for entity {} (at {}): {:#?}",
+                            e_id, sim_ts, movement
                         );
                     }
                     _ => panic!("unexpected type_id: {}", tag),

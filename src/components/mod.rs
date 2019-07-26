@@ -43,7 +43,7 @@ pub struct Velocity {
     pub last_pos: Position,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Movement {
     pub vel: Vector2<f32>,
     pub max_vel: Vector2<f32>,
