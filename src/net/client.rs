@@ -1,9 +1,10 @@
 use std::intrinsics::type_id;
 use std::net::Ipv4Addr;
+use std::collections::HashMap;
 
 use bincode::deserialize_from;
 
-use ecs::World;
+use ecs::{World, Entity, ModifyData};
 
 use enet::{self, Event};
 
@@ -13,6 +14,7 @@ use crate::systems::LevelSystems;
 
 pub struct Client {
     enet_host: enet::Host<()>,
+    entity_mapping: HashMap<u64, Entity>
 }
 
 const POSITION_ID: u64 = unsafe { type_id::<Position>() };
@@ -24,6 +26,21 @@ const INTENTS_ID: u64 = unsafe { type_id::<Intents>() };
 const INTERACTOR_ID: u64 = unsafe { type_id::<Interactor>() };
 const CAMERA_ID: u64 = unsafe { type_id::<Camera>() };
 const MOVEMENT_ID: u64 = unsafe { type_id::<Movement>() };
+
+macro_rules! deserialize_component {
+    ($component:ident, $component_name:ident, $en:ident, $e_id:ident, $sim_ts:ident, $world:ident, $reader:ident) => (
+        {
+            let v: $component = deserialize_from(&mut $reader).unwrap();
+            println!(
+                "received '{}' update for entity {} (at {}): {:#?}",
+                stringify!($component), $e_id, $sim_ts, v
+            );
+            $world.modify_entity($en, move |e: ModifyData<LevelComponents>, data: &mut LevelComponents| {
+                data.$component_name.insert(&e, v);
+            });
+        }
+    );
+}
 
 impl Client {
     pub fn new() -> Client {
@@ -37,10 +54,13 @@ impl Client {
             )
             .expect("could not create host");
 
-        Client { enet_host }
+        Client {
+            enet_host,
+            entity_mapping: HashMap::new()
+        }
     }
 
-    fn deserialize_updates(data: &[u8], world: &mut World<LevelSystems>) {
+    fn deserialize_updates(&mut self, data: &[u8], world: &mut World<LevelSystems>) {
         let mut reader = std::io::Cursor::new(data);
 
         while reader.get_ref().len() - (reader.position() as usize) > 0 {
@@ -50,70 +70,22 @@ impl Client {
                 let e_id: u64 = deserialize_from(&mut reader).unwrap();
                 let sim_ts: u64 = deserialize_from(&mut reader).unwrap();
 
+                let en = *self.entity_mapping.entry(e_id).or_insert_with(|| {
+                    let e = world.create_entity(());
+                    println!("e_id: {}, e: {:?}", e_id, e);
+                    e
+                });
+
                 match tag {
-                    POSITION_ID => {
-                        let pos: Position = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Position' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, pos
-                        );
-                    }
-                    VELOCITY_ID => {
-                        let vel: Velocity = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Velocity' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, vel
-                        );
-                    }
-                    JUMP_ID => {
-                        let jump: Jump = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Jump' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, jump
-                        );
-                    }
-                    GRAVITY_ID => {
-                        let grav: Gravity = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Gravity' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, grav
-                        );
-                    }
-                    FACING_ID => {
-                        let facing: Facing = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Facing' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, facing
-                        );
-                    }
-                    INTENTS_ID => {
-                        let intents: Intents = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Intents' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, intents
-                        );
-                    }
-                    INTERACTOR_ID => {
-                        let interactor: Interactor = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Interactor' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, interactor
-                        );
-                    }
-                    CAMERA_ID => {
-                        let camera: Camera = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Camera' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, camera
-                        );
-                    }
-                    MOVEMENT_ID => {
-                        let movement: Movement = deserialize_from(&mut reader).unwrap();
-                        println!(
-                            "received 'Movement' update for entity {} (at {}): {:#?}",
-                            e_id, sim_ts, movement
-                        );
-                    }
+                    POSITION_ID => deserialize_component!(Position, position, en, e_id, sim_ts, world, reader),
+                    VELOCITY_ID => deserialize_component!(Velocity, velocity, en, e_id, sim_ts, world, reader),
+                    JUMP_ID => deserialize_component!(Jump, jump, en, e_id, sim_ts, world, reader),
+                    GRAVITY_ID => deserialize_component!(Gravity, gravity, en, e_id, sim_ts, world, reader),
+                    FACING_ID => deserialize_component!(Facing, facing, en, e_id, sim_ts, world, reader),
+                    INTENTS_ID => deserialize_component!(Intents, intents, en, e_id, sim_ts, world, reader),
+                    INTERACTOR_ID => deserialize_component!(Interactor, interactor, en, e_id, sim_ts, world, reader),
+                    CAMERA_ID => deserialize_component!(Camera, camera, en, e_id, sim_ts, world, reader),
+                    MOVEMENT_ID => deserialize_component!(Movement, movement, en, e_id, sim_ts, world, reader),
                     _ => panic!("unexpected type_id: {}", tag),
                 }
 
@@ -126,20 +98,29 @@ impl Client {
     }
 
     pub fn maintain(&mut self, world: &mut World<LevelSystems>) {
-        let maybe_event = self.enet_host.service(0).unwrap();
-        if let Some(event) = maybe_event {
-            if let Event::Receive {
-                channel_id: UPDATE_CHANNEL_ID,
-                ref packet,
-                ..
-            } = event
-            {
-                let data = packet.data();
-                assert!(data.len() > 0);
-                Client::deserialize_updates(data, world);
+        let data = {
+            let maybe_event = self.enet_host.service(0).unwrap();
+            if let Some(event) = maybe_event {
+                if let Event::Receive {
+                    channel_id: UPDATE_CHANNEL_ID,
+                    ref packet,
+                    ..
+                } = event
+                {
+                    let data = packet.data().to_vec();
+                    assert!(data.len() > 0);
+                    Some(data)
+                } else {
+                    dbg!(event);
+                    None
+                }
             } else {
-                dbg!(event);
+                None
             }
+        };
+
+        if let Some(data) = data {
+            self.deserialize_updates(&data, world);
         }
     }
 
