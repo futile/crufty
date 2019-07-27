@@ -90,7 +90,7 @@ impl EntityProcess for JumpSystem {
                 let velocity = &mut data.velocity[e];
                 velocity.vx += delta * vel_change.x;
                 velocity.vy += delta * vel_change.y;
-                velocity.clone()
+                *velocity
             };
 
             data.services.changed_flags.velocity.insert(**e, vel);

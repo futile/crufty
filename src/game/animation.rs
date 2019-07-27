@@ -17,7 +17,7 @@ pub struct Animation {
 impl Animation {
     pub fn create_sprite_info(&self, frame_idx: u8) -> SpriteInfo {
         let mut new_tex_info = self.start_info;
-        new_tex_info.idx += frame_idx as f32;
+        new_tex_info.idx += f32::from(frame_idx);
 
         SpriteInfo {
             width: self.width,
@@ -35,7 +35,7 @@ pub struct SpriteSheet {
 impl SpriteSheet {
     pub fn new(animations: HashMap<String, Animation>) -> SpriteSheet {
         SpriteSheet {
-            animations: animations,
+            animations,
         }
     }
 

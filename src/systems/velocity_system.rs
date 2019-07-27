@@ -26,13 +26,13 @@ impl EntityProcess for VelocitySystem {
                 continue;
             }
 
-            if let Some(mut position) = data.position.get(&e).clone() {
+            if let Some(mut position) = data.position.get(&e) {
                 data.velocity[e].last_pos = position;
 
                 position.x += velocity.vx;
                 position.y += velocity.vy;
 
-                data.move_entity(e.into(), &position, false);
+                data.move_entity(e.into(), position, false);
             }
 
             data.velocity[e].vx = 0.0;

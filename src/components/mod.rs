@@ -21,12 +21,12 @@ pub struct Position {
 }
 
 impl Position {
-    pub fn as_vec(&self) -> Vector2<f32> {
+    pub fn as_vec(self) -> Vector2<f32> {
         Vector2::new(self.x, self.y)
     }
 
     #[allow(unused)]
-    pub fn as_pnt(&self) -> Point2<f32> {
+    pub fn as_pnt(self) -> Point2<f32> {
         Point2::new(self.x, self.y)
     }
 }
@@ -54,8 +54,8 @@ impl Movement {
     pub fn new(max_vel: Vector2<f32>, acc: Vector2<f32>) -> Movement {
         Movement {
             vel: Vector2::zero(),
-            max_vel: max_vel,
-            acc: acc,
+            max_vel,
+            acc,
         }
     }
 }
@@ -73,6 +73,12 @@ pub struct Jump {
     pub jump_time_remaining: f32,
 }
 
+impl Default for Jump {
+    fn default() -> Self {
+        Jump::new()
+    }
+}
+
 impl Jump {
     pub fn new() -> Jump {
         Jump {
@@ -85,6 +91,12 @@ impl Jump {
 #[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Gravity {
     pub f: f32,
+}
+
+impl Default for Gravity {
+    fn default() -> Self {
+        Gravity::new()
+    }
 }
 
 impl Gravity {
@@ -130,9 +142,9 @@ impl CollisionShape {
         CollisionShape {
             coll_type: collision_type,
             r_x: rect_x,
-            off_x: off_x,
+            off_x,
             r_y: rect_y,
-            off_y: off_y,
+            off_y,
             ongoing_collisions: Default::default(),
         }
     }
@@ -178,13 +190,13 @@ impl OngoingCollisions {
         Default::default()
     }
 
-    pub fn contains(&self, other: &Entity) -> bool {
-        self.others.contains(other)
+    pub fn contains(&self, other: Entity) -> bool {
+        self.others.contains(&other)
     }
 
     /// Adds the given entity to the set of ongoing collisions, and returns true if `other` was not already contained
     pub fn add(&mut self, other: Entity) -> bool {
-        if !self.contains(&other) {
+        if !self.contains(other) {
             self.others.push(other);
             true
         } else {
@@ -193,8 +205,8 @@ impl OngoingCollisions {
     }
 
     /// Removes `other` from the set of ongoing collisions, and returns `true` if it was contained
-    pub fn remove(&mut self, other: &Entity) -> bool {
-        if let Some(idx) = self.others.iter().position(|e| e == other) {
+    pub fn remove(&mut self, other: Entity) -> bool {
+        if let Some(idx) = self.others.iter().position(|e| *e == other) {
             self.others.swap_remove(idx);
             true
         } else {
@@ -226,8 +238,8 @@ pub enum SpriteLayer {
 impl SpriteLayer {
     pub const MAX_DEPTH: f32 = 1.0;
 
-    pub fn to_depth(&self) -> f32 {
-        match *self {
+    pub fn to_depth(self) -> f32 {
+        match self {
             SpriteLayer::Background => 0.1,
             SpriteLayer::Foreground => 1.0,
         }
@@ -283,9 +295,9 @@ impl Camera {
         resize_world_to_window: bool,
     ) -> Camera {
         Camera {
-            world_viewport: world_viewport,
-            screen_viewport: screen_viewport,
-            resize_world_to_window: resize_world_to_window,
+            world_viewport,
+            screen_viewport,
+            resize_world_to_window,
         }
     }
 

@@ -25,11 +25,11 @@ impl KeyboardState {
         };
     }
 
-    pub fn is_pressed(&self, vkc: &VirtualKeyCode) -> bool {
-        self.keys.contains(vkc)
+    pub fn is_pressed(&self, vkc: VirtualKeyCode) -> bool {
+        self.keys.contains(&vkc)
     }
 
-    pub fn pressed_keys<'a>(&'a self) -> ::std::collections::hash_set::Iter<'a, VirtualKeyCode> {
+    pub fn pressed_keys(& self) -> ::std::collections::hash_set::Iter<VirtualKeyCode> {
         self.keys.iter()
     }
 }
@@ -43,10 +43,10 @@ pub enum InputState {
 
 impl InputState {
     #[allow(unused)]
-    pub fn is_pressed(&self) -> bool {
+    pub fn is_pressed(self) -> bool {
         use self::InputState::*;
 
-        match *self {
+        match self {
             Pressed | PressedThisFrame => true,
             ReleasedThisFrame => false,
         }
@@ -74,6 +74,12 @@ pub struct InputContextKey(
 
 pub type InputContext = HashMap<InputContextKey, InputIntent>;
 
+impl Default for InputManager {
+    fn default() -> InputManager {
+        InputManager::new()
+    }
+}
+
 impl InputManager {
     pub fn new() -> InputManager {
         InputManager {
@@ -94,7 +100,7 @@ impl InputManager {
                 continue;
             }
 
-            let state = if self.keyboard_state.is_pressed(vkc) {
+            let state = if self.keyboard_state.is_pressed(*vkc) {
                 InputState::PressedThisFrame
             } else {
                 InputState::ReleasedThisFrame

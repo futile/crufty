@@ -6,11 +6,12 @@ use super::LevelServices;
 use crate::components::LevelComponents;
 use crate::components::SpriteSheetAnimation;
 
+#[derive(Default, Debug)]
 pub struct SpriteSheetAnimationSystem;
 
 impl SpriteSheetAnimationSystem {
     pub fn new() -> SpriteSheetAnimationSystem {
-        SpriteSheetAnimationSystem
+        Default::default()
     }
 }
 

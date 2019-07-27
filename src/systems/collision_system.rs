@@ -5,11 +5,12 @@ use super::LevelServices;
 
 use crate::components::LevelComponents;
 
+#[derive(Default)]
 pub struct CollisionSystem;
 
 impl CollisionSystem {
     pub fn new() -> CollisionSystem {
-        CollisionSystem
+        Default::default()
     }
 }
 
@@ -26,7 +27,7 @@ impl System for CollisionSystem {
         // TODO `&data.collision[*e]` causes a clone, find a way which doesn't
         services
             .collision_world
-            .add(***e, &data.collision_shape[*e], &data.position[*e]);
+            .add(***e, &data.collision_shape[*e], data.position[*e]);
     }
 
     fn deactivated(

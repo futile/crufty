@@ -25,7 +25,7 @@ impl EntityProcess for IntentSystem {
                 println!("debug message!");
             }
 
-            if data.intents[e].len() > 0 {
+            if !data.intents[e].is_empty() {
                 data.intents[e].clear();
                 data.services
                     .changed_flags

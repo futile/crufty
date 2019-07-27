@@ -111,7 +111,7 @@ impl EntityProcess for MovementSystem {
                 velocity.vx += delta * vel.x;
                 velocity.vy += delta * vel.y;
 
-                velocity.clone()
+                *velocity
             };
 
             data.services

@@ -75,7 +75,7 @@ pub trait EntityOps {
     /// play animation with name `anim_name` for entity `e`
     fn play_animation(&mut self, eod: EntityOrData, anim_name: &str);
 
-    fn move_entity(&mut self, eod: EntityOrData, new_pos: &Position, warp: bool);
+    fn move_entity(&mut self, eod: EntityOrData, new_pos: Position, warp: bool);
 }
 
 impl EntityOps for DataHelper<LevelComponents, LevelServices> {
@@ -129,7 +129,7 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
         }
     }
 
-    fn move_entity(&mut self, eod: EntityOrData, new_pos: &Position, warp: bool) {
+    fn move_entity(&mut self, eod: EntityOrData, new_pos: Position, warp: bool) {
         let (mut coll_shape, last_pos) = match eod.with_entity_data(self, |en, comps| {
             let coll_shape = comps.collision_shape[en].clone();
             let last_pos = comps.velocity.borrow(&en).map(|vel| vel.last_pos);
@@ -149,7 +149,7 @@ impl EntityOps for DataHelper<LevelComponents, LevelServices> {
         let resolved_pos = self.services.collision_world.move_entity(
             eod.as_entity(),
             &coll_shape,
-            &new_pos,
+            new_pos,
             if warp { None } else { last_pos.as_ref() },
             &mut colls,
         );

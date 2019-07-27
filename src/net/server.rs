@@ -100,7 +100,7 @@ impl PeerData {
             new_from_world_inner!(movement  , res, world, en, sim_time, now);
         }
 
-        return res;
+        res
     }
 
     fn update_from_changes(&mut self, world: &mut World<LevelSystems>) {

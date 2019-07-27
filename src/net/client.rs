@@ -108,7 +108,7 @@ impl Client {
                 } = event
                 {
                     let data = packet.data().to_vec();
-                    assert!(data.len() > 0);
+                    assert!(!data.is_empty());
                     Some(data)
                 } else {
                     dbg!(event);

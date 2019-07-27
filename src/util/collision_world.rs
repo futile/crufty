@@ -43,7 +43,7 @@ enum Axis {
 
 fn find_depth(
     dyn_ent: &AABB<f32>,
-    dyn_last: &Point<f32>,
+    dyn_last: Point<f32>,
     stat: &AABB<f32>,
     axis: Axis,
 ) -> Option<f32> {
@@ -88,9 +88,9 @@ pub struct CollisionResult {
 impl CollisionResult {
     fn new(depth: f32, other: Entity, other_coll_type: CollisionType) -> CollisionResult {
         CollisionResult {
-            depth: depth,
-            other: other,
-            other_coll_type: other_coll_type,
+            depth,
+            other,
+            other_coll_type,
         }
     }
 }
@@ -99,6 +99,12 @@ impl CollisionResult {
 pub struct Collision {
     pub collider: Entity,
     pub collided: Entity,
+}
+
+impl Default for CollisionWorld {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl CollisionWorld {
@@ -111,7 +117,7 @@ impl CollisionWorld {
         }
     }
 
-    pub fn add(&mut self, e: Entity, coll: &components::CollisionShape, pos: &Position) {
+    pub fn add(&mut self, e: Entity, coll: &components::CollisionShape, pos: Position) {
         // if it already existed, just remove it
         self.remove(e);
 
@@ -134,7 +140,7 @@ impl CollisionWorld {
         &mut self,
         leafs: (&mut CollisionTreeLeaf, &mut CollisionTreeLeaf),
         coll: &components::CollisionShape,
-        new_pos: &Position,
+        new_pos: Position,
         _last_pos: Option<&Position>, // currently unused, see comment below
         axis: Axis,
     ) -> SmallVec<[self::CollisionResult; 4]> {
@@ -196,7 +202,7 @@ impl CollisionWorld {
                     Axis::Y => &self.dbvt_y[other_leafs.y],
                 };
 
-                let depth = find_depth(&aabb, &leaf.center, &other_leaf.bounding_volume, axis);
+                let depth = find_depth(&aabb, leaf.center, &other_leaf.bounding_volume, axis);
 
                 depth.map(|depth| {
                     // println!("other.coll_type({:?}): {:?}", axis, other_leafs.coll_type);
@@ -234,7 +240,7 @@ impl CollisionWorld {
         &mut self,
         e: Entity,
         coll: &components::CollisionShape,
-        new_pos: &Position,
+        new_pos: Position,
         last_pos: Option<&Position>,
         collision_collector: &mut E,
     ) -> Position {
@@ -244,14 +250,14 @@ impl CollisionWorld {
         let mut leaf_x = self.dbvt_x.remove(leafs.x);
         let mut leaf_y = self.dbvt_y.remove(leafs.y);
 
-        let mut updated_pos = *new_pos;
+        let mut updated_pos = new_pos;
 
         // 2. call move_axis for both axes, X first
         for axis in &[Axis::X, Axis::Y] {
             let coll_ress = self.move_axis(
                 (&mut leaf_x, &mut leaf_y),
                 coll,
-                &updated_pos,
+                updated_pos,
                 last_pos,
                 *axis,
             );
@@ -334,7 +340,7 @@ impl CollisionWorld {
 
         let bot_y = leaf_y.bounding_volume.mins().y;
 
-        const ON_GROUND_THRESHOLD: f32 = 0.000015; // chosen through experiments
+        const ON_GROUND_THRESHOLD: f32 = 0.000_015; // chosen through experiments
 
         let on_ground = colls
             .iter()

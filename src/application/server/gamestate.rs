@@ -380,10 +380,10 @@ impl State<ServerTransition> for GameState {
         const FPS: u64 = 60;
 
         // leave these
-        const MS_TO_NS: u64 = 1000000;
+        const MS_TO_NS: u64 = 1_000_000;
         const NS_PER_UPDATE: u64 = MS_PER_UPDATE * MS_TO_NS;
         #[allow(dead_code)]
-        const INV_FPS_NS: u64 = 1000000000 / FPS; // 1s / FPS
+        const INV_FPS_NS: u64 = 1_000_000_000 / FPS; // 1s / FPS
 
         // change this to min(NS_PER_UPDATE, INV_FPS_NS)
         const MAX_SLEEP: u64 = NS_PER_UPDATE;
@@ -409,8 +409,8 @@ impl State<ServerTransition> for GameState {
                     use self::glutin::{dpi::LogicalSize, Event, KeyboardInput, WindowEvent};
                     let event = match event {
                         Event::WindowEvent {
-                            window_id: _,
                             event,
+                            ..
                         } => event,
                         _ => return,
                     };
@@ -420,14 +420,13 @@ impl State<ServerTransition> for GameState {
                             shutdown = true;
                         }
                         WindowEvent::KeyboardInput {
-                            device_id: _,
                             input:
                                 KeyboardInput {
-                                    scancode: _,
                                     state: key_state,
-                                    modifiers: _,
                                     virtual_keycode: Some(vkc),
+                                    ..
                                 },
+                            ..
                         } => match (key_state, vkc) {
                             (ElementState::Released, VirtualKeyCode::P) => profiler_ticks += 3,
                             (ElementState::Released, VirtualKeyCode::D) => {

@@ -7,13 +7,14 @@ use super::LevelServices;
 
 use crate::components::LevelComponents;
 
+#[derive(Default, Debug)]
 pub struct CameraSystem {
     pub resized: Option<(u32, u32)>,
 }
 
 impl CameraSystem {
     pub fn new() -> CameraSystem {
-        CameraSystem { resized: None }
+        Default::default()
     }
 }
 

@@ -31,8 +31,8 @@ pub struct WorldViewport {
 impl WorldViewport {
     pub fn new(width: f32, height: f32) -> WorldViewport {
         WorldViewport {
-            width: width,
-            height: height,
+            width,
+            height,
         }
     }
 
@@ -122,12 +122,12 @@ impl RenderSystem {
         .unwrap();
 
         RenderSystem {
-            display: display,
+            display,
             unit_quad: vertex_buffer,
-            sprite_index_buffer: sprite_index_buffer,
-            physics_index_buffer: physics_index_buffer,
-            sprite_program: sprite_program,
-            physics_program: physics_program,
+            sprite_index_buffer,
+            physics_index_buffer,
+            sprite_program,
+            physics_program,
             render_physics_debug: false,
         }
     }

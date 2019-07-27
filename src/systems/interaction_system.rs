@@ -71,7 +71,7 @@ impl EntityProcess for InteractionSystem {
 
             match interaction_possibility.interaction {
                 Interaction::WarpInRoom { x, y } => {
-                    data.move_entity(e.into(), &Position { x, y }, true);
+                    data.move_entity(e.into(), Position { x, y }, true);
                     data.receive_event(InteractionDone {
                         interactor: **e,
                         interacted: interaction_target,

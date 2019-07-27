@@ -11,15 +11,14 @@ use crate::application::{InputContextKey, InputState, KeyHandler};
 
 use crate::components::LevelComponents;
 
+#[derive(Default, Debug)]
 pub struct KeyboardSystem {
     keys: HashSet<InputContextKey>,
 }
 
 impl KeyboardSystem {
     pub fn new() -> KeyboardSystem {
-        KeyboardSystem {
-            keys: HashSet::new(),
-        }
+        Default::default()
     }
 }
 
