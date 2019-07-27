@@ -54,7 +54,7 @@ impl SpriteSheetStore {
 }
 
 fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteSheet {
-    use crate::game::{Animation, SpriteSheet};
+    use crate::game::{Animation};
 
     use std::fs::File;
     use std::io::Read;

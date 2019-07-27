@@ -37,12 +37,12 @@ impl State<ClientTransition> for GameState {
     fn run(mut self: Box<Self>) -> ClientTransition {
         let mut world = World::<LevelSystems>::new();
 
-        let (width, height) = self.display.get_framebuffer_dimensions();
+        let (_width, _height) = self.display.get_framebuffer_dimensions();
         let render_system = RenderSystem::new(self.display.clone());
 
         world.services.resource_store = ResourceStore::new(self.display.clone());
 
-        let ss_handle = world
+        let _ss_handle = world
             .services
             .resource_store
             .load_sprite_sheet(Path::new("assets/textures/sprites/player/animations.toml"));
@@ -58,7 +58,7 @@ impl State<ClientTransition> for GameState {
         let mut profiler_ticks = 0;
 
         let mut previous_time = clock_ticks::precise_time_ns();
-        let mut lag_behind_simulation = 0u64;
+        let mut _lag_behind_simulation = 0u64;
 
         // change these
         const MS_PER_UPDATE: u64 = 10;
@@ -84,7 +84,7 @@ impl State<ClientTransition> for GameState {
             let current_time = clock_ticks::precise_time_ns();
             let elapsed = current_time - previous_time;
             previous_time = current_time;
-            lag_behind_simulation += elapsed;
+            _lag_behind_simulation += elapsed;
 
             {
                 let _ = hprof::enter("window-events");

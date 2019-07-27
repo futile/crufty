@@ -183,7 +183,7 @@ impl InteractProcess for RenderSystem {
                     -(SpriteLayer::MAX_DEPTH + 1.0), // +1.0 for debug rendering
                     0.0,
                 )
-                .unwrap();
+                .into_inner();
                 drop(_g);
 
                 for e in &sprites {
