@@ -1,13 +1,13 @@
-use std::time::{Duration};
+use std::time::Duration;
 
-use enet::{Enet};
+use enet::Enet;
 
-mod server;
 mod client;
 pub mod serde_impls;
+mod server;
 
-pub use self::server::Server;
 pub use self::client::Client;
+pub use self::server::Server;
 
 lazy_static! {
     static ref ENET: Enet = Enet::new().unwrap();
@@ -16,4 +16,3 @@ lazy_static! {
 const PORT: u16 = 9001;
 const RESEND_DURATION: Duration = Duration::from_millis(100);
 const UPDATE_CHANNEL_ID: u8 = 1;
-

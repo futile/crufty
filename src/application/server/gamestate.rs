@@ -10,7 +10,8 @@ use ecs::system::InteractSystem;
 use ecs::{BuildData /* , ModifyData */, World};
 
 use crate::application::{
-    client::ClientTransition, server::ServerTransition, InputIntent, InputManager, InputState, InputContextKey,
+    client::ClientTransition, server::ServerTransition, InputContextKey, InputIntent, InputManager,
+    InputState,
 };
 use crate::game::{Interaction, ResourceStore};
 use crate::net;

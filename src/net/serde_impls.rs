@@ -1,7 +1,7 @@
 pub mod aabb {
     use crate::na::Point2;
     use crate::nc::bounding_volume::AABB;
-    use serde::{Deserializer, Serializer, Serialize, Deserialize};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     #[derive(Serialize, Deserialize)]
     struct Bounds {
@@ -13,7 +13,7 @@ pub mod aabb {
     where
         D: Deserializer<'de>,
     {
-        let Bounds {mins, maxs} = Bounds::deserialize(deserializer)?;
+        let Bounds { mins, maxs } = Bounds::deserialize(deserializer)?;
 
         Ok(AABB::new(mins, maxs))
     }
@@ -34,7 +34,7 @@ pub mod aabb {
 pub mod cuboid {
     use crate::na::Vector2;
     use crate::nc::shape::Cuboid;
-    use serde::{Deserializer, Serializer, Serialize, Deserialize};
+    use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
     pub fn deserialize<'de, D>(deserializer: D) -> Result<Cuboid<f32>, D::Error>
     where
@@ -200,7 +200,7 @@ pub mod virtual_key_code {
         Multiply,
         Mute,
         MyComputer,
-        NavigateForward, // also called "Prior"
+        NavigateForward,  // also called "Prior"
         NavigateBackward, // also called "Next"
         NextTrack,
         NoConvert,

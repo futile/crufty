@@ -29,7 +29,7 @@ impl KeyboardState {
         self.keys.contains(&vkc)
     }
 
-    pub fn pressed_keys(& self) -> ::std::collections::hash_set::Iter<VirtualKeyCode> {
+    pub fn pressed_keys(&self) -> ::std::collections::hash_set::Iter<VirtualKeyCode> {
         self.keys.iter()
     }
 }
