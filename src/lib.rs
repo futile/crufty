@@ -27,3 +27,4 @@ pub mod components;
 pub mod game;
 pub mod net;
 pub mod systems;
+pub mod resources;

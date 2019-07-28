@@ -15,6 +15,15 @@ pub struct TextureInfo {
     id: usize,
 }
 
+impl TextureInfo {
+    pub fn new(id: usize, idx: f32) -> TextureInfo {
+        TextureInfo {
+            idx,
+            id,
+        }
+    }
+}
+
 pub struct TextureStore {
     tex_store: Vec<CompressedSrgbTexture2dArray>,
     info_store: HashMap<PathBuf, TextureInfo>,
@@ -39,9 +48,8 @@ impl TextureStore {
 
     pub fn new(display: glium::Display) -> TextureStore {
         TextureStore {
-            tex_store: Vec::new(),
-            info_store: HashMap::new(),
             display: Some(display),
+            ..TextureStore::new_invalid()
         }
     }
 

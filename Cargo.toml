@@ -3,7 +3,11 @@ name = "crufty"
 version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 edition = "2018"
+build = "build.rs"
 # features = ["glutin", "image", "nalgebra"]
+
+[build-dependencies]
+walkdir = "2"
 
 [dependencies]
 image = "0.20.1"
