@@ -1,28 +1,24 @@
+use std::cmp::Ordering;
+use std::collections::BTreeMap;
 use std::env;
-use std::path::{Path, PathBuf};
 use std::fs::File;
 use std::io::Write;
-use std::collections::BTreeMap;
-use std::cmp::Ordering;
+use std::path::{Path, PathBuf};
 
-use walkdir::{WalkDir, DirEntry};
+use walkdir::{DirEntry, WalkDir};
 
 fn files_before_dirs(d1: &DirEntry, d2: &DirEntry) -> Ordering {
     match d1.file_type() {
-        d1d if d1d.is_dir() => {
-            match d2.file_type() {
-                d2d if d2d.is_dir() => Ordering::Equal,
-                d2f if d2f.is_file() => Ordering::Greater,
-                d2o => panic!("unexpected d2o file-type: {:?}", d2o),
-            }
-        }
-        d1f if d1f.is_file() => {
-            match d2.file_type() {
-                d2d if d2d.is_dir() => Ordering::Less,
-                d2f if d2f.is_file() => Ordering::Equal,
-                d2o => panic!("unexpected d2o file-type: {:?}", d2o),
-            }
-        }
+        d1d if d1d.is_dir() => match d2.file_type() {
+            d2d if d2d.is_dir() => Ordering::Equal,
+            d2f if d2f.is_file() => Ordering::Greater,
+            d2o => panic!("unexpected d2o file-type: {:?}", d2o),
+        },
+        d1f if d1f.is_file() => match d2.file_type() {
+            d2d if d2d.is_dir() => Ordering::Less,
+            d2f if d2f.is_file() => Ordering::Equal,
+            d2o => panic!("unexpected d2o file-type: {:?}", d2o),
+        },
         d1o => {
             panic!("unexpected d1o file-type: {:?}", d1o);
         }
@@ -78,18 +74,20 @@ fn build_texture_slugs(out_file: &Path) {
                 // println!("[build_texture_slugs] new cur_id: {}", cur_id);
             }
             f if f.is_file() => {
-                let slug_name = path_to_slug_name(&entry_path.with_file_name(entry_path.file_stem().unwrap()));
+                let slug_name =
+                    path_to_slug_name(&entry_path.with_file_name(entry_path.file_stem().unwrap()));
                 // println!("[build_texture_slugs] slug_name: '{}'", slug_name);
-                slug_map.insert(slug_name, SlugData {
-                    id: cur_id,
-                    idx: cur_idx,
-                    path: entry.path().to_path_buf(),
-                });
+                slug_map.insert(
+                    slug_name,
+                    SlugData {
+                        id: cur_id,
+                        idx: cur_idx,
+                        path: entry.path().to_path_buf(),
+                    },
+                );
                 cur_idx += 1;
             }
-            o => {
-                panic!("unexpected o file-type: {:?}", o)
-            }
+            o => panic!("unexpected o file-type: {:?}", o),
         }
 
         println!("cargo:rerun-if-changed={}", entry.path().display());
@@ -97,66 +95,76 @@ fn build_texture_slugs(out_file: &Path) {
 
     println!("[build_texture_slugs] slug_map:\n{:#?}", slug_map);
 
+    let mut enum_content = String::new();
+    let mut id_content = String::new();
+    let mut idx_content = String::new();
+    let mut texture_info_content = String::new();
+    let mut path_content = String::new();
+
+    for (slug_name, slug) in &slug_map {
+        enum_content.push_str(&format!("  {},\n", slug_name));
+        id_content.push_str(&format!(
+            "      TextureSlug::{} => {},\n",
+            slug_name, slug.id
+        ));
+        idx_content.push_str(&format!(
+            "      TextureSlug::{} => {},\n",
+            slug_name, slug.idx
+        ));
+        texture_info_content.push_str(&format!(
+            "      TextureSlug::{} => TextureInfo::new({}, {}.0f32),\n",
+            slug_name, slug.id, slug.idx
+        ));
+        path_content.push_str(&format!(
+            "      TextureSlug::{} => Path::new(\"{}\"),\n",
+            slug_name,
+            path_to_string(&slug.path)
+        ));
+    }
 
     let mut f = File::create(out_file).unwrap();
-    f.write_all(b"use std::path::Path;
-use crate::game::{TextureInfo};
+    f.write_fmt(format_args!("// this file is auto generated from build.rs
+
+use std::path::Path;
+use crate::game::TextureInfo;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
-pub enum TextureSlug {
-").unwrap();
+pub enum TextureSlug {{
+{enum}
+}}
 
-    for slug_name in slug_map.keys() {
-        f.write_fmt(format_args!("  {},\n", slug_name)).unwrap();
-    }
-    f.write_all(b"}
+impl TextureSlug {{
+  pub fn id(self) -> usize {{
+    match self {{
+{id}
+    }}
+  }}
 
-impl TextureSlug {
-  pub fn id(self) -> usize {
-    match self {
-").unwrap();
+  pub fn idx(self) -> u16 {{
+    match self {{
+{idx}
+    }}
+  }}
 
-    for (slug_name, slug) in &slug_map {
-        f.write_fmt(format_args!("      TextureSlug::{} => {},\n", slug_name, slug.id)).unwrap();
-    }
+  pub fn texture_info(self) -> TextureInfo {{
+    match self {{
+{texture_info}
+    }}
+  }}
 
-    f.write_all(b"    }
-  }
-
-  pub fn idx(self) -> u16 {
-    match self {
-").unwrap();
-
-    for (slug_name, slug) in &slug_map {
-        f.write_fmt(format_args!("      TextureSlug::{} => {},\n", slug_name, slug.idx)).unwrap();
-    }
-
-    f.write_all(b"    }
-  }
-
-  pub fn texture_info(self) -> TextureInfo {
-    match self {
-").unwrap();
-
-    for (slug_name, slug) in &slug_map {
-        f.write_fmt(format_args!("      TextureSlug::{} => TextureInfo::new({}, {}.0f32),\n", slug_name, slug.id, slug.idx)).unwrap();
-    }
-
-    f.write_all(b"    }
-  }
-
-  pub fn path(self) -> &'static Path {
-    match self {
-").unwrap();
-
-    for (slug_name, slug) in &slug_map {
-        f.write_fmt(format_args!("      TextureSlug::{} => Path::new(\"{}\"),\n", slug_name, path_to_string(&slug.path))).unwrap();
-    }
-
-    f.write_all(b"    }
-  }
-}").unwrap();
+  pub fn path(self) -> &'static Path {{
+    match self {{
+{path}
+    }}
+  }}
+}}",
+        enum=enum_content.trim_end(),
+        id=id_content.trim_end(),
+        idx=idx_content.trim_end(),
+        texture_info=texture_info_content.trim_end(),
+        path=path_content.trim_end()))
+    .unwrap();
 }
 
 fn main() {
