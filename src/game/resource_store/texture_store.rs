@@ -10,7 +10,7 @@ use glium::texture::CompressedSrgbTexture2dArray;
 
 use crate::resources::TextureSlug;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct TextureInfo {
     pub idx: f32,
 

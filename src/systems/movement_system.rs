@@ -46,12 +46,25 @@ impl EntityProcess for MovementSystem {
             let delta = data.services.delta_time_s;
 
             if move_left || move_right {
+                let mut facing_change = None;
                 if let Some(facing) = data.facing.borrow(&e) {
-                    *facing = if move_right {
+                    let new_facing = if move_right {
                         Facing::Right
                     } else {
                         Facing::Left
+                    };
+
+                    if new_facing != *facing {
+                        *facing = new_facing;
+                        facing_change = Some(new_facing);
                     }
+                };
+
+                if let Some(new_facing) = facing_change {
+                    data.services
+                        .changed_flags
+                        .facing
+                        .insert(**e, new_facing);
                 }
             }
 

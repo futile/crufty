@@ -246,14 +246,14 @@ impl SpriteLayer {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct SpriteInfo {
     pub width: f32,
     pub height: f32,
     pub texture_info: TextureInfo,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct Sprite {
     pub info: SpriteInfo,
     pub sprite_layer: SpriteLayer,

@@ -26,15 +26,18 @@ const INTENTS_ID: u64 = unsafe { type_id::<Intents>() };
 const INTERACTOR_ID: u64 = unsafe { type_id::<Interactor>() };
 const CAMERA_ID: u64 = unsafe { type_id::<Camera>() };
 const MOVEMENT_ID: u64 = unsafe { type_id::<Movement>() };
+const SPRITE_ID: u64 = unsafe { type_id::<Sprite>() };
 
 macro_rules! deserialize_component {
-    ($component:ident, $component_name:ident, $en:ident, $e_id:ident, $sim_ts:ident, $world:ident, $reader:ident) => (
+    ($component:ident, $component_name:ident, $en:ident, $e_id:ident, $sim_ts:ident, $world:ident, $reader:ident, $do_print:expr) => (
         {
             let v: $component = deserialize_from(&mut $reader).unwrap();
-            println!(
-                "received '{}' update for entity {} (at {}): {:#?}",
-                stringify!($component), $e_id, $sim_ts, v
-            );
+            if $do_print {
+                println!(
+                    "received '{}' update for entity {} (at {}): {:#?}",
+                    stringify!($component), $e_id, $sim_ts, v
+                );
+            }
             $world.modify_entity($en, move |e: ModifyData<LevelComponents>, data: &mut LevelComponents| {
                 data.$component_name.insert(&e, v);
             });
@@ -77,15 +80,16 @@ impl Client {
                 });
 
                 match tag {
-                    POSITION_ID => deserialize_component!(Position, position, en, e_id, sim_ts, world, reader),
-                    VELOCITY_ID => deserialize_component!(Velocity, velocity, en, e_id, sim_ts, world, reader),
-                    JUMP_ID => deserialize_component!(Jump, jump, en, e_id, sim_ts, world, reader),
-                    GRAVITY_ID => deserialize_component!(Gravity, gravity, en, e_id, sim_ts, world, reader),
-                    FACING_ID => deserialize_component!(Facing, facing, en, e_id, sim_ts, world, reader),
-                    INTENTS_ID => deserialize_component!(Intents, intents, en, e_id, sim_ts, world, reader),
-                    INTERACTOR_ID => deserialize_component!(Interactor, interactor, en, e_id, sim_ts, world, reader),
-                    CAMERA_ID => deserialize_component!(Camera, camera, en, e_id, sim_ts, world, reader),
-                    MOVEMENT_ID => deserialize_component!(Movement, movement, en, e_id, sim_ts, world, reader),
+                    POSITION_ID => deserialize_component!(Position, position, en, e_id, sim_ts, world, reader, false),
+                    VELOCITY_ID => deserialize_component!(Velocity, velocity, en, e_id, sim_ts, world, reader, false),
+                    JUMP_ID => deserialize_component!(Jump, jump, en, e_id, sim_ts, world, reader, true),
+                    GRAVITY_ID => deserialize_component!(Gravity, gravity, en, e_id, sim_ts, world, reader, true),
+                    FACING_ID => deserialize_component!(Facing, facing, en, e_id, sim_ts, world, reader, true),
+                    INTENTS_ID => deserialize_component!(Intents, intents, en, e_id, sim_ts, world, reader, false),
+                    INTERACTOR_ID => deserialize_component!(Interactor, interactor, en, e_id, sim_ts, world, reader, true),
+                    CAMERA_ID => deserialize_component!(Camera, camera, en, e_id, sim_ts, world, reader, true),
+                    MOVEMENT_ID => deserialize_component!(Movement, movement, en, e_id, sim_ts, world, reader, false),
+                    SPRITE_ID => deserialize_component!(Sprite, sprite, en, e_id, sim_ts, world, reader, false),
                     _ => panic!("unexpected type_id: {}", tag),
                 }
 
