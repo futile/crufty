@@ -78,8 +78,8 @@ macro_rules! new_from_world_inner {
 
 macro_rules! update_from_changes_inner {
     ($name:ident, $self:ident, $world:ident, $sim_time:ident, $now: ident) => {
-        for (e, c) in $world.services.changed_flags.$name.drain() {
-            $self.$name.insert(e, (c, $sim_time, $now));
+        for (e, c) in $world.services.changed_flags.$name.iter() {
+            $self.$name.insert(*e, (c.clone(), $sim_time, $now));
         }
     };
 }
