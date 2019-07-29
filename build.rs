@@ -61,22 +61,23 @@ fn build_texture_slugs(out_file: &Path) {
     }
 
     let mut cur_id: usize = 0;
+    let mut cur_id_used: bool = false;
     let mut cur_idx: u16 = 0;
     for entry in walker.into_iter().filter_entry(should_visit) {
         let entry = entry.unwrap();
         let entry_path = entry.path().strip_prefix(search_path).unwrap();
-        // println!("[build_texture_slugs] {}", entry_path.display());
 
         match entry.file_type() {
             d if d.is_dir() => {
-                cur_id += 1;
-                cur_idx = 0;
-                // println!("[build_texture_slugs] new cur_id: {}", cur_id);
+                if cur_id_used {
+                    cur_id += 1;
+                    cur_idx = 0;
+                    cur_id_used = false;
+                }
             }
             f if f.is_file() => {
                 let slug_name =
                     path_to_slug_name(&entry_path.with_file_name(entry_path.file_stem().unwrap()));
-                // println!("[build_texture_slugs] slug_name: '{}'", slug_name);
                 slug_map.insert(
                     slug_name,
                     SlugData {
@@ -86,6 +87,7 @@ fn build_texture_slugs(out_file: &Path) {
                     },
                 );
                 cur_idx += 1;
+                cur_id_used = true;
             }
             o => panic!("unexpected o file-type: {:?}", o),
         }
@@ -164,7 +166,7 @@ impl TextureSlug {{
         idx=idx_content.trim_end(),
         texture_info=texture_info_content.trim_end(),
         path=path_content.trim_end()))
-    .unwrap();
+        .unwrap();
 }
 
 fn main() {
