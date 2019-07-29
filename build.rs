@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use vec_map::VecMap;
 use walkdir::{DirEntry, WalkDir};
 
 fn files_before_dirs(d1: &DirEntry, d2: &DirEntry) -> Ordering {
@@ -50,6 +51,7 @@ fn build_texture_slugs(out_file: &Path) {
     }
 
     let mut slug_map: BTreeMap<String, SlugData> = BTreeMap::new();
+    let mut id_to_slugs: VecMap<Vec<String>> = VecMap::new();
 
     let search_path = Path::new("./assets/textures/sprites");
 
@@ -79,13 +81,18 @@ fn build_texture_slugs(out_file: &Path) {
                 let slug_name =
                     path_to_slug_name(&entry_path.with_file_name(entry_path.file_stem().unwrap()));
                 slug_map.insert(
-                    slug_name,
+                    slug_name.clone(),
                     SlugData {
                         id: cur_id,
                         idx: cur_idx,
                         path: entry.path().to_path_buf(),
                     },
                 );
+                id_to_slugs.reserve_len(cur_id + 1);
+                id_to_slugs
+                    .entry(cur_id)
+                    .or_insert_with(Vec::new)
+                    .push(slug_name);
                 cur_idx += 1;
                 cur_id_used = true;
             }
@@ -102,6 +109,7 @@ fn build_texture_slugs(out_file: &Path) {
     let mut idx_content = String::new();
     let mut texture_info_content = String::new();
     let mut path_content = String::new();
+    let mut id_to_slugs_content = String::new();
 
     for (slug_name, slug) in &slug_map {
         enum_content.push_str(&format!("  {},\n", slug_name));
@@ -121,6 +129,20 @@ fn build_texture_slugs(out_file: &Path) {
             "      TextureSlug::{} => Path::new(\"{}\"),\n",
             slug_name,
             path_to_string(&slug.path)
+        ));
+    }
+
+    for (id, slug_names) in &id_to_slugs {
+        id_to_slugs_content.push_str(&format!(
+            "      {} => &[\n", id
+        ));
+        for s in slug_names {
+            id_to_slugs_content.push_str(&format!(
+                "        TextureSlug::{},\n", s
+            ));
+        }
+        id_to_slugs_content.push_str(&format!(
+            "      ],\n"
         ));
     }
 
@@ -160,12 +182,20 @@ impl TextureSlug {{
 {path}
     }}
   }}
+
+  pub fn all_with_id(self) -> &'static [TextureSlug] {{
+    match self.id() {{
+{id_to_slugs}
+      i => panic!(\"unknown id: {{}}\", i),
+    }}
+  }}
 }}",
         enum=enum_content.trim_end(),
         id=id_content.trim_end(),
         idx=idx_content.trim_end(),
         texture_info=texture_info_content.trim_end(),
-        path=path_content.trim_end()))
+        path=path_content.trim_end(),
+        id_to_slugs=id_to_slugs_content.trim_end()))
         .unwrap();
 }
 
