@@ -211,7 +211,7 @@ impl InteractProcess for RenderSystem {
                             view_pos: *view_pos.as_ref(),
                             scale: *scale.as_ref(),
                             proj: *ortho_proj.as_ref(),
-                            tex: texture,
+                            tex: &*texture,
                             tex_index: sprite.info.texture_info.idx,
                             invert_tex_x: invert_tex_x,
                             win_scale: *screen_size.as_ref(),

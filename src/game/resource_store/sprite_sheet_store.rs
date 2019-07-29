@@ -1,6 +1,5 @@
-use super::texture_store::TextureStore;
-
 use crate::game::SpriteSheet;
+use crate::resources::TextureSlug;
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -22,11 +21,10 @@ impl SpriteSheetStore {
 
     pub fn get_sprite_sheet_handle(
         &mut self,
-        texture_store: &mut TextureStore,
         path: &Path,
     ) -> SpriteSheetHandle {
         if !self.handles.contains_key(path) {
-            return self.load_sheet(texture_store, path);
+            return self.load_sheet(path);
         }
 
         *self.handles.get(path).unwrap()
@@ -36,8 +34,8 @@ impl SpriteSheetStore {
         self.sprite_sheets.get(handle.0).unwrap()
     }
 
-    fn load_sheet(&mut self, texture_store: &mut TextureStore, path: &Path) -> SpriteSheetHandle {
-        let sprite_sheet = load_sprite_sheet(texture_store, path);
+    fn load_sheet(&mut self, path: &Path) -> SpriteSheetHandle {
+        let sprite_sheet = load_sprite_sheet(path);
 
         self.sprite_sheets.push(sprite_sheet);
         let ss_id = self.sprite_sheets.len() - 1;
@@ -53,7 +51,7 @@ impl SpriteSheetStore {
     }
 }
 
-fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteSheet {
+fn load_sprite_sheet(path: &Path) -> SpriteSheet {
     use crate::game::Animation;
 
     use std::fs::File;
@@ -124,11 +122,12 @@ fn load_sprite_sheet(texture_store: &mut TextureStore, path: &Path) -> SpriteShe
 
         // sprite path is relative to current folder of the spritesheet file
         let sprite_path = path.parent().unwrap().join(sprite);
+        let tex_info = TextureSlug::from_path(&sprite_path).unwrap().texture_info();
 
         animations.insert(
             name.clone(),
             Animation {
-                start_info: texture_store.get_texture_info(&sprite_path),
+                start_info: tex_info,
                 name: Rc::new(name),
                 num_frames: num_frames as u8,
                 frame_durations: vec_durations,

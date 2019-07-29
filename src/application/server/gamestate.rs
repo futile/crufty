@@ -32,6 +32,8 @@ use crate::na::{Point2, Vector2};
 use crate::nc::bounding_volume::AABB;
 use crate::nc::shape::Cuboid;
 
+use crate::resources::TextureSlug;
+
 pub struct GameState {
     display: glium::Display,
     events_loop: glutin::EventsLoop,
@@ -61,26 +63,19 @@ impl State<ServerTransition> for GameState {
 
         world.services.resource_store = ResourceStore::new(self.display.clone());
 
-        let ss_handle = world
-            .services
-            .resource_store
-            .load_sprite_sheet(Path::new("assets/textures/sprites/player/animations.toml"));
-
         world.systems.render_system.init(InteractSystem::new(
             render_system,
             aspect!(<LevelComponents> all: [camera]),
             aspect!(<LevelComponents> all: [position]),
         ));
 
-        let tex_info = world
+        let tile_tex_info = TextureSlug::tilesets__cave__tile1.texture_info();
+        let player_tex_info = TextureSlug::sprites__player__stand__p_stand.texture_info();
+
+        let ss_handle = world
             .services
             .resource_store
-            .load_texture(Path::new("assets/textures/tilesets/cave/tile1.png"));
-
-        let player_tex_info = world.services.resource_store.load_texture(Path::new(
-            "assets/textures/sprites/player/stand/p_stand.png",
-        ));
-        // .load_texture(Path::new("assets/textures/sprites/player/jump/p_jump.png"));
+            .load_sprite_sheet(Path::new("assets/textures/sprites/player/animations.toml"));
 
         let player_stand_animation = world
             .services
@@ -253,7 +248,7 @@ impl State<ServerTransition> for GameState {
                     info: SpriteInfo {
                         width: 32.0,
                         height: 32.0,
-                        texture_info: tex_info,
+                        texture_info: tile_tex_info,
                     },
                     sprite_layer: SpriteLayer::Background,
                 };
@@ -294,7 +289,7 @@ impl State<ServerTransition> for GameState {
                     info: SpriteInfo {
                         width: 32.0,
                         height: 32.0,
-                        texture_info: tex_info,
+                        texture_info: tile_tex_info,
                     },
                     sprite_layer: SpriteLayer::Background,
                 };

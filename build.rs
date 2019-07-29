@@ -1,9 +1,11 @@
 use std::cmp::Ordering;
+use std::hash::{Hash, Hasher};
 use std::collections::BTreeMap;
 use std::env;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::collections::hash_map::DefaultHasher;
 
 use vec_map::VecMap;
 use walkdir::{DirEntry, WalkDir};
@@ -53,7 +55,7 @@ fn build_texture_slugs(out_file: &Path) {
     let mut slug_map: BTreeMap<String, SlugData> = BTreeMap::new();
     let mut id_to_slugs: VecMap<Vec<String>> = VecMap::new();
 
-    let search_path = Path::new("./assets/textures/sprites");
+    let search_path = Path::new("assets/textures");
 
     let walker = WalkDir::new(search_path).sort_by(|f1, f2| {
         files_before_dirs(f1, f2).then_with(|| f1.file_name().cmp(f2.file_name()))
@@ -109,9 +111,12 @@ fn build_texture_slugs(out_file: &Path) {
     let mut idx_content = String::new();
     let mut texture_info_content = String::new();
     let mut path_content = String::new();
+    let mut from_path_content = String::new();
     let mut id_to_slugs_content = String::new();
 
     for (slug_name, slug) in &slug_map {
+        let slug_path_str = path_to_string(&slug.path);
+
         enum_content.push_str(&format!("  {},\n", slug_name));
         id_content.push_str(&format!(
             "      TextureSlug::{} => {},\n",
@@ -128,13 +133,20 @@ fn build_texture_slugs(out_file: &Path) {
         path_content.push_str(&format!(
             "      TextureSlug::{} => Path::new(\"{}\"),\n",
             slug_name,
-            path_to_string(&slug.path)
+            slug_path_str
         ));
+
+        let mut h = DefaultHasher::new();
+        slug.path.hash(&mut h);
+        let hash = h.finish();
+        from_path_content.push_str(&format!(
+            "      {} => Some(TextureSlug::{}), // \"{}\"\n", hash, slug_name, slug_path_str
+        ))
     }
 
     for (id, slug_names) in &id_to_slugs {
         id_to_slugs_content.push_str(&format!(
-            "      {} => &[\n", id
+            "      {} => Some(&[\n", id
         ));
         for s in slug_names {
             id_to_slugs_content.push_str(&format!(
@@ -142,7 +154,7 @@ fn build_texture_slugs(out_file: &Path) {
             ));
         }
         id_to_slugs_content.push_str(&format!(
-            "      ],\n"
+            "      ]),\n"
         ));
     }
 
@@ -150,6 +162,9 @@ fn build_texture_slugs(out_file: &Path) {
     f.write_fmt(format_args!("// this file is auto generated from build.rs
 
 use std::path::Path;
+use std::hash::{{Hash, Hasher}};
+use std::collections::hash_map::DefaultHasher;
+
 use crate::game::TextureInfo;
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -177,16 +192,27 @@ impl TextureSlug {{
     }}
   }}
 
+  pub fn from_path(path: &Path) -> Option<TextureSlug> {{
+    let mut h = DefaultHasher::new();
+    path.hash(&mut h);
+    let hash = h.finish();
+
+    match hash {{
+{from_path}
+      _ => None,
+    }}
+  }}
+
   pub fn path(self) -> &'static Path {{
     match self {{
 {path}
     }}
   }}
 
-  pub fn all_with_id(self) -> &'static [TextureSlug] {{
-    match self.id() {{
+  pub fn all_with_id(id: usize) -> Option<&'static [TextureSlug]> {{
+    match id {{
 {id_to_slugs}
-      i => panic!(\"unknown id: {{}}\", i),
+      _ => None,
     }}
   }}
 }}",
@@ -195,6 +221,7 @@ impl TextureSlug {{
         idx=idx_content.trim_end(),
         texture_info=texture_info_content.trim_end(),
         path=path_content.trim_end(),
+        from_path=from_path_content.trim_end(),
         id_to_slugs=id_to_slugs_content.trim_end()))
         .unwrap();
 }

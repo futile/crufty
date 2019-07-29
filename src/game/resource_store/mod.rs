@@ -1,3 +1,5 @@
+use std::ops::Deref;
+
 pub use self::sprite_sheet_store::SpriteSheetHandle;
 pub use self::texture_store::TextureInfo;
 
@@ -28,17 +30,15 @@ impl ResourceStore {
         }
     }
 
-    pub fn load_texture(&mut self, path: &Path) -> TextureInfo {
-        self.texture_store.get_texture_info(path)
-    }
-
-    pub fn get_texture(&self, tex_info: TextureInfo) -> &CompressedSrgbTexture2dArray {
+    pub fn get_texture(
+        &self,
+        tex_info: TextureInfo,
+    ) -> impl Deref<Target = CompressedSrgbTexture2dArray> + '_ {
         self.texture_store.get_texture(tex_info)
     }
 
     pub fn load_sprite_sheet(&mut self, path: &Path) -> SpriteSheetHandle {
-        self.sprite_sheet_store
-            .get_sprite_sheet_handle(&mut self.texture_store, path)
+        self.sprite_sheet_store.get_sprite_sheet_handle(path)
     }
 
     pub fn get_sprite_sheet(&self, handle: SpriteSheetHandle) -> &SpriteSheet {

@@ -8,6 +8,7 @@ build = "build.rs"
 
 [build-dependencies]
 walkdir = "2"
+vec_map = "0.8.1"
 
 [dependencies]
 image = "0.20.1"
@@ -33,6 +34,10 @@ features = ["serde-serialize"]
 
 [dependencies.smallvec]
 version = "0.6.6"
+features = ["serde"]
+
+[dependencies.vec_map]
+version = "0.8.1"
 features = ["serde"]
 
 [patch.crates-io]
