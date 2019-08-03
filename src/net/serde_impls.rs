@@ -54,6 +54,8 @@ pub mod cuboid {
 pub mod virtual_key_code {
     use glium::glutin::VirtualKeyCode;
 
+    // TODO: use winit's/glutin's native "serde" feature
+    // We can't do that because glium doesn't re-export the feature
     #[derive(Serialize, Deserialize)]
     #[serde(remote = "VirtualKeyCode")]
     pub enum VirtualKeyCodeDef {
