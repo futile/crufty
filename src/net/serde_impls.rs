@@ -123,6 +123,15 @@ pub mod virtual_key_code {
         F13,
         F14,
         F15,
+        F16,
+        F17,
+        F18,
+        F19,
+        F20,
+        F21,
+        F22,
+        F23,
+        F24,
 
         /// Print Screen/SysRq.
         Snapshot,
@@ -241,24 +250,4 @@ pub mod virtual_key_code {
         Paste,
         Cut,
     }
-    // use serde::{Deserializer, Serializer, Serialize, Deserialize};
-
-    // pub fn deserialize<'de, D>(deserializer: D) -> Result<VirtualKeyCode, D::Error>
-    // where
-    //     D: Deserializer<'de>,
-    // {
-    //     // Vector2::deserialize(deserializer).map(Cuboid::new)
-    //     // let raw: u32 = deserializer.deserialize_u32(visitor: V)
-    //     u32::deserialize(deserializer).map(|u| u.try_into())
-    //     // panic!()
-    // }
-
-    // pub fn serialize<S>(vkc: &VirtualKeyCode, serializer: S) -> Result<S::Ok, S::Error>
-    // where
-    //     S: Serializer,
-    // {
-    //     // cuboid.half_extents().serialize(serializer)
-    //     (*vkc as u32).serialize(serializer)
-    //     // panic!()
-    // }
 }
