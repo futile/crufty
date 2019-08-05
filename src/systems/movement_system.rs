@@ -84,7 +84,7 @@ impl EntityProcess for MovementSystem {
                         continue;
                     }
 
-                    // TODO reduce speed instead(e.g. by acc)
+                    // TODO reduce speed instead(e.g. by acc) - FR, unknown date (early)
                     movement.vel.x = add_clamp_to_zero(
                         movement.vel.x,
                         movement.acc.x * delta,
@@ -109,8 +109,8 @@ impl EntityProcess for MovementSystem {
                     let inter_x = na::partial_clamp(&n.x, &min.x, &max.x);
                     let inter_y = na::partial_clamp(&n.y, &min.y, &max.y);
 
-                    // TODO working around this issue: https://github.com/rustsim/nalgebra/issues/401
-                    // movement.vel = *inter.unwrap_or(&Vector2::zero());
+                    // TODO working around this issue: https://github.com/rustsim/nalgebra/issues/401 - FR, unknown date (early)
+                    // Not sure what is being worked around here.. - FR, 2019-08-05
                     movement.vel = Vector2::new(*inter_x.unwrap_or(&0.0), *inter_y.unwrap_or(&0.0));
                 }
 
