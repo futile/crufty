@@ -60,6 +60,7 @@ fn build_texture_slugs(out_file: &Path) {
     let walker = WalkDir::new(search_path).sort_by(|f1, f2| {
         files_before_dirs(f1, f2).then_with(|| f1.file_name().cmp(f2.file_name()))
     });
+
     fn should_visit(d: &DirEntry) -> bool {
         !d.file_type().is_file() || d.file_name().to_str().unwrap().ends_with(".png")
     }

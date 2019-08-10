@@ -5,6 +5,7 @@ use enet::Enet;
 mod client;
 pub mod serde_impls;
 mod server;
+mod protocol;
 
 pub use self::client::Client;
 pub use self::server::Server;
