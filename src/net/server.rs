@@ -38,7 +38,7 @@ where
 
             if !tag_written {
                 tag_written = true;
-                serialize_into(&mut out, unsafe { &type_id::<C>() }).unwrap();
+                serialize_into(&mut out, &type_id::<C>()).unwrap();
             } else {
                 serialize_into(&mut out, &true).unwrap();
             }

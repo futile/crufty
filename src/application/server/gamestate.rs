@@ -117,7 +117,7 @@ impl State<ServerTransition> for GameState {
                 Vector2::new(16.0, 16.0),
                 CollisionType::Solid,
             );
-            let movement = Movement::new(Vector2::new(75.0, 0.0), Vector2::new(150.0, 0.0));
+            let movement = Movement::new(Vector2::new(110.0, 0.0), Vector2::new(1000.0, 0.0));
             let facing = Facing::Right;
             let jump = Jump::new();
             let gravity = Gravity::new();

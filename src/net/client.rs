@@ -17,16 +17,16 @@ pub struct Client {
     entity_mapping: HashMap<u64, Entity>
 }
 
-const POSITION_ID: u64 = unsafe { type_id::<Position>() };
-const VELOCITY_ID: u64 = unsafe { type_id::<Velocity>() };
-const JUMP_ID: u64 = unsafe { type_id::<Jump>() };
-const GRAVITY_ID: u64 = unsafe { type_id::<Gravity>() };
-const FACING_ID: u64 = unsafe { type_id::<Facing>() };
-const INTENTS_ID: u64 = unsafe { type_id::<Intents>() };
-const INTERACTOR_ID: u64 = unsafe { type_id::<Interactor>() };
-const CAMERA_ID: u64 = unsafe { type_id::<Camera>() };
-const MOVEMENT_ID: u64 = unsafe { type_id::<Movement>() };
-const SPRITE_ID: u64 = unsafe { type_id::<Sprite>() };
+const POSITION_ID: u64 = type_id::<Position>();
+const VELOCITY_ID: u64 = type_id::<Velocity>();
+const JUMP_ID: u64 = type_id::<Jump>();
+const GRAVITY_ID: u64 = type_id::<Gravity>();
+const FACING_ID: u64 = type_id::<Facing>();
+const INTENTS_ID: u64 = type_id::<Intents>();
+const INTERACTOR_ID: u64 = type_id::<Interactor>();
+const CAMERA_ID: u64 = type_id::<Camera>();
+const MOVEMENT_ID: u64 = type_id::<Movement>();
+const SPRITE_ID: u64 = type_id::<Sprite>();
 
 macro_rules! deserialize_component {
     ($component:ident, $component_name:ident, $en:ident, $e_id:ident, $sim_ts:ident, $world:ident, $reader:ident, $do_print:expr) => (

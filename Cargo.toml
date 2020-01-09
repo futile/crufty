@@ -4,6 +4,7 @@ version = "0.0.1"
 authors = ["Felix Rath <felixr@archlinux.info>"]
 edition = "2018"
 build = "build.rs"
+default-run = "server"
 # features = ["glutin", "image", "nalgebra"]
 
 [build-dependencies]
